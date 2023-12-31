@@ -1,3 +1,0 @@
-const char* NETWORK_SSID = "VIRGIN788";
-const char* NETWORK_PASSWORD = "A1DA257EF95D";
-const char* API_TOKEN = "TpQXr0DTTz6f8pvZHloDa1PX5G1c2Flg";
