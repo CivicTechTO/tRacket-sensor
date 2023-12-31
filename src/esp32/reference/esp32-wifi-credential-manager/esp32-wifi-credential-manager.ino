@@ -15,7 +15,7 @@
  *  - Encrypt the stored credentials (simple XOR with a long key?).
  */
 
-#include <CRC32.h> // https://github.com/bakercp/CRC32
+#include <CRC32.h>  // https://github.com/bakercp/CRC32
 #include <EEPROM.h>
 #include <WebServer.h>
 #include <WiFiAP.h>
@@ -23,22 +23,22 @@
 #include <cstdint>
 
 constexpr auto AccessPointSSID = "Noise meter";
-constexpr auto AccessPointPsk  = "noisemeter";
+constexpr auto AccessPointPsk = "noisemeter";
 
 // The ESP32's IP address within its access point will be "4.3.2.1".
 // Once connected to the access point, open up 4.3.2.1 in a browser to get
 // to the credentials form.
-static const IPAddress AccessPointIP (4, 3, 2, 1);
+static const IPAddress AccessPointIP(4, 3, 2, 1);
 
 // Grounding this pin (e.g. with a button) will force access open to start.
 // Useful as a "reset" button to overwrite currently saved credentials.
-constexpr int CredsResetPin = 0;
+constexpr int CredsResetPin = 5;
 
 // EEPROM addresses for credential data.
 constexpr unsigned int EEPROMMaxStringSize = 64;
-constexpr int EEPROMEntryCSum = 0; // CRC32 checksum of SSID and passkey
+constexpr int EEPROMEntryCSum = 0;  // CRC32 checksum of SSID and passkey
 constexpr int EEPROMEntrySSID = EEPROMEntryCSum + sizeof(uint32_t);
-constexpr int EEPROMEntryPsk  = EEPROMEntrySSID + EEPROMMaxStringSize;
+constexpr int EEPROMEntryPsk = EEPROMEntrySSID + EEPROMMaxStringSize;
 constexpr int EEPROMTotalSize = EEPROMEntryPsk + EEPROMMaxStringSize;
 
 // Main webpage HTML with form to collect WiFi credentials.
@@ -80,8 +80,7 @@ static const char SubmitPageHTML[] PROGMEM = R"(
 /**
  * Starts the WiFi access point and web server and enters an infinite loop to process connections.
  */
-[[noreturn]]
-static void runAccessPoint();
+[[noreturn]] static void runAccessPoint();
 
 /**
  * Calculates a CRC32 checksum based on the given SSID and passkey.
@@ -119,10 +118,11 @@ void setup() {
   Serial.println("Initializing...");
 
   EEPROM.begin(EEPROMTotalSize);
-  delay(2000); // Ensure the EEPROM peripheral has enough time to initialize.
+  delay(2000);  // Ensure the EEPROM peripheral has enough time to initialize.
 
   // Run the access point if it is requested or if there are no valid credentials.
   if (isCredsResetPressed() || !isEEPROMCredsValid()) {
+    eraseNetworkCreds();
     runAccessPoint();
   }
 
@@ -134,12 +134,11 @@ void setup() {
 }
 
 void loop() {
-  delay(1000); // Nothing to do yet...
+  delay(1000);  // Nothing to do yet...
 }
 
-void runAccessPoint()
-{
-  static WebServer httpServer (80);
+void runAccessPoint() {
+  static WebServer httpServer(80);
 
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(AccessPointIP, AccessPointIP, IPAddress(255, 255, 255, 0));
@@ -148,14 +147,16 @@ void runAccessPoint()
   // GET request means user wants to see the form.
   // POST request means user has submitted data through the form.
   httpServer.on("/", HTTP_GET,
-    [] { httpServer.send_P(200, PSTR("text/html"), SetupPageHTML); });
+                [] {
+                  httpServer.send_P(200, PSTR("text/html"), SetupPageHTML);
+                });
   httpServer.on("/", HTTP_POST,
-    [] {
-      // Show "submitted" page immediately before we begin saving the credentials.
-      httpServer.client().setNoDelay(true);
-      httpServer.send_P(200, PSTR("text/html"), SubmitPageHTML);
-      saveNetworkCreds(httpServer);
-    });
+                [] {
+                  // Show "submitted" page immediately before we begin saving the credentials.
+                  httpServer.client().setNoDelay(true);
+                  httpServer.send_P(200, PSTR("text/html"), SubmitPageHTML);
+                  saveNetworkCreds(httpServer);
+                });
   httpServer.begin();
 
   Serial.println("Running setup access point.");
@@ -164,8 +165,7 @@ void runAccessPoint()
     httpServer.handleClient();
 }
 
-void printCredentials(const String& ssid, const String& psk)
-{
+void printCredentials(const String& ssid, const String& psk) {
   Serial.print("SSID \"");
   Serial.print(ssid);
   Serial.print("\" passkey \"");
@@ -173,16 +173,14 @@ void printCredentials(const String& ssid, const String& psk)
   Serial.println("\"");
 }
 
-uint32_t calculateCredsChecksum(const String& ssid, const String& psk)
-{
+uint32_t calculateCredsChecksum(const String& ssid, const String& psk) {
   CRC32 crc;
   crc.update(ssid.c_str(), ssid.length());
   crc.update(psk.c_str(), psk.length());
   return crc.finalize();
 }
 
-bool isEEPROMCredsValid()
-{
+bool isEEPROMCredsValid() {
   const auto csum = EEPROM.readUInt(EEPROMEntryCSum);
   const auto ssid = EEPROM.readString(EEPROMEntrySSID);
   const auto psk = EEPROM.readString(EEPROMEntryPsk);
@@ -193,15 +191,16 @@ bool isEEPROMCredsValid()
   return !ssid.isEmpty() && !psk.isEmpty() && csum == calculateCredsChecksum(ssid, psk);
 }
 
-bool isCredsResetPressed()
-{
+bool isCredsResetPressed() {
   pinMode(CredsResetPin, INPUT_PULLUP);
-  delay(100); // Let the IO circuit settle.
+  delay(100);  // Let the IO circuit settle.
+  Serial.println();
+  Serial.print("Is reset detected: ");
+  Serial.println(!digitalRead(CredsResetPin));
   return !digitalRead(CredsResetPin);
 }
 
-void saveNetworkCreds(WebServer& httpServer)
-{
+void saveNetworkCreds(WebServer& httpServer) {
   // Confirm that the form was actually submitted.
   if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
     const auto ssid = httpServer.arg("ssid");
@@ -219,10 +218,26 @@ void saveNetworkCreds(WebServer& httpServer)
 
       Serial.println("Saved network credentials. Restarting...");
       delay(2000);
-      ESP.restart(); // Software reset.
+      ESP.restart();  // Software reset.
     }
   }
 
   // TODO inform user that something went wrong...
   Serial.println("Error: Invalid network credentials!");
+}
+
+void eraseNetworkCreds() {
+  Serial.println("Erasing...");
+  EEPROM.writeUInt(EEPROMEntryCSum, calculateCredsChecksum("", ""));
+  EEPROM.writeString(EEPROMEntrySSID, "");
+  EEPROM.writeString(EEPROMEntryPsk, "");
+  EEPROM.commit();
+
+  const auto ssid = EEPROM.readString(EEPROMEntrySSID);
+  const auto psk = EEPROM.readString(EEPROMEntryPsk);
+  Serial.print("Stored Credentials after erasing: ");
+  printCredentials(ssid, psk);
+
+  Serial.println("Erased network credentials.");
+  delay(2000);
 }
