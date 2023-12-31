@@ -1,0 +1,19 @@
+{
+  "type": "COMAND",
+  "version": "1.0",
+  "time": "2023-10-18T09:28:25-04:00",
+  "source": "https://noisemeter.webcomand.com/ws/put",
+  "request": "",
+  "status": true,
+  "title": "Put Service",
+  "description": "Create and/or update one or more objects in the repository.  The desired parent container (object and field) can be specified using the parent option.",
+  "contents": [
+    {
+      "UUID": "37017c46-6dba-11ee-b78f-708d729184e1",
+      "DOID": "42584",
+      "OID": "72132",
+      "Type": "Noise",
+      "updated": true
+    }
+  ]
+}
