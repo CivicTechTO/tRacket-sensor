@@ -12,3 +12,7 @@
 | LRCL | P18   |
 | SEL  | N/C   |
 | 3V   | 3V    |
+
+| Misc  | Board |
+| ----- | ----- |
+| Reset | P5    |
