@@ -19,7 +19,8 @@ Many source code repos will be missing some files, which have been gitignored to
 ## Current Points of Contact for the project:
 
 (May be subject to change)
-Gabe Sawnhey (Project Lead)
-Nick Barnard (Arduino)
-Clyne Sullivan (Arduino)
-Mitch Bechtel (API & Cloud DB)
+
+- Gabe Sawnhey (Project Lead)
+- Nick Barnard (Arduino)
+- Clyne Sullivan (Arduino)
+- Mitch Bechtel (API & Cloud DB)
