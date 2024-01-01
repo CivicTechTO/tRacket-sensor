@@ -1,20 +1,16 @@
 /**
- * WiFi Credential Manager example
- * Written by Clyne Sullivan.
- * 
- * This Arduino sketch stores WiFi SSID and passkey information in non-volatile
- * EEPROM in order to connect to a given network. If these credentials are not
- * saved, an access point will be started with a web server allowing the user
- * to input new credentials. The access point can also be started by grounding
- * the "CredsResetPin" pin (default pin 0).
- * 
- * This example is intended for ESP32 microcontrollers.
+ * Civic Tech TO - Noisemeter Device (ESP32 Version) v1
+ * Written by Clyne Sullivan and Nick Barnard.
+ * Open source dB meter code taken from Ivan Kostoski (https://github.com/ikostoski/esp32-i2s-slm)
  * 
  * TODO:
  *  - Use DNS to make a "captive portal" that brings users directly to the credentials form.
  *  - Encrypt the stored credentials (simple XOR with a long key?).
+ *  - Add second step to Access Point flow - to gather users email, generate a UUID and upload them to the cloud. UUID to be saved in EEPROM
+ *  - Add functionality to reset the device periodically (eg every 24 hours)
+ *  - 
  */
-#include <ArduinoJson.h>
+#include <ArduinoJson.h> // https://arduinojson.org/
 #include <ArduinoJson.hpp>
 #include <WiFi.h>
 #include <WiFiMulti.h>
@@ -24,8 +20,8 @@
 #include <WiFiAP.h>
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
-#include <dummy.h>
-#include <driver/i2s.h>
+#include <dummy.h> // ESP32 core
+#include <driver/i2s.h> // ESP32 core
 
 #include "sos-iir-filter.h"
 #include "certs.h"
@@ -338,11 +334,11 @@ void printArray(float arr[], unsigned long length) {
 
 void printReadingToConsole(double reading) {
   String output = "";
-  if (numberOfReadings > 1) {
-    output += "[...+" + String(numberOfReadings) + " more] ";
-  }
   output += reading;
   output += "dB";
+  if (numberOfReadings > 1) {
+    output += " [+" + String(numberOfReadings - 1) + " more]";
+  }
   Serial.println(output);
 }
 
@@ -400,18 +396,17 @@ void saveNetworkCreds(WebServer& httpServer) {
 }
 
 void eraseNetworkCreds() {
-  Serial.println("Erasing...");
+  Serial.println("Erasing stored credentials...");
   EEPROM.writeUInt(EEPROMEntryCSum, calculateCredsChecksum("", ""));
   EEPROM.writeString(EEPROMEntrySSID, "");
   EEPROM.writeString(EEPROMEntryPsk, "");
   EEPROM.commit();
+  Serial.println("Erase complete");
 
   const auto ssid = EEPROM.readString(EEPROMEntrySSID);
   const auto psk = EEPROM.readString(EEPROMEntryPsk);
   Serial.print("Stored Credentials after erasing: ");
   printCredentials(ssid, psk);
-
-  Serial.println("Erased network credentials.");
   delay(2000);
 }
 
