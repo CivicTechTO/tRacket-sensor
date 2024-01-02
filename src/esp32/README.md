@@ -3,6 +3,7 @@
 ![ESP32-WROOM Pinout](media\ESP-WROOM-32-Pinout.jpg)
 
 Board used (ESP32-WROOM): [https://a.co/d/6XwJp64](https://a.co/d/6XwJp64)
+
 Mic module used (SPH0645LM4H): [https://www.adafruit.com/product/3421](https://a.co/d/6XwJp64)
 
 ## Pin Connections:
@@ -40,7 +41,7 @@ const char* API_TOKEN = "<Your API token here>";
 
 - Power on the device by connecting it to power. The device should start in Hotspot mode.
 - Connect to device's wifi hotspot, which will be called "Noise Meter". Password is "noisemeter".
-- Navigate to 4.3.2.1 and fill out your Wifi network SSID and password. This will then bbe saved to the onboard flash, and should persist between restarts.
+- Open a web browser and navigate to IP address 4.3.2.1 and fill out your Wifi network SSID and password. This will then bbe saved to the onboard flash, and should persist between restarts.
 - The device should reset and begin attempting to connect to wifi. Use Serial monitor to confirm this.
 - Once connected, the device will sync itself with a NTP time server and then begin taking readings.
 - The device fills a buffer with integer readings from the microphone until it has enough to 
