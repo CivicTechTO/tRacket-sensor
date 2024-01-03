@@ -35,7 +35,7 @@ constexpr auto AccessPointSSID = "Noise meter";
 constexpr auto AccessPointPsk = "noisemeter";
 const bool UPLOAD_DISABLED = false;
 const unsigned long UPLOAD_INTERVAL_MS = 60000 * 5;  // Upload every 5 mins
-// const unsigned long UPLOAD_INTERVAL_MS = 20000;  // Upload every 20 secs
+// const unsigned long UPLOAD_INTERVAL_MS = 30000;  // Upload every 30 secs
 const String DEVICE_ID = "nick2024test";         // TODO EPROM
 const unsigned long MIN_READINGS_BEFORE_UPLOAD = 20;
 
@@ -418,7 +418,7 @@ String createJSONPayload(String deviceId, float min, float max, float average) {
   doc["data"]["contents"][0]["Type"] = "Noise";
   doc["data"]["contents"][0]["Min"] = min;
   doc["data"]["contents"][0]["Max"] = max;
-  doc["data"]["contents"][0]["Average"] = average;
+  doc["data"]["contents"][0]["Mean"] = average;
   doc["data"]["contents"][0]["DeviceID"] = deviceId;  // TODO
 
   // Serialize JSON document
