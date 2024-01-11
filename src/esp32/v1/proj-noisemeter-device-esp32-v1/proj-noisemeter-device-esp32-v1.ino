@@ -10,7 +10,7 @@
  *  - Add functionality to reset the device periodically (eg every 24 hours)
  *  - 
  */
-#include <ArduinoJson.h> // https://arduinojson.org/
+#include <ArduinoJson.h>  // https://arduinojson.org/
 #include <ArduinoJson.hpp>
 #include <WiFi.h>
 #include <WiFiMulti.h>
@@ -20,8 +20,8 @@
 #include <WiFiAP.h>
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
-#include <dummy.h> // ESP32 core
-#include <driver/i2s.h> // ESP32 core
+#include <dummy.h>       // ESP32 core
+#include <driver/i2s.h>  // ESP32 core
 
 #include "sos-iir-filter.h"
 #include "certs.h"
@@ -36,7 +36,7 @@ constexpr auto AccessPointPsk = "noisemeter";
 const bool UPLOAD_DISABLED = false;
 const unsigned long UPLOAD_INTERVAL_MS = 60000 * 5;  // Upload every 5 mins
 // const unsigned long UPLOAD_INTERVAL_MS = 30000;  // Upload every 30 secs
-const String DEVICE_ID = "nick2024test";         // TODO EPROM
+const String DEVICE_ID = "nickjan2024int";  // TODO EPROM
 const unsigned long MIN_READINGS_BEFORE_UPLOAD = 20;
 
 // The ESP32's IP address within its access point will be "4.3.2.1".
@@ -47,7 +47,7 @@ static const IPAddress AccessPointIP(4, 3, 2, 1);
 //
 // Constants & Config
 //
-#define LEQ_PERIOD 1           // second(s)
+#define LEQ_PERIOD 1         // second(s)
 #define WEIGHTING A_weighting  // Also avaliable: 'C_weighting' or 'None' (Z_weighting)
 #define LEQ_UNITS "LAeq"       // customize based on above weighting used
 #define DB_UNITS "dBA"         // customize based on above weighting used
@@ -234,46 +234,48 @@ void setup() {
 
   initMicrophone();
 
-  // Run the access point if it is requested or if there are no valid credentials.
-  if (isCredsResetPressed() || !isEEPROMCredsValid()) {
-    eraseNetworkCreds();
-    runAccessPoint();
+  if (!UPLOAD_DISABLED) {
+    // Run the access point if it is requested or if there are no valid credentials.
+    if (isCredsResetPressed() || !isEEPROMCredsValid()) {
+      eraseNetworkCreds();
+      runAccessPoint();
+    }
+
+    // Valid credentials: Next step would be to connect to the network.
+    const auto ssid = EEPROM.readString(EEPROMEntrySSID);
+    const auto psk = EEPROM.readString(EEPROMEntryPsk);
+
+    Serial.print("Ready to connect to ");
+    printCredentials(ssid, psk);
+
+    int ssid_len = ssid.length() + 1;
+    int psk_len = psk.length() + 1;
+
+    char intSSID[ssid_len];
+    char intPSK[psk_len];
+    ssid.toCharArray(intSSID, ssid_len);
+    psk.toCharArray(intPSK, psk_len);
+
+    WiFi.mode(WIFI_STA);
+    WiFiMulti.addAP(intSSID, intPSK);
+
+
+    // wait for WiFi connection
+    Serial.print("Waiting for WiFi to connect...");
+    while ((WiFiMulti.run() != WL_CONNECTED)) {
+      Serial.print(".");
+      delay(500);
+    }
+    Serial.println("\nConnected to the WiFi network");
+    Serial.print("Local ESP32 IP: ");
+    Serial.println(WiFi.localIP());
+
+    setClock();
   }
-
-  // Valid credentials: Next step would be to connect to the network.
-  const auto ssid = EEPROM.readString(EEPROMEntrySSID);
-  const auto psk = EEPROM.readString(EEPROMEntryPsk);
-
-  Serial.print("Ready to connect to ");
-  printCredentials(ssid, psk);
-
-  int ssid_len = ssid.length() + 1;
-  int psk_len = psk.length() + 1;
-
-  char intSSID[ssid_len];
-  char intPSK[psk_len];
-  ssid.toCharArray(intSSID, ssid_len);
-  psk.toCharArray(intPSK, psk_len);
-
-  WiFi.mode(WIFI_STA);
-  WiFiMulti.addAP(intSSID, intPSK);
-
-
-  // wait for WiFi connection
-  Serial.print("Waiting for WiFi to connect...");
-  while ((WiFiMulti.run() != WL_CONNECTED)) {
-    Serial.print(".");
-    delay(500);
-  }
-  Serial.println("\nConnected to the WiFi network");
-  Serial.print("Local ESP32 IP: ");
-  Serial.println(WiFi.localIP());
-
-  setClock();
 }
 
 void loop() {
-  
+
 
   readMicrophoneData();
 
