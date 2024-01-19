@@ -23,6 +23,7 @@
 #include <dummy.h> // ESP32 core
 #include <driver/i2s.h> // ESP32 core
 
+#include "board.h"
 #include "sos-iir-filter.h"
 #include "certs.h"
 #include "secret.h"
@@ -31,9 +32,12 @@
 
 WiFiMulti WiFiMulti;
 
+// Uncomment these to disable WiFi and/or data upload
+//#define WIFI_DISABLED
+//#define UPLOAD_DISABLED
+
 constexpr auto AccessPointSSID = "Noise meter";
 constexpr auto AccessPointPsk = "noisemeter";
-const bool UPLOAD_DISABLED = false;
 const unsigned long UPLOAD_INTERVAL_MS = 60000 * 5;  // Upload every 5 mins
 // const unsigned long UPLOAD_INTERVAL_MS = 30000;  // Upload every 30 secs
 const String DEVICE_ID = "nick2024test";         // TODO EPROM
@@ -64,7 +68,6 @@ static const IPAddress AccessPointIP(4, 3, 2, 1);
 #define MIC_NOISE_DB 29        // dB - Noise floor
 #define MIC_BITS 24            // valid number of bits in I2S data
 #define MIC_CONVERT(s) (s >> (SAMPLE_BITS - MIC_BITS))
-#define MIC_TIMING_SHIFT 0  // Set to one to fix MSB timing for some microphones, i.e. SPH0645LM4H-x
 
 // Calculate reference amplitude value at compile time
 constexpr double MIC_REF_AMPL = pow(10, double(MIC_SENSITIVITY) / 20) * ((1 << (MIC_BITS - 1)) - 1);
@@ -91,22 +94,6 @@ struct sum_queue_t {
 // Static buffer for block of samples
 float samples[SAMPLES_SHORT] __attribute__((aligned(4)));
 
-// Grounding this pin (e.g. with a button) will force access open to start.
-// Useful as a "reset" button to overwrite currently saved credentials.
-#define CredsResetPin 5
-//
-// I2S pins - Can be routed to almost any (unused) ESP32 pin.
-//            SD can be any pin, inlcuding input only pins (36-39).
-//            SCK (i.e. BCLK) and WS (i.e. L/R CLK) must be output capable pins
-//
-// Below ones are just example for my board layout, put here the pins you will use
-//
-#define I2S_WS 18
-#define I2S_SCK 23
-#define I2S_SD 19
-// I2S peripheral to use (0 or 1)
-#define I2S_PORT I2S_NUM_0
-
 // EEPROM addresses for credential data.
 constexpr unsigned int EEPROMMaxStringSize = 64;
 constexpr int EEPROMEntryCSum = 0;  // CRC32 checksum of SSID and passkey
@@ -119,20 +106,20 @@ constexpr int EEPROMTotalSize = EEPROMEntryPsk + EEPROMMaxStringSize;
 void setClock() {
   configTime(0, 0, "pool.ntp.org");
 
-  Serial.print(F("Waiting for NTP time sync: "));
+  USBSerial.print(F("Waiting for NTP time sync: "));
   time_t nowSecs = time(nullptr);
   while (nowSecs < 8 * 3600 * 2) {
     delay(500);
-    Serial.print(F("."));
+    USBSerial.print(F("."));
     yield();
     nowSecs = time(nullptr);
   }
 
-  Serial.println();
+  USBSerial.println();
   struct tm timeinfo;
   gmtime_r(&nowSecs, &timeinfo);
-  Serial.print(F("Current time: "));
-  Serial.print(asctime(&timeinfo));
+  USBSerial.print(F("Current time: "));
+  USBSerial.print(asctime(&timeinfo));
 }
 
 // Main webpage HTML with form to collect WiFi credentials.
@@ -183,7 +170,7 @@ static const char SubmitPageHTML[] PROGMEM = R"(
 static uint32_t calculateCredsChecksum(const String& ssid, const String& psk);
 
 /**
- * Prints the SSID and passkey to Serial.
+ * Prints the SSID and passkey to USBSerial.
  */
 static void printCredentials(const String& ssid, const String& psk);
 
@@ -221,19 +208,30 @@ unsigned long lastUploadMillis = 0;
  * Initialization routine.
  */
 void setup() {
+  pinMode(PIN_LED1, OUTPUT);
+  pinMode(PIN_LED2, OUTPUT);
+  // Turn LEDs off.
+  digitalWrite(PIN_LED1, HIGH);
+  digitalWrite(PIN_LED2, HIGH);
+
+  // Grounding this pin (e.g. with a button) will force access open to start.
+  // Useful as a "reset" button to overwrite currently saved credentials.
+  pinMode(PIN_BUTTON, INPUT_PULLUP);
+
   // If needed, now you can actually lower the CPU frquency,
   // i.e. if you want to (slightly) reduce ESP32 power consumption
   // setCpuFrequencyMhz(80);  // It should run as low as 80MHz
 
-  Serial.begin(115200);
-  Serial.println();
-  Serial.println("Initializing...");
+  USBSerial.begin(115200);
+  USBSerial.println();
+  USBSerial.println("Initializing...");
 
   EEPROM.begin(EEPROMTotalSize);
   delay(2000);  // Ensure the EEPROM peripheral has enough time to initialize.
 
   initMicrophone();
 
+#ifndef WIFI_DISABLED
   // Run the access point if it is requested or if there are no valid credentials.
   if (isCredsResetPressed() || !isEEPROMCredsValid()) {
     eraseNetworkCreds();
@@ -244,7 +242,7 @@ void setup() {
   const auto ssid = EEPROM.readString(EEPROMEntrySSID);
   const auto psk = EEPROM.readString(EEPROMEntryPsk);
 
-  Serial.print("Ready to connect to ");
+  USBSerial.print("Ready to connect to ");
   printCredentials(ssid, psk);
 
   int ssid_len = ssid.length() + 1;
@@ -260,30 +258,31 @@ void setup() {
 
 
   // wait for WiFi connection
-  Serial.print("Waiting for WiFi to connect...");
+  USBSerial.print("Waiting for WiFi to connect...");
   while ((WiFiMulti.run() != WL_CONNECTED)) {
-    Serial.print(".");
+    USBSerial.print(".");
     delay(500);
   }
-  Serial.println("\nConnected to the WiFi network");
-  Serial.print("Local ESP32 IP: ");
-  Serial.println(WiFi.localIP());
+  USBSerial.println("\nConnected to the WiFi network");
+  USBSerial.print("Local ESP32 IP: ");
+  USBSerial.println(WiFi.localIP());
 
   setClock();
+#endif // !WIFI_DISABLED
 }
 
 void loop() {
-  
-
   readMicrophoneData();
 
+#ifndef UPLOAD_DISABLED
   if (canUploadData()) {
     WiFiClientSecure* client = new WiFiClientSecure;
     float average = sumReadings / numberOfReadings;
     String payload = createJSONPayload(DEVICE_ID, minReading, maxReading, average);
     uploadData(client, payload);
     delete client;
-  };
+  }
+#endif // !UPLOAD_DISABLED
 }
 
 void runAccessPoint() {
@@ -308,28 +307,28 @@ void runAccessPoint() {
                 });
   httpServer.begin();
 
-  Serial.println("Running setup access point.");
+  USBSerial.println("Running setup access point.");
 
   while (1)
     httpServer.handleClient();
 }
 
 void printCredentials(const String& ssid, const String& psk) {
-  Serial.print("SSID \"");
-  Serial.print(ssid);
-  Serial.print("\" passkey \"");
-  Serial.print(psk);
-  Serial.println("\"");
+  USBSerial.print("SSID \"");
+  USBSerial.print(ssid);
+  USBSerial.print("\" passkey \"");
+  USBSerial.print(psk);
+  USBSerial.println("\"");
 }
 
 void printArray(float arr[], unsigned long length) {
-  Serial.print(length);
-  Serial.print(" {");
+  USBSerial.print(length);
+  USBSerial.print(" {");
   for (int i = 0; i < length; i++) {
-    Serial.print(arr[i]);
-    if (i < length - 1) Serial.print(", ");
+    USBSerial.print(arr[i]);
+    if (i < length - 1) USBSerial.print(", ");
   }
-  Serial.println("}");
+  USBSerial.println("}");
 }
 
 void printReadingToConsole(double reading) {
@@ -339,7 +338,7 @@ void printReadingToConsole(double reading) {
   if (numberOfReadings > 1) {
     output += " [+" + String(numberOfReadings - 1) + " more]";
   }
-  Serial.println(output);
+  USBSerial.println(output);
 }
 
 uint32_t calculateCredsChecksum(const String& ssid, const String& psk) {
@@ -354,19 +353,19 @@ bool isEEPROMCredsValid() {
   const auto ssid = EEPROM.readString(EEPROMEntrySSID);
   const auto psk = EEPROM.readString(EEPROMEntryPsk);
 
-  Serial.print("EEPROM stored credentials: ");
+  USBSerial.print("EEPROM stored credentials: ");
   printCredentials(ssid, psk);
 
   return !ssid.isEmpty() && !psk.isEmpty() && csum == calculateCredsChecksum(ssid, psk);
 }
 
 bool isCredsResetPressed() {
-  pinMode(CredsResetPin, INPUT_PULLUP);
-  delay(100);  // Let the IO circuit settle.
-  Serial.println();
-  Serial.print("Is reset detected: ");
-  Serial.println(!digitalRead(CredsResetPin));
-  return !digitalRead(CredsResetPin);
+  bool pressed = !digitalRead(PIN_BUTTON);
+
+  USBSerial.println();
+  USBSerial.print("Is reset detected: ");
+  USBSerial.println(pressed);
+  return pressed;
 }
 
 void saveNetworkCreds(WebServer& httpServer) {
@@ -382,30 +381,30 @@ void saveNetworkCreds(WebServer& httpServer) {
       EEPROM.writeString(EEPROMEntryPsk, psk);
       EEPROM.commit();
 
-      Serial.print("Saving ");
+      USBSerial.print("Saving ");
       printCredentials(ssid, psk);
 
-      Serial.println("Saved network credentials. Restarting...");
+      USBSerial.println("Saved network credentials. Restarting...");
       delay(2000);
       ESP.restart();  // Software reset.
     }
   }
 
   // TODO inform user that something went wrong...
-  Serial.println("Error: Invalid network credentials!");
+  USBSerial.println("Error: Invalid network credentials!");
 }
 
 void eraseNetworkCreds() {
-  Serial.println("Erasing stored credentials...");
+  USBSerial.println("Erasing stored credentials...");
   EEPROM.writeUInt(EEPROMEntryCSum, calculateCredsChecksum("", ""));
   EEPROM.writeString(EEPROMEntrySSID, "");
   EEPROM.writeString(EEPROMEntryPsk, "");
   EEPROM.commit();
-  Serial.println("Erase complete");
+  USBSerial.println("Erase complete");
 
   const auto ssid = EEPROM.readString(EEPROMEntrySSID);
   const auto psk = EEPROM.readString(EEPROMEntryPsk);
-  Serial.print("Stored Credentials after erasing: ");
+  USBSerial.print("Stored Credentials after erasing: ");
   printCredentials(ssid, psk);
   delay(2000);
 }
@@ -428,9 +427,6 @@ String createJSONPayload(String deviceId, float min, float max, float average) {
 }
 
 bool canUploadData() {
-  // DEBUG SWITCH - If true, will skip upload and continue accumulating data
-  if (UPLOAD_DISABLED) return false;
-
   // Has it been at least the upload interval since we uploaded data?
   long now = millis();
   long msSinceLastUpload = now - lastUploadMillis;
@@ -449,9 +445,9 @@ void uploadData(WiFiClientSecure* client, String json) {
       HTTPClient https;
       // void addHeader(const String& name, const String& value, bool first = false, bool replace = true);
 
-      Serial.print("[HTTPS] begin...\n");
+      USBSerial.print("[HTTPS] begin...\n");
       if (https.begin(*client, "https://noisemeter.webcomand.com/ws/put")) {  // HTTPS
-        Serial.print("[HTTPS] POST...\n");
+        USBSerial.print("[HTTPS] POST...\n");
         // start connection and send HTTP header
 
 
@@ -468,20 +464,20 @@ void uploadData(WiFiClientSecure* client, String json) {
         // httpCode will be negative on error
         if (httpCode > 0) {
           // HTTP header has been send and Server response header has been handled
-          Serial.printf("[HTTPS] POST... code: %d\n", httpCode);
+          USBSerial.printf("[HTTPS] POST... code: %d\n", httpCode);
 
           // file found at server
           if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
             String payload = https.getString();
-            Serial.println(payload);
+            USBSerial.println(payload);
           }
         } else {
-          Serial.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
+          USBSerial.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
         }
 
         https.end();
       } else {
-        Serial.printf("[HTTPS] Unable to connect\n");
+        USBSerial.printf("[HTTPS] Unable to connect\n");
       }
 
       // End extra scoping block
@@ -489,7 +485,7 @@ void uploadData(WiFiClientSecure* client, String json) {
 
     // delete client;
   } else {
-    Serial.println("Unable to create client");
+    USBSerial.println("Unable to create client");
   }
 
   long now = millis();
@@ -498,18 +494,18 @@ void uploadData(WiFiClientSecure* client, String json) {
 };  // Given a serialized JSON payload, upload the data to webcomand
 
 void resetReading() {
-  Serial.println("Resetting readings cache...");
+  USBSerial.println("Resetting readings cache...");
   numberOfReadings = 0;
   minReading = MIC_OVERLOAD_DB;
   maxReading = MIC_NOISE_DB;
   sumReadings = 0;
-  Serial.println("Reset complete");
+  USBSerial.println("Reset complete");
 };
 
 //
 // I2S Microphone sampling setup
 //
-void mic_i2s_init() {
+void initMicrophone() {
   // Setup I2S to sample mono channel for SAMPLE_RATE * SAMPLE_BITS
   // NOTE: Recent update to Arduino_esp32 (1.0.2 -> 1.0.3)
   //       seems to have swapped ONLY_LEFT and ONLY_RIGHT channels
@@ -517,7 +513,7 @@ void mic_i2s_init() {
     mode: i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_RX),
     sample_rate: SAMPLE_RATE,
     bits_per_sample: i2s_bits_per_sample_t(SAMPLE_BITS),
-    channel_format: I2S_CHANNEL_FMT_ONLY_RIGHT,
+    channel_format: I2S_CHANNEL_FMT_ONLY_LEFT,
     communication_format: i2s_comm_format_t(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
     intr_alloc_flags: ESP_INTR_FLAG_LEVEL1,
     dma_buf_count: DMA_BANKS,
@@ -526,8 +522,10 @@ void mic_i2s_init() {
     tx_desc_auto_clear: false,
     fixed_mclk: 0
   };
+
   // I2S pin mapping
   const i2s_pin_config_t pin_config = {
+    mck_io_num: -1, // not used
     bck_io_num: I2S_SCK,
     ws_io_num: I2S_WS,
     data_out_num: -1,  // not used
@@ -535,31 +533,10 @@ void mic_i2s_init() {
   };
 
   i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
-
-#if (MIC_TIMING_SHIFT > 0)
-  // Undocumented (?!) manipulation of I2S peripheral registers
-  // to fix MSB timing issues with some I2S microphones
-  REG_SET_BIT(I2S_TIMING_REG(I2S_PORT), BIT(9));
-  REG_SET_BIT(I2S_CONF_REG(I2S_PORT), I2S_RX_MSB_SHIFT);
-#endif
-
   i2s_set_pin(I2S_PORT, &pin_config);
 
-  //FIXME: There is a known issue with esp-idf and sampling rates, see:
-  //       https://github.com/espressif/esp-idf/issues/2634
-  //       In the meantime, the below line seems to set sampling rate at ~47999.992Hz
-  //       fifs_req=24576000, sdm0=149, sdm1=212, sdm2=5, odir=2 -> fifs_reached=24575996
-  //NOTE:  This seems to be fixed in ESP32 Arduino 1.0.4, esp-idf 3.2
-  //       Should be safe to remove...
-  //#include <soc/rtc.h>
-  //rtc_clk_apll_enable(1, 149, 212, 5, 2);
-}
-
-void initMicrophone() {
-  mic_i2s_init();
-  // Discard first block, microphone may have startup time (i.e. INMP441 up to 83ms)
+  // Discard first block, microphone may need time to startup and settle.
   i2s_read(I2S_PORT, &samples, SAMPLES_SHORT * sizeof(int32_t), &bytes_read, portMAX_DELAY);
-  // Equivalent to: i2s_read(0, &samples, SAMPLES_SHORT * sizeof(int32_t), &bytes_read, portMAX_DELAY);
 }
 
 void readMicrophoneData() {
@@ -608,7 +585,7 @@ void readMicrophoneData() {
     Leq_sum_sqr = 0;
     Leq_samples = 0;
 
-    // Serial.printf("Calculated dB: %.1fdB\n", Leq_dB);
+    // USBSerial.printf("Calculated dB: %.1fdB\n", Leq_dB);
     printReadingToConsole(Leq_dB);
 
     if (Leq_dB < minReading) minReading = Leq_dB;
