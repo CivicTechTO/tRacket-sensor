@@ -32,6 +32,8 @@
 
 WiFiMulti WiFiMulti;
 
+#define SERIAL USBSerial
+
 // Uncomment these to disable WiFi and/or data upload
 //#define WIFI_DISABLED
 //#define UPLOAD_DISABLED
@@ -40,7 +42,7 @@ constexpr auto AccessPointSSID = "Noise meter";
 constexpr auto AccessPointPsk = "noisemeter";
 const unsigned long UPLOAD_INTERVAL_MS = 60000 * 5;  // Upload every 5 mins
 // const unsigned long UPLOAD_INTERVAL_MS = 30000;  // Upload every 30 secs
-const String DEVICE_ID = "nick2024test";         // TODO EPROM
+const String DEVICE_ID = "pcb-clyne";         // TODO EPROM
 const unsigned long MIN_READINGS_BEFORE_UPLOAD = 20;
 
 // The ESP32's IP address within its access point will be "4.3.2.1".
@@ -106,20 +108,20 @@ constexpr int EEPROMTotalSize = EEPROMEntryPsk + EEPROMMaxStringSize;
 void setClock() {
   configTime(0, 0, "pool.ntp.org");
 
-  USBSerial.print(F("Waiting for NTP time sync: "));
+  SERIAL.print(F("Waiting for NTP time sync: "));
   time_t nowSecs = time(nullptr);
   while (nowSecs < 8 * 3600 * 2) {
     delay(500);
-    USBSerial.print(F("."));
+    SERIAL.print(F("."));
     yield();
     nowSecs = time(nullptr);
   }
 
-  USBSerial.println();
+  SERIAL.println();
   struct tm timeinfo;
   gmtime_r(&nowSecs, &timeinfo);
-  USBSerial.print(F("Current time: "));
-  USBSerial.print(asctime(&timeinfo));
+  SERIAL.print(F("Current time: "));
+  SERIAL.print(asctime(&timeinfo));
 }
 
 // Main webpage HTML with form to collect WiFi credentials.
@@ -170,7 +172,7 @@ static const char SubmitPageHTML[] PROGMEM = R"(
 static uint32_t calculateCredsChecksum(const String& ssid, const String& psk);
 
 /**
- * Prints the SSID and passkey to USBSerial.
+ * Prints the SSID and passkey to SERIAL.
  */
 static void printCredentials(const String& ssid, const String& psk);
 
@@ -210,8 +212,8 @@ unsigned long lastUploadMillis = 0;
 void setup() {
   pinMode(PIN_LED1, OUTPUT);
   pinMode(PIN_LED2, OUTPUT);
-  // Turn LEDs off.
-  digitalWrite(PIN_LED1, HIGH);
+
+  digitalWrite(PIN_LED1, LOW);
   digitalWrite(PIN_LED2, HIGH);
 
   // Grounding this pin (e.g. with a button) will force access open to start.
@@ -222,9 +224,9 @@ void setup() {
   // i.e. if you want to (slightly) reduce ESP32 power consumption
   // setCpuFrequencyMhz(80);  // It should run as low as 80MHz
 
-  USBSerial.begin(115200);
-  USBSerial.println();
-  USBSerial.println("Initializing...");
+  SERIAL.begin(115200);
+  SERIAL.println();
+  SERIAL.println("Initializing...");
 
   EEPROM.begin(EEPROMTotalSize);
   delay(2000);  // Ensure the EEPROM peripheral has enough time to initialize.
@@ -242,7 +244,7 @@ void setup() {
   const auto ssid = EEPROM.readString(EEPROMEntrySSID);
   const auto psk = EEPROM.readString(EEPROMEntryPsk);
 
-  USBSerial.print("Ready to connect to ");
+  SERIAL.print("Ready to connect to ");
   printCredentials(ssid, psk);
 
   int ssid_len = ssid.length() + 1;
@@ -256,19 +258,20 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFiMulti.addAP(intSSID, intPSK);
 
-
   // wait for WiFi connection
-  USBSerial.print("Waiting for WiFi to connect...");
+  SERIAL.print("Waiting for WiFi to connect...");
   while ((WiFiMulti.run() != WL_CONNECTED)) {
-    USBSerial.print(".");
+    SERIAL.print(".");
     delay(500);
   }
-  USBSerial.println("\nConnected to the WiFi network");
-  USBSerial.print("Local ESP32 IP: ");
-  USBSerial.println(WiFi.localIP());
+  SERIAL.println("\nConnected to the WiFi network");
+  SERIAL.print("Local ESP32 IP: ");
+  SERIAL.println(WiFi.localIP());
 
   setClock();
 #endif // !WIFI_DISABLED
+
+  digitalWrite(PIN_LED1, HIGH);
 }
 
 void loop() {
@@ -307,28 +310,28 @@ void runAccessPoint() {
                 });
   httpServer.begin();
 
-  USBSerial.println("Running setup access point.");
+  SERIAL.println("Running setup access point.");
 
   while (1)
     httpServer.handleClient();
 }
 
 void printCredentials(const String& ssid, const String& psk) {
-  USBSerial.print("SSID \"");
-  USBSerial.print(ssid);
-  USBSerial.print("\" passkey \"");
-  USBSerial.print(psk);
-  USBSerial.println("\"");
+  SERIAL.print("SSID \"");
+  SERIAL.print(ssid);
+  SERIAL.print("\" passkey \"");
+  SERIAL.print(psk);
+  SERIAL.println("\"");
 }
 
 void printArray(float arr[], unsigned long length) {
-  USBSerial.print(length);
-  USBSerial.print(" {");
+  SERIAL.print(length);
+  SERIAL.print(" {");
   for (int i = 0; i < length; i++) {
-    USBSerial.print(arr[i]);
-    if (i < length - 1) USBSerial.print(", ");
+    SERIAL.print(arr[i]);
+    if (i < length - 1) SERIAL.print(", ");
   }
-  USBSerial.println("}");
+  SERIAL.println("}");
 }
 
 void printReadingToConsole(double reading) {
@@ -338,7 +341,7 @@ void printReadingToConsole(double reading) {
   if (numberOfReadings > 1) {
     output += " [+" + String(numberOfReadings - 1) + " more]";
   }
-  USBSerial.println(output);
+  SERIAL.println(output);
 }
 
 uint32_t calculateCredsChecksum(const String& ssid, const String& psk) {
@@ -353,7 +356,7 @@ bool isEEPROMCredsValid() {
   const auto ssid = EEPROM.readString(EEPROMEntrySSID);
   const auto psk = EEPROM.readString(EEPROMEntryPsk);
 
-  USBSerial.print("EEPROM stored credentials: ");
+  SERIAL.print("EEPROM stored credentials: ");
   printCredentials(ssid, psk);
 
   return !ssid.isEmpty() && !psk.isEmpty() && csum == calculateCredsChecksum(ssid, psk);
@@ -362,9 +365,9 @@ bool isEEPROMCredsValid() {
 bool isCredsResetPressed() {
   bool pressed = !digitalRead(PIN_BUTTON);
 
-  USBSerial.println();
-  USBSerial.print("Is reset detected: ");
-  USBSerial.println(pressed);
+  SERIAL.println();
+  SERIAL.print("Is reset detected: ");
+  SERIAL.println(pressed);
   return pressed;
 }
 
@@ -381,30 +384,30 @@ void saveNetworkCreds(WebServer& httpServer) {
       EEPROM.writeString(EEPROMEntryPsk, psk);
       EEPROM.commit();
 
-      USBSerial.print("Saving ");
+      SERIAL.print("Saving ");
       printCredentials(ssid, psk);
 
-      USBSerial.println("Saved network credentials. Restarting...");
+      SERIAL.println("Saved network credentials. Restarting...");
       delay(2000);
       ESP.restart();  // Software reset.
     }
   }
 
   // TODO inform user that something went wrong...
-  USBSerial.println("Error: Invalid network credentials!");
+  SERIAL.println("Error: Invalid network credentials!");
 }
 
 void eraseNetworkCreds() {
-  USBSerial.println("Erasing stored credentials...");
+  SERIAL.println("Erasing stored credentials...");
   EEPROM.writeUInt(EEPROMEntryCSum, calculateCredsChecksum("", ""));
   EEPROM.writeString(EEPROMEntrySSID, "");
   EEPROM.writeString(EEPROMEntryPsk, "");
   EEPROM.commit();
-  USBSerial.println("Erase complete");
+  SERIAL.println("Erase complete");
 
   const auto ssid = EEPROM.readString(EEPROMEntrySSID);
   const auto psk = EEPROM.readString(EEPROMEntryPsk);
-  USBSerial.print("Stored Credentials after erasing: ");
+  SERIAL.print("Stored Credentials after erasing: ");
   printCredentials(ssid, psk);
   delay(2000);
 }
@@ -445,9 +448,9 @@ void uploadData(WiFiClientSecure* client, String json) {
       HTTPClient https;
       // void addHeader(const String& name, const String& value, bool first = false, bool replace = true);
 
-      USBSerial.print("[HTTPS] begin...\n");
+      SERIAL.print("[HTTPS] begin...\n");
       if (https.begin(*client, "https://noisemeter.webcomand.com/ws/put")) {  // HTTPS
-        USBSerial.print("[HTTPS] POST...\n");
+        SERIAL.print("[HTTPS] POST...\n");
         // start connection and send HTTP header
 
 
@@ -464,20 +467,20 @@ void uploadData(WiFiClientSecure* client, String json) {
         // httpCode will be negative on error
         if (httpCode > 0) {
           // HTTP header has been send and Server response header has been handled
-          USBSerial.printf("[HTTPS] POST... code: %d\n", httpCode);
+          SERIAL.printf("[HTTPS] POST... code: %d\n", httpCode);
 
           // file found at server
           if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
             String payload = https.getString();
-            USBSerial.println(payload);
+            SERIAL.println(payload);
           }
         } else {
-          USBSerial.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
+          SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
         }
 
         https.end();
       } else {
-        USBSerial.printf("[HTTPS] Unable to connect\n");
+        SERIAL.printf("[HTTPS] Unable to connect\n");
       }
 
       // End extra scoping block
@@ -485,7 +488,7 @@ void uploadData(WiFiClientSecure* client, String json) {
 
     // delete client;
   } else {
-    USBSerial.println("Unable to create client");
+    SERIAL.println("Unable to create client");
   }
 
   long now = millis();
@@ -494,12 +497,12 @@ void uploadData(WiFiClientSecure* client, String json) {
 };  // Given a serialized JSON payload, upload the data to webcomand
 
 void resetReading() {
-  USBSerial.println("Resetting readings cache...");
+  SERIAL.println("Resetting readings cache...");
   numberOfReadings = 0;
   minReading = MIC_OVERLOAD_DB;
   maxReading = MIC_NOISE_DB;
   sumReadings = 0;
-  USBSerial.println("Reset complete");
+  SERIAL.println("Reset complete");
 };
 
 //
@@ -585,12 +588,16 @@ void readMicrophoneData() {
     Leq_sum_sqr = 0;
     Leq_samples = 0;
 
-    // USBSerial.printf("Calculated dB: %.1fdB\n", Leq_dB);
+    // SERIAL.printf("Calculated dB: %.1fdB\n", Leq_dB);
     printReadingToConsole(Leq_dB);
 
     if (Leq_dB < minReading) minReading = Leq_dB;
     if (Leq_dB > maxReading) maxReading = Leq_dB;
     sumReadings += Leq_dB;
     numberOfReadings++;
+
+    digitalWrite(PIN_LED2, LOW);
+    delay(30);
+    digitalWrite(PIN_LED2, HIGH);
   }
 }
