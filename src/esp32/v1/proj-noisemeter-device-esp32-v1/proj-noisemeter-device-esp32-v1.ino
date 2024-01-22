@@ -35,7 +35,6 @@ WiFiMulti WiFiMulti;
 #define SERIAL USBSerial
 
 // Uncomment these to disable WiFi and/or data upload
-//#define WIFI_DISABLED
 //#define UPLOAD_DISABLED
 
 constexpr auto AccessPointSSID = "Noise meter";
@@ -233,7 +232,7 @@ void setup() {
 
   initMicrophone();
 
-#ifndef WIFI_DISABLED
+#ifndef UPLOAD_DISABLED
   // Run the access point if it is requested or if there are no valid credentials.
   if (isCredsResetPressed() || !isEEPROMCredsValid()) {
     eraseNetworkCreds();
@@ -269,7 +268,7 @@ void setup() {
   SERIAL.println(WiFi.localIP());
 
   setClock();
-#endif // !WIFI_DISABLED
+#endif // !UPLOAD_DISABLED
 
   digitalWrite(PIN_LED1, HIGH);
 }
