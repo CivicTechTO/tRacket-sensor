@@ -3,12 +3,12 @@
 **/[Cc]erts.h
 **/[Cc]ert.h
 
-src/esp32/hardware/noisemeter-backups
-src/esp32/hardware/production
-src/esp32/hardware/fp-info-cache
-src/esp32/hardware/fp-lib-table
-src/esp32/hardware/sym-lib-table
-src/esp32/hardware/*.pdf
+src/**/hardware/noisemeter-backups
+src/**/hardware/production
+src/**/hardware/fp-info-cache
+src/**/hardware/fp-lib-table
+src/**/hardware/sym-lib-table
+src/**/hardware/*.pdf
 *.kicad_prl
 *.step
 *.lck
