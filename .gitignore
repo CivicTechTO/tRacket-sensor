@@ -13,3 +13,4 @@ src/**/hardware/*.pdf
 *.step
 *.lck
 *.sw*
+*.bin

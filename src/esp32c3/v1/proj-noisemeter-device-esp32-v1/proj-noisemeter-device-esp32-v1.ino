@@ -19,6 +19,7 @@
 #include <WebServer.h>
 #include <WiFiAP.h>
 #include <HTTPClient.h>
+#include <Update.h>
 #include <WiFiClientSecure.h>
 #include <dummy.h> // ESP32 core
 #include <driver/i2s.h> // ESP32 core
@@ -39,6 +40,11 @@ WiFiMulti WiFiMulti;
 
 constexpr auto AccessPointSSID = "Noise meter";
 constexpr auto AccessPointPsk = "noisemeter";
+
+constexpr auto UpdateEndpoint  = "https://www.bitgloo.com/files/noisemeter-update.bin";
+constexpr auto VersionEndpoint = "https://www.bitgloo.com/files/noisemeter-update.txt";
+constexpr auto VersionNumber   = "v0.2";
+
 const unsigned long UPLOAD_INTERVAL_MS = 60000 * 5;  // Upload every 5 mins
 // const unsigned long UPLOAD_INTERVAL_MS = 30000;  // Upload every 30 secs
 const String DEVICE_ID = "pcb-clyne";         // TODO EPROM
@@ -224,7 +230,10 @@ void setup() {
   // setCpuFrequencyMhz(80);  // It should run as low as 80MHz
 
   SERIAL.begin(115200);
+  delay(2000);
   SERIAL.println();
+  SERIAL.print("Noisemeter ");
+  SERIAL.println(VersionNumber);
   SERIAL.println("Initializing...");
 
   EEPROM.begin(EEPROMTotalSize);
@@ -273,8 +282,130 @@ void setup() {
   digitalWrite(PIN_LED1, HIGH);
 }
 
+class HTTPClientGet
+{
+  WiFiClientSecure secure;
+  HTTPClient client;
+
+public:
+  HTTPClientGet() {
+    secure.setCACert(cert_ISRG_Root_X1);
+  }
+  ~HTTPClientGet() {
+    client.end();
+  }
+
+  int begin(const char *endpoint) {
+    return client.begin(secure, endpoint) ? client.GET() : -1;
+  }
+
+  int available() {
+    return secure.available();
+  }
+
+  String getString() {
+    return client.getString();
+  }
+
+  int read(uint8_t *buf, unsigned size) {
+    return secure.read(buf, size);
+  }
+
+  int getSize() {
+    return client.getSize();
+  }
+
+  bool connected() {
+    return client.connected();
+  }
+};
+
 void loop() {
   readMicrophoneData();
+
+  if (!digitalRead(PIN_BUTTON)) {
+    SERIAL.println("Update check!");
+    delay(2000);
+
+    bool shouldUpdate = false;
+
+    {
+      HTTPClientGet client;
+      const auto code = client.begin(VersionEndpoint);
+
+      SERIAL.printf("[HTTPS] GET... code: %d\n", code);
+      if (code == HTTP_CODE_OK) {
+        auto response = client.getString();
+        response.trim();
+
+        if (!response.isEmpty() && response.compareTo(String(VersionNumber)) > 0) {
+          shouldUpdate = true;
+          SERIAL.print(response);
+          SERIAL.println(" available!");
+        } else {
+          SERIAL.println("No new vesion available.");
+        }
+      } else {
+        SERIAL.println("[HTTPS] Unable to connect");
+      }
+    }
+
+    digitalWrite(PIN_LED1, LOW);
+    delay(500);
+
+    if (shouldUpdate) {
+      HTTPClientGet client;
+      SERIAL.println("Downloading latest update...");
+
+      const auto code = client.begin(UpdateEndpoint);
+      SERIAL.printf("[HTTPS] GET... code: %d\n", code);
+
+      if (code == HTTP_CODE_OK) {
+        auto totalSize = client.getSize();
+
+        if (!Update.begin(totalSize > 0 ? totalSize : UPDATE_SIZE_UNKNOWN)) {
+          Update.printError(SERIAL);
+          return;
+        }
+
+        // create buffer for read
+        uint8_t buff[128] = {0};
+
+        // read all data from server
+        while (client.connected() && (totalSize > 0 || totalSize == -1)) {
+          const auto size = client.available();
+
+          if (size) {
+            const auto bytesRead = client.read(buff, std::min(static_cast<int>(sizeof(buff)), size));
+
+            if (!Update.write(buff, bytesRead)) {
+              Update.printError(SERIAL);
+              break;
+            }
+
+            if (totalSize > 0)
+              totalSize -= bytesRead;
+
+            delay(1);
+          }
+        }
+
+        if (totalSize == 0) {
+          SERIAL.println("Success? Restarting...");
+          Update.end(true);
+          digitalWrite(PIN_LED1, HIGH);
+          delay(2000);
+          ESP.restart();
+        } else {
+          SERIAL.println("[HTTP] connection closed or incomplete file download.");
+        }
+      } else {
+        SERIAL.println("[HTTPS] Unable to connect");
+      }
+    }
+
+    digitalWrite(PIN_LED1, HIGH);
+  }
 
 #ifndef UPLOAD_DISABLED
   if (canUploadData()) {
