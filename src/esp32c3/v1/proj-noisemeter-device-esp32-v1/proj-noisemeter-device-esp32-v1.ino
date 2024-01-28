@@ -22,6 +22,7 @@
 #include <WiFiClientSecure.h>
 #include <dummy.h> // ESP32 core
 #include <driver/i2s.h> // ESP32 core
+#include <mbedtls/aes.h>
 
 #include "board.h"
 #include "sos-iir-filter.h"
@@ -102,6 +103,44 @@ constexpr int EEPROMEntrySSID = EEPROMEntryCSum + sizeof(uint32_t);
 constexpr int EEPROMEntryPsk = EEPROMEntrySSID + EEPROMMaxStringSize;
 constexpr int EEPROMTotalSize = EEPROMEntryPsk + EEPROMMaxStringSize;
 
+class Secret
+{
+  constexpr static int BITS = 128;
+  mbedtls_aes_context aes;
+  unsigned char key[BITS / 8];
+
+  void generateKey() {
+    for (unsigned i = 0; i < sizeof(key); ++i)
+      key[i] = DEVICE_ID[i % DEVICE_ID.length()];
+  }
+
+  String process(String in, int mode) {
+    uint8_t out[64] = {0};
+    mbedtls_aes_crypt_ecb(&aes, mode, (const uint8_t *)in.c_str(), out);
+    return String((char *)out);
+  }
+
+public:
+  Secret() {
+    mbedtls_aes_init(&aes);
+    generateKey();
+  }
+
+  ~Secret() {
+    mbedtls_aes_free(&aes);
+  }
+
+  String encrypt(String in) {
+    mbedtls_aes_setkey_enc(&aes, key, BITS);
+    return process(in, MBEDTLS_AES_ENCRYPT);
+  }
+
+  String decrypt(String in) {
+    mbedtls_aes_setkey_dec(&aes, key, BITS);
+    return process(in, MBEDTLS_AES_DECRYPT);
+  }
+};
+
 // Not sure if WiFiClientSecure checks the validity date of the certificate.
 // Setting clock just to be sure...
 void setClock() {
@@ -171,11 +210,6 @@ static const char SubmitPageHTML[] PROGMEM = R"(
 static uint32_t calculateCredsChecksum(const String& ssid, const String& psk);
 
 /**
- * Prints the SSID and passkey to SERIAL.
- */
-static void printCredentials(const String& ssid, const String& psk);
-
-/**
  * Saves credentials to EEPROM is form was properly submitted.
  * If successful, reboots the microcontroller.
  */
@@ -243,19 +277,10 @@ void setup() {
   const auto ssid = EEPROM.readString(EEPROMEntrySSID);
   const auto psk = EEPROM.readString(EEPROMEntryPsk);
 
-  SERIAL.print("Ready to connect to ");
-  printCredentials(ssid, psk);
-
-  int ssid_len = ssid.length() + 1;
-  int psk_len = psk.length() + 1;
-
-  char intSSID[ssid_len];
-  char intPSK[psk_len];
-  ssid.toCharArray(intSSID, ssid_len);
-  psk.toCharArray(intPSK, psk_len);
-
+  SERIAL.print("Ready to connect to network: ");
+  SERIAL.println(ssid);
   WiFi.mode(WIFI_STA);
-  WiFiMulti.addAP(intSSID, intPSK);
+  WiFiMulti.addAP(ssid.c_str(), Secret().decrypt(psk).c_str());
 
   // wait for WiFi connection
   SERIAL.print("Waiting for WiFi to connect...");
@@ -315,14 +340,6 @@ void runAccessPoint() {
     httpServer.handleClient();
 }
 
-void printCredentials(const String& ssid, const String& psk) {
-  SERIAL.print("SSID \"");
-  SERIAL.print(ssid);
-  SERIAL.print("\" passkey \"");
-  SERIAL.print(psk);
-  SERIAL.println("\"");
-}
-
 void printArray(float arr[], unsigned long length) {
   SERIAL.print(length);
   SERIAL.print(" {");
@@ -355,9 +372,6 @@ bool isEEPROMCredsValid() {
   const auto ssid = EEPROM.readString(EEPROMEntrySSID);
   const auto psk = EEPROM.readString(EEPROMEntryPsk);
 
-  SERIAL.print("EEPROM stored credentials: ");
-  printCredentials(ssid, psk);
-
   return !ssid.isEmpty() && !psk.isEmpty() && csum == calculateCredsChecksum(ssid, psk);
 }
 
@@ -374,7 +388,7 @@ void saveNetworkCreds(WebServer& httpServer) {
   // Confirm that the form was actually submitted.
   if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
     const auto ssid = httpServer.arg("ssid");
-    const auto psk = httpServer.arg("psk");
+    const auto psk = Secret().encrypt(httpServer.arg("psk"));
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
     if (ssid.length() < EEPROMMaxStringSize && psk.length() < EEPROMMaxStringSize) {
@@ -382,9 +396,6 @@ void saveNetworkCreds(WebServer& httpServer) {
       EEPROM.writeString(EEPROMEntrySSID, ssid);
       EEPROM.writeString(EEPROMEntryPsk, psk);
       EEPROM.commit();
-
-      SERIAL.print("Saving ");
-      printCredentials(ssid, psk);
 
       SERIAL.println("Saved network credentials. Restarting...");
       delay(2000);
@@ -403,12 +414,7 @@ void eraseNetworkCreds() {
   EEPROM.writeString(EEPROMEntryPsk, "");
   EEPROM.commit();
   SERIAL.println("Erase complete");
-
-  const auto ssid = EEPROM.readString(EEPROMEntrySSID);
-  const auto psk = EEPROM.readString(EEPROMEntryPsk);
-  SERIAL.print("Stored Credentials after erasing: ");
-  printCredentials(ssid, psk);
-  delay(2000);
+  delay(1000);
 }
 
 String createJSONPayload(String deviceId, float min, float max, float average) {
