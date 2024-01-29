@@ -55,7 +55,7 @@ static const IPAddress AccessPointIP(4, 3, 2, 1);
 
 // NOTE: Some microphones require at least DC-Blocker filter
 #define MIC_EQUALIZER SPH0645LM4H_B_RB  // See below for defined IIR filters or set to 'None' to disable
-#define MIC_OFFSET_DB 3.0103            // Default offset (sine-wave RMS vs. dBFS). Modify this value for linear calibration
+#define MIC_OFFSET_DB 0            // Default offset (sine-wave RMS vs. dBFS). Modify this value for linear calibration
 
 // Customize these values from microphone datasheet
 #define MIC_SENSITIVITY -26    // dBFS value expected at MIC_REF_DB (Sensitivity value from datasheet)
