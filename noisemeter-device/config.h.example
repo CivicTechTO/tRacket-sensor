@@ -1,0 +1,15 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// Device ID to identify this board with the server.
+#define DEVICE_ID   "my-board"
+
+//
+// Define only *one* board option:
+//
+
+#define BOARD_PCB_REV1
+//#define BOARD_ESP32_BREADBOARD
+
+#endif // CONFIG_H
+
