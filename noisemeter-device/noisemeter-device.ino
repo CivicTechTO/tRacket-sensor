@@ -32,6 +32,11 @@
 
 #include <cstdint>
 
+#if defined(BUILD_PLATFORMIO) && defined(BOARD_PCB_REV1)
+#include <HWCDC.h>
+HWCDC USBSerial;
+#endif
+
 WiFiMulti WiFiMulti;
 
 // Uncomment these to disable WiFi and/or data upload
@@ -161,34 +166,34 @@ static const char SubmitPageHTML[] PROGMEM = R"(
 /**
  * Starts the WiFi access point and web server and enters an infinite loop to process connections.
  */
-[[noreturn]] static void runAccessPoint();
+[[noreturn]] void runAccessPoint();
 
 /**
  * Calculates a CRC32 checksum based on the given SSID and passkey.
  * Checksums are used to determine if the credentials in EEPROM are valid.
  */
-static uint32_t calculateCredsChecksum(const String& ssid, const String& psk);
+uint32_t calculateCredsChecksum(const String& ssid, const String& psk);
 
 /**
  * Prints the SSID and passkey to serial.
  */
-static void printCredentials(const String& ssid, const String& psk);
+void printCredentials(const String& ssid, const String& psk);
 
 /**
  * Saves credentials to EEPROM is form was properly submitted.
  * If successful, reboots the microcontroller.
  */
-static void saveNetworkCreds(WebServer& httpServer);
+void saveNetworkCreds(WebServer& httpServer);
 
 /**
  * Returns true if the credentials stored in EEPROM are valid.
  */
-static bool isEEPROMCredsValid();
+bool isEEPROMCredsValid();
 
 /**
  * Returns true if the "reset" button is pressed, meaning the user wants to input new credentials.
  */
-static bool isCredsResetPressed();
+bool isCredsResetPressed();
 
 // Sampling Buffers & accumulators
 sum_queue_t q;
@@ -245,16 +250,8 @@ void setup() {
   SERIAL.print("Ready to connect to ");
   printCredentials(ssid, psk);
 
-  int ssid_len = ssid.length() + 1;
-  int psk_len = psk.length() + 1;
-
-  char intSSID[ssid_len];
-  char intPSK[psk_len];
-  ssid.toCharArray(intSSID, ssid_len);
-  psk.toCharArray(intPSK, psk_len);
-
   WiFi.mode(WIFI_STA);
-  WiFiMulti.addAP(intSSID, intPSK);
+  WiFiMulti.addAP(ssid.c_str(), psk.c_str());
 
   // wait for WiFi connection
   SERIAL.print("Waiting for WiFi to connect...");
@@ -411,7 +408,11 @@ void eraseNetworkCreds() {
 }
 
 String createJSONPayload(String deviceId, float min, float max, float average) {
-  DynamicJsonDocument doc(2048);
+#ifdef BUILD_PLATFORMIO
+  JsonDocument doc;
+#else
+  DynamicJsonDocument doc (2048);
+#endif
   doc["parent"] = "/Bases/nm1";
   doc["data"]["type"] = "comand";
   doc["data"]["version"] = "1.0";

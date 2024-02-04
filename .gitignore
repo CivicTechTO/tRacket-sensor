@@ -3,6 +3,7 @@
 **/[Cc]erts.h
 **/[Cc]ert.h
 
+noisemeter-device/config.h
 hardware/pcb-*/noisemeter-backups
 hardware/pcb-*/production
 hardware/pcb-*/fp-info-cache
@@ -14,3 +15,4 @@ hardware/pcb-*/*.pdf
 *.lck
 *.sw*
 *.FCBak
+.pio

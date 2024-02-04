@@ -1,6 +1,8 @@
 #ifndef BOARD_H
 #define BOARD_H
 
+#undef SERIAL
+
 #if defined(BOARD_PCB_REV1)
 
 // Pin definitions
