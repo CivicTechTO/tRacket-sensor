@@ -18,8 +18,6 @@ from cryptography.hazmat.primitives.serialization import pkcs7
 from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.hazmat.primitives.serialization import PublicFormat
 
-print("RUNNING")
-
 def printData(data, showPub = True):
     try:
         xcert = x509.load_der_x509_certificate(data)

@@ -1,0 +1,18 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// Device ID to identify this board with the server.
+#define DEVICE_ID   "my-board"
+
+// Define only *one* of the follwoing board options.
+// If using PlatformIO, the selected 'env' will override this selection.
+#if !defined(BOARD_PCB_REV1) && \
+    !defined(BOARD_ESP32_BREADBOARD)
+
+//#define BOARD_PCB_REV1
+//#define BOARD_ESP32_BREADBOARD
+
+#endif // BOARD_*
+
+#endif // CONFIG_H
+

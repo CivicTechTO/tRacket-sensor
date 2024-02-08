@@ -3,13 +3,16 @@
 **/[Cc]erts.h
 **/[Cc]ert.h
 
-src/**/hardware/noisemeter-backups
-src/**/hardware/production
-src/**/hardware/fp-info-cache
-src/**/hardware/fp-lib-table
-src/**/hardware/sym-lib-table
-src/**/hardware/*.pdf
+noisemeter-device/config.h
+hardware/pcb-*/noisemeter-backups
+hardware/pcb-*/production
+hardware/pcb-*/fp-info-cache
+hardware/pcb-*/fp-lib-table
+hardware/pcb-*/sym-lib-table
+hardware/pcb-*/*.pdf
 *.kicad_prl
 *.step
 *.lck
 *.sw*
+*.FCBak
+.pio
