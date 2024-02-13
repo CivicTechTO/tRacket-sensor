@@ -18,6 +18,7 @@
 #include <WiFiMulti.h>
 #include <CRC32.h>  // https://github.com/bakercp/CRC32
 #include <EEPROM.h>
+#include "UUID.h" // https://github.com/RobTillaart/UUID
 #include <WebServer.h>
 #include <WiFiAP.h>
 #include <HTTPClient.h>
@@ -104,7 +105,8 @@ constexpr unsigned int EEPROMMaxStringSize = 64;
 constexpr int EEPROMEntryCSum = 0;  // CRC32 checksum of SSID and passkey
 constexpr int EEPROMEntrySSID = EEPROMEntryCSum + sizeof(uint32_t);
 constexpr int EEPROMEntryPsk = EEPROMEntrySSID + EEPROMMaxStringSize;
-constexpr int EEPROMTotalSize = EEPROMEntryPsk + EEPROMMaxStringSize;
+constexpr int EEPROMEntryUUID = EEPROMEntryPsk + EEPROMMaxStringSize;
+constexpr int EEPROMTotalSize = EEPROMEntryUUID + EEPROMMaxStringSize;
 
 // Not sure if WiFiClientSecure checks the validity date of the certificate.
 // Setting clock just to be sure...
@@ -180,10 +182,25 @@ uint32_t calculateCredsChecksum(const String& ssid, const String& psk);
 void printCredentials(const String& ssid, const String& psk);
 
 /**
- * Saves credentials to EEPROM is form was properly submitted.
+ * Saves network credentials to EEPROM if form was properly submitted.
  * If successful, reboots the microcontroller.
  */
 void saveNetworkCreds(WebServer& httpServer);
+
+/**
+ * Erases network credentials from EEPROM.
+ */
+[[noreturn]] void eraseNetworkCreds();
+
+/**
+ * Saves UUID to EEPROM.
+ */
+void saveUUID(UUID& uuid);
+
+/**
+ * Erases UUID from EEPROM.
+ */
+[[noreturn]] void eraseUUID();
 
 /**
  * Returns true if the credentials stored in EEPROM are valid.
@@ -233,6 +250,11 @@ void setup() {
 
   EEPROM.begin(EEPROMTotalSize);
   delay(2000);  // Ensure the EEPROM peripheral has enough time to initialize.
+
+  UUID uuid;
+
+  saveUUID(uuid);
+  eraseUUID();
 
   initMicrophone();
 
@@ -318,6 +340,11 @@ void printCredentials(const String& ssid, const String& psk) {
   SERIAL.print(psk);
   SERIAL.println("\"");
 }
+void printUUID(const String& uuid) {
+  SERIAL.print("\"");
+  SERIAL.println(uuid);
+  SERIAL.print("\"");
+}
 
 void printArray(float arr[], unsigned long length) {
   SERIAL.print(length);
@@ -346,6 +373,12 @@ uint32_t calculateCredsChecksum(const String& ssid, const String& psk) {
   return crc.finalize();
 }
 
+uint32_t calculateUUIDChecksum(const String& uuid) {
+  CRC32 crc;
+  crc.update(uuid.c_str(), uuid.length());
+  return crc.finalize();
+}
+
 bool isEEPROMCredsValid() {
   const auto csum = EEPROM.readUInt(EEPROMEntryCSum);
   const auto ssid = EEPROM.readString(EEPROMEntrySSID);
@@ -355,6 +388,16 @@ bool isEEPROMCredsValid() {
   printCredentials(ssid, psk);
 
   return !ssid.isEmpty() && !psk.isEmpty() && csum == calculateCredsChecksum(ssid, psk);
+}
+
+bool isEEPROMUUIDValid() {
+  const auto csum = EEPROM.readUInt(EEPROMEntryCSum);
+  const auto uuid = EEPROM.readString(EEPROMEntryUUID);
+
+  SERIAL.print("EEPROM stored UUID: ");
+  printUUID(uuid);
+
+  return !uuid.isEmpty() && csum == calculateUUIDChecksum(uuid);
 }
 
 bool isCredsResetPressed() {
@@ -404,6 +447,42 @@ void eraseNetworkCreds() {
   const auto psk = EEPROM.readString(EEPROMEntryPsk);
   SERIAL.print("Stored Credentials after erasing: ");
   printCredentials(ssid, psk);
+  delay(2000);
+}
+
+void saveUUID(UUID& uuid) {
+  char* uuidValue = uuid.toCharArray();
+  String uuidString;
+  uuidString = uuidValue;
+  SERIAL.println(uuidString);
+  // Confirm that the form was actually submitted.
+
+    // Confirm that the given credentials will fit in the allocated EEPROM space.
+    if (uuidString.length() < EEPROMMaxStringSize) {
+      EEPROM.writeUInt(EEPROMEntryCSum, calculateUUIDChecksum(uuidString));
+      EEPROM.writeString(EEPROMEntryUUID, uuidString);
+      EEPROM.commit();
+
+      SERIAL.print("Saving ");
+      printUUID(uuidString);
+
+      SERIAL.println("Saved UUID.");
+    }
+
+  // TODO inform user that something went wrong...
+  SERIAL.println("Error: UUID save failed");
+}
+
+void eraseUUID() {
+  SERIAL.println("Erasing UUID...");
+  EEPROM.writeUInt(EEPROMEntryCSum, calculateUUIDChecksum(""));
+  EEPROM.writeString(EEPROMEntryUUID, "");
+  EEPROM.commit();
+  SERIAL.println("Erase complete");
+
+  const auto uuid = EEPROM.readString(EEPROMEntryUUID);
+  SERIAL.print("Stored UUID after erasing: ");
+  printUUID(uuid);
   delay(2000);
 }
 
