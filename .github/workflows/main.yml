@@ -7,19 +7,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.1.1
+      - uses: actions/cache@v4.0.0
         with:
-          node-version: 20
-      - uses: actions/cache@v3
-        with:
-          node-version: 20
           path: |
             ~/.cache/pip
             ~/.platformio/.cache
           key: ${{ runner.os }}-pio
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5.0.0
         with:
-          node-version: 20
           python-version: '3.9'
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
