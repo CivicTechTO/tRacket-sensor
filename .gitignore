@@ -9,7 +9,6 @@ hardware/pcb-*/production
 hardware/pcb-*/fp-info-cache
 hardware/pcb-*/fp-lib-table
 hardware/pcb-*/sym-lib-table
-hardware/pcb-*/*.pdf
 *.kicad_prl
 *.step
 *.lck

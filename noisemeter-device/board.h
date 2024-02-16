@@ -3,7 +3,7 @@
 
 #undef SERIAL
 
-#if defined(BOARD_PCB_REV1)
+#if defined(BOARD_ESP32_PCB)
 
 // Pin definitions
 #define PIN_LED1    (0)

@@ -33,7 +33,7 @@
 
 #include <cstdint>
 
-#if defined(BUILD_PLATFORMIO) && defined(BOARD_PCB_REV1)
+#if defined(BUILD_PLATFORMIO) && defined(BOARD_ESP32_PCB)
 #include <HWCDC.h>
 HWCDC USBSerial;
 #endif
