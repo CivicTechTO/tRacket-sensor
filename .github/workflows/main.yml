@@ -1,6 +1,6 @@
 name: PlatformIO CI
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -19,6 +19,10 @@ jobs:
           python-version: '3.9'
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
+
+      - name: Create config.h
+        run: |
+          cp "${GITHUB_WORKSPACE}/noisemeter-device/config.h.example" "${GITHUB_WORKSPACE}/noisemeter-device/config.h"
 
       - name: Build PlatformIO Project (esp32-pcb)
         run: pio run -e esp32-pcb
