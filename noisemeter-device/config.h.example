@@ -6,10 +6,10 @@
 
 // Define only *one* of the follwoing board options.
 // If using PlatformIO, the selected 'env' will override this selection.
-#if !defined(BOARD_PCB_REV1) && \
+#if !defined(BOARD_ESP32_PCB) && \
     !defined(BOARD_ESP32_BREADBOARD)
 
-//#define BOARD_PCB_REV1
+//#define BOARD_ESP32_PCB
 //#define BOARD_ESP32_BREADBOARD
 
 #endif // BOARD_*
