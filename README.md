@@ -2,8 +2,6 @@
 
 Civic Tech TO
 
-Current release candidate: /src/esp32c3/v1
-
 ## Overview
 
 This repo contains all source code for the Project Noisemeter Data-Gathering Devices, which are being developed by a group of volunteers at Civic Tech Toronto. The purpose of the device is to gather data about urban noise levels and upload that data to the cloud, whereupon the data can be made available to citizens, activists and lawmakers to help inform public policy around noise bylaws.
