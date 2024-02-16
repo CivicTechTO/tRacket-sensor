@@ -20,9 +20,13 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
-      - name: Create config.h
+      - name: Create header files
         run: |
           cp "${GITHUB_WORKSPACE}/noisemeter-device/config.h.example" "${GITHUB_WORKSPACE}/noisemeter-device/config.h"
+          echo 'const char *API_TOKEN = "NotAnAPIToken";' > "${GITHUB_WORKSPACE}/noisemeter-device/secret.h"
+          python "${GITHUB_WORKSPACE}/noisemeter-device/certs.py" -s noisemeter.webcomand.com -n webcomand > "${GITHUB_WORKSPACE}/noisemeter-device/certs.h"
+
+      - name: Create certs.h
 
       - name: Build PlatformIO Project (esp32-pcb)
         run: pio run -e esp32-pcb
