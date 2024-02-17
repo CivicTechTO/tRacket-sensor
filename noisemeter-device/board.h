@@ -20,6 +20,11 @@
 // Use USB for serial log
 #define SERIAL      USBSerial
 
+#if defined(BUILD_PLATFORMIO)
+#include <HWCDC.h>
+extern HWCDC USBSerial;
+#endif
+
 #elif defined(BOARD_ESP32_BREADBOARD)
 
 // Pin definitions

@@ -19,13 +19,12 @@
 #include <CRC32.h>  // https://github.com/bakercp/CRC32
 #include <EEPROM.h>
 #include "UUID.h" // https://github.com/RobTillaart/UUID
-#include <WebServer.h>
-#include <WiFiAP.h>
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
 #include <dummy.h> // ESP32 core
 #include <driver/i2s.h> // ESP32 core
 
+#include "access-point.h"
 #include "board.h"
 #include "sos-iir-filter.h"
 #include "certs.h"
@@ -34,7 +33,6 @@
 #include <cstdint>
 
 #if defined(BUILD_PLATFORMIO) && defined(BOARD_ESP32_PCB)
-#include <HWCDC.h>
 HWCDC USBSerial;
 #endif
 
@@ -43,16 +41,9 @@ WiFiMulti WiFiMulti;
 // Uncomment these to disable WiFi and/or data upload
 //#define UPLOAD_DISABLED
 
-constexpr auto AccessPointSSID = "Noise meter";
-constexpr auto AccessPointPsk = "noisemeter";
 const unsigned long UPLOAD_INTERVAL_MS = 60000 * 5;  // Upload every 5 mins
 // const unsigned long UPLOAD_INTERVAL_MS = 30000;  // Upload every 30 secs
 const unsigned long MIN_READINGS_BEFORE_UPLOAD = 20;
-
-// The ESP32's IP address within its access point will be "4.3.2.1".
-// Once connected to the access point, open up 4.3.2.1 in a browser to get
-// to the credentials form.
-static const IPAddress AccessPointIP(4, 3, 2, 1);
 
 //
 // Constants & Config
@@ -129,47 +120,6 @@ void setClock() {
   SERIAL.print(asctime(&timeinfo));
 }
 
-// Main webpage HTML with form to collect WiFi credentials.
-static const char SetupPageHTML[] PROGMEM = R"(
-<!DOCTYPE html>
-<html lang='en'>
-<head>
-  <meta charset='utf-8'>
-  <meta name='viewport' content='width=device-width,initial-scale=1'/>
-</head>
-<body>
-<h1>Noise Meter Setup</h1>
-<form method='POST' action='' enctype='multipart/form-data'>
-<p>SSID:</p>
-<input type='text' name='ssid'>
-<p>Password:</p>
-<input type='password' name='psk'>
-<input type='submit' value='Connect'>
-</form>
-</body>
-</html>
-)";
-
-// HTML to show after credentials are submitted.
-static const char SubmitPageHTML[] PROGMEM = R"(
-<!DOCTYPE html>
-<html lang='en'>
-<head>
-  <meta charset='utf-8'>
-  <meta name='viewport' content='width=device-width,initial-scale=1'/>
-</head>
-<body>
-<h1>Noise Meter Setup</h1>
-<p>Connecting...</p>
-</body>
-</html>
-)";
-
-/**
- * Starts the WiFi access point and web server and enters an infinite loop to process connections.
- */
-[[noreturn]] void runAccessPoint();
-
 /**
  * Calculates a CRC32 checksum based on the given SSID and passkey.
  * Checksums are used to determine if the credentials in EEPROM are valid.
@@ -190,7 +140,7 @@ void saveNetworkCreds(WebServer& httpServer);
 /**
  * Erases network credentials from EEPROM.
  */
-[[noreturn]] void eraseNetworkCreds();
+void eraseNetworkCreds();
 
 /**
  * Saves UUID to EEPROM.
@@ -200,7 +150,7 @@ void saveUUID(UUID& uuid);
 /**
  * Erases UUID from EEPROM.
  */
-[[noreturn]] void eraseUUID();
+void eraseUUID();
 
 /**
  * Returns true if the credentials stored in EEPROM are valid.
@@ -261,8 +211,12 @@ void setup() {
 #ifndef UPLOAD_DISABLED
   // Run the access point if it is requested or if there are no valid credentials.
   if (isCredsResetPressed() || !isEEPROMCredsValid()) {
+    AccessPoint ap;
+
     eraseNetworkCreds();
-    runAccessPoint();
+    ap.onCredentialsReceived(saveNetworkCreds);
+    ap.begin();
+    ap.run(); // does not return
   }
 
   // Valid credentials: Next step would be to connect to the network.
@@ -303,34 +257,6 @@ void loop() {
     delete client;
   }
 #endif // !UPLOAD_DISABLED
-}
-
-void runAccessPoint() {
-  static WebServer httpServer(80);
-
-  WiFi.mode(WIFI_AP);
-  WiFi.softAPConfig(AccessPointIP, AccessPointIP, IPAddress(255, 255, 255, 0));
-  WiFi.softAP(AccessPointSSID, AccessPointPsk);
-
-  // GET request means user wants to see the form.
-  // POST request means user has submitted data through the form.
-  httpServer.on("/", HTTP_GET,
-                [] {
-                  httpServer.send_P(200, PSTR("text/html"), SetupPageHTML);
-                });
-  httpServer.on("/", HTTP_POST,
-                [] {
-                  // Show "submitted" page immediately before we begin saving the credentials.
-                  httpServer.client().setNoDelay(true);
-                  httpServer.send_P(200, PSTR("text/html"), SubmitPageHTML);
-                  saveNetworkCreds(httpServer);
-                });
-  httpServer.begin();
-
-  SERIAL.println("Running setup access point.");
-
-  while (1)
-    httpServer.handleClient();
 }
 
 void printCredentials(const String& ssid, const String& psk) {
