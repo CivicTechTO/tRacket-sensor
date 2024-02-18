@@ -201,10 +201,10 @@ void setup() {
   EEPROM.begin(EEPROMTotalSize);
   delay(2000);  // Ensure the EEPROM peripheral has enough time to initialize.
 
-  UUID uuid;
+  //UUID uuid;
 
-  saveUUID(uuid);
-  eraseUUID();
+  //saveUUID(uuid);
+  //eraseUUID();
 
   initMicrophone();
 
