@@ -8,19 +8,16 @@
  *  - Encrypt the stored credentials (simple XOR with a long key?).
  *  - Add second step to Access Point flow - to gather users email, generate a UUID and upload them to the cloud. UUID to be saved in EEPROM
  *  - Add functionality to reset the device periodically (eg every 24 hours)
- *  - 
  */
 #include "config.h"
 
 #include <ArduinoJson.h> // https://arduinojson.org/
 #include <ArduinoJson.hpp>
-#include <WiFi.h>
-#include <WiFiMulti.h>
-#include <CRC32.h>  // https://github.com/bakercp/CRC32
-#include <EEPROM.h>
-#include "UUID.h" // https://github.com/RobTillaart/UUID
 #include <HTTPClient.h>
+#include <UUID.h> // https://github.com/RobTillaart/UUID
+#include <WiFi.h>
 #include <WiFiClientSecure.h>
+#include <WiFiMulti.h>
 #include <dummy.h> // ESP32 core
 #include <driver/i2s.h> // ESP32 core
 
@@ -29,6 +26,7 @@
 #include "sos-iir-filter.h"
 #include "certs.h"
 #include "secret.h"
+#include "storage.h"
 
 #include <cstdint>
 
@@ -36,7 +34,8 @@
 HWCDC USBSerial;
 #endif
 
-WiFiMulti WiFiMulti;
+static Storage Creds;
+static WiFiMulti WiFiMulti;
 
 // Uncomment these to disable WiFi and/or data upload
 //#define UPLOAD_DISABLED
@@ -91,14 +90,6 @@ struct sum_queue_t {
 // Static buffer for block of samples
 float samples[SAMPLES_SHORT] __attribute__((aligned(4)));
 
-// EEPROM addresses for credential data.
-constexpr unsigned int EEPROMMaxStringSize = 64;
-constexpr int EEPROMEntryCSum = 0;  // CRC32 checksum of SSID and passkey
-constexpr int EEPROMEntrySSID = EEPROMEntryCSum + sizeof(uint32_t);
-constexpr int EEPROMEntryPsk = EEPROMEntrySSID + EEPROMMaxStringSize;
-constexpr int EEPROMEntryUUID = EEPROMEntryPsk + EEPROMMaxStringSize;
-constexpr int EEPROMTotalSize = EEPROMEntryUUID + EEPROMMaxStringSize;
-
 // Not sure if WiFiClientSecure checks the validity date of the certificate.
 // Setting clock just to be sure...
 void setClock() {
@@ -119,43 +110,6 @@ void setClock() {
   SERIAL.print(F("Current time: "));
   SERIAL.print(asctime(&timeinfo));
 }
-
-/**
- * Calculates a CRC32 checksum based on the given SSID and passkey.
- * Checksums are used to determine if the credentials in EEPROM are valid.
- */
-uint32_t calculateCredsChecksum(const String& ssid, const String& psk);
-
-/**
- * Prints the SSID and passkey to serial.
- */
-void printCredentials(const String& ssid, const String& psk);
-
-/**
- * Saves network credentials to EEPROM if form was properly submitted.
- * If successful, reboots the microcontroller.
- */
-void saveNetworkCreds(WebServer& httpServer);
-
-/**
- * Erases network credentials from EEPROM.
- */
-void eraseNetworkCreds();
-
-/**
- * Saves UUID to EEPROM.
- */
-void saveUUID(UUID& uuid);
-
-/**
- * Erases UUID from EEPROM.
- */
-void eraseUUID();
-
-/**
- * Returns true if the credentials stored in EEPROM are valid.
- */
-bool isEEPROMCredsValid();
 
 /**
  * Returns true if the "reset" button is pressed, meaning the user wants to input new credentials.
@@ -198,36 +152,35 @@ void setup() {
   SERIAL.println();
   SERIAL.println("Initializing...");
 
-  EEPROM.begin(EEPROMTotalSize);
-  delay(2000);  // Ensure the EEPROM peripheral has enough time to initialize.
-
-  //UUID uuid;
-
-  //saveUUID(uuid);
-  //eraseUUID();
+  Creds.begin();
+  SERIAL.print("Stored credentials: ");
+  SERIAL.println(Creds);
 
   initMicrophone();
 
 #ifndef UPLOAD_DISABLED
   // Run the access point if it is requested or if there are no valid credentials.
-  if (isCredsResetPressed() || !isEEPROMCredsValid()) {
+  if (isCredsResetPressed() || !Creds.valid()) {
     AccessPoint ap;
 
-    eraseNetworkCreds();
+    SERIAL.println("Erasing stored credentials...");
+    Creds.clear();
+    SERIAL.print("Stored Credentials after erasing: ");
+    SERIAL.println(Creds);
+
     ap.onCredentialsReceived(saveNetworkCreds);
     ap.begin();
     ap.run(); // does not return
   }
 
   // Valid credentials: Next step would be to connect to the network.
-  const auto ssid = EEPROM.readString(EEPROMEntrySSID);
-  const auto psk = EEPROM.readString(EEPROMEntryPsk);
+  const auto ssid = Creds.get(Storage::Entry::SSID);
 
   SERIAL.print("Ready to connect to ");
-  printCredentials(ssid, psk);
+  SERIAL.println(ssid);
 
   WiFi.mode(WIFI_STA);
-  WiFiMulti.addAP(ssid.c_str(), psk.c_str());
+  WiFiMulti.addAP(ssid.c_str(), Creds.get(Storage::Entry::Passkey).c_str());
 
   // wait for WiFi connection
   SERIAL.print("Waiting for WiFi to connect...");
@@ -259,19 +212,6 @@ void loop() {
 #endif // !UPLOAD_DISABLED
 }
 
-void printCredentials(const String& ssid, const String& psk) {
-  SERIAL.print("SSID \"");
-  SERIAL.print(ssid);
-  SERIAL.print("\" passkey \"");
-  SERIAL.print(psk);
-  SERIAL.println("\"");
-}
-void printUUID(const String& uuid) {
-  SERIAL.print("\"");
-  SERIAL.println(uuid);
-  SERIAL.print("\"");
-}
-
 void printArray(float arr[], unsigned long length) {
   SERIAL.print(length);
   SERIAL.print(" {");
@@ -292,40 +232,6 @@ void printReadingToConsole(double reading) {
   SERIAL.println(output);
 }
 
-uint32_t calculateCredsChecksum(const String& ssid, const String& psk) {
-  CRC32 crc;
-  crc.update(ssid.c_str(), ssid.length());
-  crc.update(psk.c_str(), psk.length());
-  return crc.finalize();
-}
-
-uint32_t calculateUUIDChecksum(const String& uuid) {
-  CRC32 crc;
-  crc.update(uuid.c_str(), uuid.length());
-  return crc.finalize();
-}
-
-bool isEEPROMCredsValid() {
-  const auto csum = EEPROM.readUInt(EEPROMEntryCSum);
-  const auto ssid = EEPROM.readString(EEPROMEntrySSID);
-  const auto psk = EEPROM.readString(EEPROMEntryPsk);
-
-  SERIAL.print("EEPROM stored credentials: ");
-  printCredentials(ssid, psk);
-
-  return !ssid.isEmpty() && !psk.isEmpty() && csum == calculateCredsChecksum(ssid, psk);
-}
-
-bool isEEPROMUUIDValid() {
-  const auto csum = EEPROM.readUInt(EEPROMEntryCSum);
-  const auto uuid = EEPROM.readString(EEPROMEntryUUID);
-
-  SERIAL.print("EEPROM stored UUID: ");
-  printUUID(uuid);
-
-  return !uuid.isEmpty() && csum == calculateUUIDChecksum(uuid);
-}
-
 bool isCredsResetPressed() {
   bool pressed = !digitalRead(PIN_BUTTON);
 
@@ -340,16 +246,18 @@ void saveNetworkCreds(WebServer& httpServer) {
   if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
     const auto ssid = httpServer.arg("ssid");
     const auto psk = httpServer.arg("psk");
+    UUID uuid; // generates random UUID
+    SERIAL.println(uuid.toCharArray());
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
-    if (ssid.length() < EEPROMMaxStringSize && psk.length() < EEPROMMaxStringSize) {
-      EEPROM.writeUInt(EEPROMEntryCSum, calculateCredsChecksum(ssid, psk));
-      EEPROM.writeString(EEPROMEntrySSID, ssid);
-      EEPROM.writeString(EEPROMEntryPsk, psk);
-      EEPROM.commit();
+    if (Creds.canStore(ssid) && Creds.canStore(psk)) {
+      Creds.set(Storage::Entry::SSID, ssid);
+      Creds.set(Storage::Entry::Passkey, psk);
+      Creds.set(Storage::Entry::UUID, uuid.toCharArray());
+      Creds.commit();
 
       SERIAL.print("Saving ");
-      printCredentials(ssid, psk);
+      SERIAL.println(Creds);
 
       SERIAL.println("Saved network credentials. Restarting...");
       delay(2000);
@@ -359,57 +267,6 @@ void saveNetworkCreds(WebServer& httpServer) {
 
   // TODO inform user that something went wrong...
   SERIAL.println("Error: Invalid network credentials!");
-}
-
-void eraseNetworkCreds() {
-  SERIAL.println("Erasing stored credentials...");
-  EEPROM.writeUInt(EEPROMEntryCSum, calculateCredsChecksum("", ""));
-  EEPROM.writeString(EEPROMEntrySSID, "");
-  EEPROM.writeString(EEPROMEntryPsk, "");
-  EEPROM.commit();
-  SERIAL.println("Erase complete");
-
-  const auto ssid = EEPROM.readString(EEPROMEntrySSID);
-  const auto psk = EEPROM.readString(EEPROMEntryPsk);
-  SERIAL.print("Stored Credentials after erasing: ");
-  printCredentials(ssid, psk);
-  delay(2000);
-}
-
-void saveUUID(UUID& uuid) {
-  char* uuidValue = uuid.toCharArray();
-  String uuidString;
-  uuidString = uuidValue;
-  SERIAL.println(uuidString);
-  // Confirm that the form was actually submitted.
-
-    // Confirm that the given credentials will fit in the allocated EEPROM space.
-    if (uuidString.length() < EEPROMMaxStringSize) {
-      EEPROM.writeUInt(EEPROMEntryCSum, calculateUUIDChecksum(uuidString));
-      EEPROM.writeString(EEPROMEntryUUID, uuidString);
-      EEPROM.commit();
-
-      SERIAL.print("Saving ");
-      printUUID(uuidString);
-
-      SERIAL.println("Saved UUID.");
-    }
-
-  // TODO inform user that something went wrong...
-  SERIAL.println("Error: UUID save failed");
-}
-
-void eraseUUID() {
-  SERIAL.println("Erasing UUID...");
-  EEPROM.writeUInt(EEPROMEntryCSum, calculateUUIDChecksum(""));
-  EEPROM.writeString(EEPROMEntryUUID, "");
-  EEPROM.commit();
-  SERIAL.println("Erase complete");
-
-  const auto uuid = EEPROM.readString(EEPROMEntryUUID);
-  SERIAL.print("Stored UUID after erasing: ");
-  printUUID(uuid);
-  delay(2000);
 }
 
 String createJSONPayload(String deviceId, float min, float max, float average) {
