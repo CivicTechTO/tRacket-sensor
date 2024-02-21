@@ -1,1 +1,0 @@
-# noisemeter-device

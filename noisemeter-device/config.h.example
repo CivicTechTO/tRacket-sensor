@@ -1,0 +1,21 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// Device ID to identify this board with the server.
+#define DEVICE_ID   "my-board"
+
+// Uncomment to print passkey over serial (for debugging).
+//#define STORAGE_SHOW_PASSKEY
+
+// Define only *one* of the follwoing board options.
+// If using PlatformIO, the selected 'env' will override this selection.
+#if !defined(BOARD_ESP32_PCB) && \
+    !defined(BOARD_ESP32_BREADBOARD)
+
+//#define BOARD_ESP32_PCB
+//#define BOARD_ESP32_BREADBOARD
+
+#endif // BOARD_*
+
+#endif // CONFIG_H
+
