@@ -1,0 +1,35 @@
+name: PlatformIO CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: actions/cache@v4.0.0
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+      - uses: actions/setup-python@v5.0.0
+        with:
+          python-version: '3.9'
+      - name: Install Python packages
+        run: |
+          pip install --upgrade platformio
+          pip install --upgrade cryptography
+
+      - name: Create header files
+        run: |
+          cp "${GITHUB_WORKSPACE}/noisemeter-device/config.h.example" "${GITHUB_WORKSPACE}/noisemeter-device/config.h"
+          echo 'const char *API_TOKEN = "NotAnAPIToken";' > "${GITHUB_WORKSPACE}/noisemeter-device/secret.h"
+          python "${GITHUB_WORKSPACE}/noisemeter-device/certs.py" -s noisemeter.webcomand.com -n webcomand > "${GITHUB_WORKSPACE}/noisemeter-device/certs.h"
+
+      - name: Build PlatformIO Project (esp32-pcb)
+        run: pio run -e esp32-pcb
+
+      - name: Build PlatformIO Project (esp32-breadboard)
+        run: pio run -e esp32-breadboard
