@@ -116,11 +116,6 @@ void setClock() {
     SERIAL.println("(error)");
 }
 
-/**
- * Returns true if the "reset" button is pressed, meaning the user wants to input new credentials.
- */
-bool isCredsResetPressed();
-
 // Sampling Buffers & accumulators
 sum_queue_t q;
 uint32_t Leq_samples = 0;
@@ -164,7 +159,8 @@ void setup() {
 
 #ifndef UPLOAD_DISABLED
   // Run the access point if it is requested or if there are no valid credentials.
-  if (isCredsResetPressed() || !Creds.valid()) {
+  bool resetPressed = !digitalRead(PIN_BUTTON);
+  if (resetPressed || !Creds.valid()) {
     AccessPoint ap;
 
     SERIAL.println("Erasing stored credentials...");
@@ -234,15 +230,6 @@ void printReadingToConsole(double reading) {
     output += " [+" + String(numberOfReadings - 1) + " more]";
   }
   SERIAL.println(output);
-}
-
-bool isCredsResetPressed() {
-  bool pressed = !digitalRead(PIN_BUTTON);
-
-  SERIAL.println();
-  SERIAL.print("Is reset detected: ");
-  SERIAL.println(pressed);
-  return pressed;
 }
 
 void saveNetworkCreds(WebServer& httpServer) {
