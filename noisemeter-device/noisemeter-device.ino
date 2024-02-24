@@ -25,9 +25,9 @@
 #include "certs.h"
 #include "secret.h"
 #include "storage.h"
+#include "timestamp.h"
 
 #include <cstdint>
-#include <ctime>
 
 #if defined(BUILD_PLATFORMIO) && defined(BOARD_ESP32_PCB)
 HWCDC USBSerial;
@@ -90,31 +90,6 @@ struct sum_queue_t {
 static_assert(sizeof(float) == sizeof(int32_t));
 using SampleBuffer alignas(4) = float[SAMPLES_SHORT];
 static SampleBuffer samples;
-
-// Not sure if WiFiClientSecure checks the validity date of the certificate.
-// Setting clock just to be sure...
-void setClock() {
-  configTime(0, 0, "pool.ntp.org");
-
-  SERIAL.print("Waiting for NTP time sync: ");
-  std::time_t nowSecs = std::time(nullptr);
-  while (nowSecs < 8 * 3600 * 2) {
-    delay(500);
-    SERIAL.print(".");
-    yield();
-    nowSecs = time(nullptr);
-  }
-  SERIAL.println();
-
-  char timebuf[32];
-
-  const auto timeinfo = std::gmtime(&nowSecs);
-  SERIAL.print("Current time: ");
-  if (std::strftime(timebuf, sizeof(timebuf), "%c", timeinfo) > 0)
-    SERIAL.println(timebuf);
-  else
-    SERIAL.println("(error)");
-}
 
 // Sampling Buffers & accumulators
 sum_queue_t q;
@@ -192,7 +167,10 @@ void setup() {
   SERIAL.print("Local ESP32 IP: ");
   SERIAL.println(WiFi.localIP());
 
-  setClock();
+  SERIAL.println("Waiting for NTP time sync...");
+  Timestamp::synchronize();
+  SERIAL.print("Current time: ");
+  SERIAL.println(Timestamp());
 #endif // !UPLOAD_DISABLED
 
   digitalWrite(PIN_LED1, HIGH);
