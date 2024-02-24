@@ -29,6 +29,7 @@
 #include "storage.h"
 
 #include <cstdint>
+#include <ctime>
 
 #if defined(BUILD_PLATFORMIO) && defined(BOARD_ESP32_PCB)
 HWCDC USBSerial;
@@ -88,27 +89,33 @@ struct sum_queue_t {
 };
 
 // Static buffer for block of samples
-float samples[SAMPLES_SHORT] __attribute__((aligned(4)));
+static_assert(sizeof(float) == sizeof(int32_t));
+using SampleBuffer alignas(4) = float[SAMPLES_SHORT];
+static SampleBuffer samples;
 
 // Not sure if WiFiClientSecure checks the validity date of the certificate.
 // Setting clock just to be sure...
 void setClock() {
   configTime(0, 0, "pool.ntp.org");
 
-  SERIAL.print(F("Waiting for NTP time sync: "));
-  time_t nowSecs = time(nullptr);
+  SERIAL.print("Waiting for NTP time sync: ");
+  std::time_t nowSecs = std::time(nullptr);
   while (nowSecs < 8 * 3600 * 2) {
     delay(500);
-    SERIAL.print(F("."));
+    SERIAL.print(".");
     yield();
     nowSecs = time(nullptr);
   }
-
   SERIAL.println();
-  struct tm timeinfo;
-  gmtime_r(&nowSecs, &timeinfo);
-  SERIAL.print(F("Current time: "));
-  SERIAL.print(asctime(&timeinfo));
+
+  char timebuf[32];
+
+  const auto timeinfo = std::gmtime(&nowSecs);
+  SERIAL.print("Current time: ");
+  if (std::strftime(timebuf, sizeof(timebuf), "%c", timeinfo) > 0)
+    SERIAL.println(timebuf);
+  else
+    SERIAL.println("(error)");
 }
 
 /**
@@ -121,7 +128,6 @@ sum_queue_t q;
 uint32_t Leq_samples = 0;
 double Leq_sum_sqr = 0;
 double Leq_dB = 0;
-size_t bytes_read = 0;
 
 // Noise Level Readings
 int numberOfReadings = 0;
@@ -247,7 +253,6 @@ void saveNetworkCreds(WebServer& httpServer) {
     const auto ssid = httpServer.arg("ssid");
     const auto psk = httpServer.arg("psk");
     UUID uuid; // generates random UUID
-    SERIAL.println(uuid.toCharArray());
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
     if (Creds.canStore(ssid) && Creds.canStore(psk)) {
@@ -384,7 +389,9 @@ void initMicrophone() {
     dma_buf_len: DMA_BANK_SIZE,
     use_apll: true,
     tx_desc_auto_clear: false,
-    fixed_mclk: 0
+    fixed_mclk: 0,
+    mclk_multiple: I2S_MCLK_MULTIPLE_DEFAULT,
+    bits_per_chan: I2S_BITS_PER_CHAN_DEFAULT,
   };
 
   // I2S pin mapping
@@ -400,7 +407,8 @@ void initMicrophone() {
   i2s_set_pin(I2S_PORT, &pin_config);
 
   // Discard first block, microphone may need time to startup and settle.
-  i2s_read(I2S_PORT, &samples, SAMPLES_SHORT * sizeof(int32_t), &bytes_read, portMAX_DELAY);
+  size_t bytes_read;
+  i2s_read(I2S_PORT, samples, sizeof(samples), &bytes_read, portMAX_DELAY);
 }
 
 void readMicrophoneData() {
@@ -411,12 +419,13 @@ void readMicrophoneData() {
   //
   // Note: i2s_read does not care it is writing in float[] buffer, it will write
   //       integer values to the given address, as received from the hardware peripheral.
-  i2s_read(I2S_PORT, &samples, SAMPLES_SHORT * sizeof(SAMPLE_T), &bytes_read, portMAX_DELAY);
+  size_t bytes_read;
+  i2s_read(I2S_PORT, samples, sizeof(samples), &bytes_read, portMAX_DELAY);
 
   // Convert (including shifting) integer microphone values to floats,
   // using the same buffer (assumed sample size is same as size of float),
   // to save a bit of memory
-  SAMPLE_T* int_samples = (SAMPLE_T*)&samples;
+  auto int_samples = reinterpret_cast<SAMPLE_T*>(samples);
 
   for (int i = 0; i < SAMPLES_SHORT; i++) samples[i] = MIC_CONVERT(int_samples[i]);
 
