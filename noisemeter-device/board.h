@@ -1,6 +1,8 @@
 #ifndef BOARD_H
 #define BOARD_H
 
+#include "config.h"
+
 #undef SERIAL
 
 #if defined(BOARD_ESP32_PCB)
@@ -46,4 +48,3 @@ extern HWCDC USBSerial;
 #endif
 
 #endif // BOARD_H
-

@@ -9,8 +9,6 @@
  *  - Add second step to Access Point flow - to gather users email, generate a UUID and upload them to the cloud. UUID to be saved in EEPROM
  *  - Add functionality to reset the device periodically (eg every 24 hours)
  */
-#include "config.h"
-
 #include <ArduinoJson.h> // https://arduinojson.org/
 #include <ArduinoJson.hpp>
 #include <HTTPClient.h>
