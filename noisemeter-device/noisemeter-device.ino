@@ -251,6 +251,7 @@ String createJSONPayload(String deviceId, float min, float max, float average) {
   doc["data"]["contents"][0]["Max"] = max;
   doc["data"]["contents"][0]["Mean"] = average;
   doc["data"]["contents"][0]["DeviceID"] = deviceId;  // TODO
+  doc["data"]["contents"][0]["Timestamp"] = String(Timestamp());
 
   // Serialize JSON document
   String json;
