@@ -21,11 +21,11 @@
 
 #include "access-point.h"
 #include "board.h"
+#include "data-packet.h"
 #include "sos-iir-filter.h"
 #include "certs.h"
 #include "secret.h"
 #include "storage.h"
-#include "timestamp.h"
 
 #include <cstdint>
 
@@ -98,10 +98,7 @@ double Leq_sum_sqr = 0;
 double Leq_dB = 0;
 
 // Noise Level Readings
-int numberOfReadings = 0;
-float minReading = MIC_OVERLOAD_DB;
-float maxReading = MIC_NOISE_DB;
-float sumReadings = 0;
+DataPacket packet;
 unsigned long lastUploadMillis = 0;
 
 /**
@@ -182,8 +179,8 @@ void loop() {
 #ifndef UPLOAD_DISABLED
   if (canUploadData()) {
     WiFiClientSecure* client = new WiFiClientSecure;
-    float average = sumReadings / numberOfReadings;
-    String payload = createJSONPayload(DEVICE_ID, minReading, maxReading, average);
+    packet.setTimestamp();
+    String payload = createJSONPayload(DEVICE_ID, packet);
     uploadData(client, payload);
     delete client;
   }
@@ -204,8 +201,8 @@ void printReadingToConsole(double reading) {
   String output = "";
   output += reading;
   output += "dB";
-  if (numberOfReadings > 1) {
-    output += " [+" + String(numberOfReadings - 1) + " more]";
+  if (packet.count > 1) {
+    output += " [+" + String(packet.count - 1) + " more]";
   }
   SERIAL.println(output);
 }
@@ -237,21 +234,23 @@ void saveNetworkCreds(WebServer& httpServer) {
   SERIAL.println("Error: Invalid network credentials!");
 }
 
-String createJSONPayload(String deviceId, float min, float max, float average) {
+String createJSONPayload(String deviceId, const DataPacket& dp)
+{
 #ifdef BUILD_PLATFORMIO
   JsonDocument doc;
 #else
   DynamicJsonDocument doc (2048);
 #endif
+
   doc["parent"] = "/Bases/nm1";
   doc["data"]["type"] = "comand";
   doc["data"]["version"] = "1.0";
   doc["data"]["contents"][0]["Type"] = "Noise";
-  doc["data"]["contents"][0]["Min"] = min;
-  doc["data"]["contents"][0]["Max"] = max;
-  doc["data"]["contents"][0]["Mean"] = average;
+  doc["data"]["contents"][0]["Min"] = dp.minimum;
+  doc["data"]["contents"][0]["Max"] = dp.maximum;
+  doc["data"]["contents"][0]["Mean"] = dp.average;
   doc["data"]["contents"][0]["DeviceID"] = deviceId;  // TODO
-  doc["data"]["contents"][0]["Timestamp"] = String(Timestamp());
+  doc["data"]["contents"][0]["Timestamp"] = String(dp.timestamp);
 
   // Serialize JSON document
   String json;
@@ -266,7 +265,7 @@ bool canUploadData() {
   if (msSinceLastUpload < UPLOAD_INTERVAL_MS) return false;
 
   // Do we have the minimum number of readings stored to form a resonable average?
-  if (numberOfReadings < MIN_READINGS_BEFORE_UPLOAD) return false;
+  if (packet.count < MIN_READINGS_BEFORE_UPLOAD) return false;
   return true;
 }
 
@@ -323,17 +322,8 @@ void uploadData(WiFiClientSecure* client, String json) {
 
   long now = millis();
   lastUploadMillis = now;
-  resetReading();
+  packet = DataPacket();
 };  // Given a serialized JSON payload, upload the data to webcomand
-
-void resetReading() {
-  SERIAL.println("Resetting readings cache...");
-  numberOfReadings = 0;
-  minReading = MIC_OVERLOAD_DB;
-  maxReading = MIC_NOISE_DB;
-  sumReadings = 0;
-  SERIAL.println("Reset complete");
-};
 
 //
 // I2S Microphone sampling setup
@@ -422,13 +412,8 @@ void readMicrophoneData() {
     Leq_sum_sqr = 0;
     Leq_samples = 0;
 
-    // SERIAL.printf("Calculated dB: %.1fdB\n", Leq_dB);
     printReadingToConsole(Leq_dB);
-
-    if (Leq_dB < minReading) minReading = Leq_dB;
-    if (Leq_dB > maxReading) maxReading = Leq_dB;
-    sumReadings += Leq_dB;
-    numberOfReadings++;
+    packet.add(Leq_dB);
 
     digitalWrite(PIN_LED2, LOW);
     delay(30);

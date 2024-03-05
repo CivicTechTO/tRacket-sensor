@@ -7,7 +7,8 @@
 class Timestamp
 {
 public:
-    Timestamp(): tm(std::time(nullptr)) {}
+    Timestamp(std::time_t tm_ = std::time(nullptr)):
+        tm(tm_) {}
 
     bool valid() const noexcept {
         return tm >= 8 * 3600 * 2;
@@ -27,6 +28,10 @@ public:
         do {
             delay(1000);
         } while (!Timestamp().valid());
+    }
+
+    static Timestamp invalidTimestamp() {
+        return Timestamp(0);
     }
 
 private:
