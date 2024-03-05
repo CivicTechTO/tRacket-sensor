@@ -15,7 +15,6 @@
 #include <UUID.h> // https://github.com/RobTillaart/UUID
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
-#include <WiFiMulti.h>
 #include <dummy.h> // ESP32 core
 #include <driver/i2s.h> // ESP32 core
 
@@ -28,20 +27,20 @@
 #include "storage.h"
 
 #include <cstdint>
+#include <forward_list>
+#include <iterator>
 
 #if defined(BUILD_PLATFORMIO) && defined(BOARD_ESP32_PCB)
 HWCDC USBSerial;
 #endif
 
 static Storage Creds;
-static WiFiMulti WiFiMulti;
 
 // Uncomment these to disable WiFi and/or data upload
 //#define UPLOAD_DISABLED
 
 const unsigned long UPLOAD_INTERVAL_MS = 60000 * 5;  // Upload every 5 mins
 // const unsigned long UPLOAD_INTERVAL_MS = 30000;  // Upload every 30 secs
-const unsigned long MIN_READINGS_BEFORE_UPLOAD = 20;
 
 //
 // Constants & Config
@@ -98,8 +97,8 @@ double Leq_sum_sqr = 0;
 double Leq_dB = 0;
 
 // Noise Level Readings
-DataPacket packet;
-unsigned long lastUploadMillis = 0;
+static std::forward_list<DataPacket> packets;
+static unsigned long lastUploadMillis = 0;
 
 /**
  * Initialization routine.
@@ -129,6 +128,8 @@ void setup() {
 
   initMicrophone();
 
+  packets.emplace_front();
+
 #ifndef UPLOAD_DISABLED
   // Run the access point if it is requested or if there are no valid credentials.
   bool resetPressed = !digitalRead(PIN_BUTTON);
@@ -152,11 +153,11 @@ void setup() {
   SERIAL.println(ssid);
 
   WiFi.mode(WIFI_STA);
-  WiFiMulti.addAP(ssid.c_str(), Creds.get(Storage::Entry::Passkey).c_str());
+  WiFi.begin(ssid.c_str(), Creds.get(Storage::Entry::Passkey).c_str());
 
   // wait for WiFi connection
   SERIAL.print("Waiting for WiFi to connect...");
-  while ((WiFiMulti.run() != WL_CONNECTED)) {
+  while (WiFi.status() != WL_CONNECTED) {
     SERIAL.print(".");
     delay(500);
   }
@@ -177,12 +178,42 @@ void loop() {
   readMicrophoneData();
 
 #ifndef UPLOAD_DISABLED
-  if (canUploadData()) {
-    WiFiClientSecure* client = new WiFiClientSecure;
-    packet.setTimestamp();
-    String payload = createJSONPayload(DEVICE_ID, packet);
-    uploadData(client, payload);
-    delete client;
+  // Has it been at least the upload interval since we uploaded data?
+  const auto now = millis();
+  if (now - lastUploadMillis >= UPLOAD_INTERVAL_MS) {
+    lastUploadMillis = millis();
+    packets.front().setTimestamp();
+
+    if (++packets.begin() != packets.end()) {
+      // Try to reconnect to the WiFi network.
+      SERIAL.println("Attempting WiFi reconnect...");
+      WiFi.reconnect();
+      delay(5000);
+    }
+
+    int sent = 0;
+    for (const auto& packet : packets) {
+      const auto payload = createJSONPayload(DEVICE_ID, packet);
+
+      WiFiClientSecure client;
+      if (uploadData(&client, payload) < 0) {
+        break;
+      }
+
+      sent++;
+    }
+
+    for (; sent > 0; sent--) {
+      packets.pop_front();
+    }
+
+    if (!packets.empty()) {
+      SERIAL.print(std::distance(packets.begin(), packets.end()));
+      SERIAL.println(" packets still need to be sent!");
+    }
+
+    // Create new packet for next measurements
+    packets.emplace_front();
   }
 #endif // !UPLOAD_DISABLED
 }
@@ -201,8 +232,10 @@ void printReadingToConsole(double reading) {
   String output = "";
   output += reading;
   output += "dB";
-  if (packet.count > 1) {
-    output += " [+" + String(packet.count - 1) + " more]";
+
+  const auto currentCount = packets.front().count;
+  if (currentCount > 1) {
+    output += " [+" + String(currentCount - 1) + " more]";
   }
   SERIAL.println(output);
 }
@@ -258,18 +291,9 @@ String createJSONPayload(String deviceId, const DataPacket& dp)
   return json;
 }
 
-bool canUploadData() {
-  // Has it been at least the upload interval since we uploaded data?
-  long now = millis();
-  long msSinceLastUpload = now - lastUploadMillis;
-  if (msSinceLastUpload < UPLOAD_INTERVAL_MS) return false;
-
-  // Do we have the minimum number of readings stored to form a resonable average?
-  if (packet.count < MIN_READINGS_BEFORE_UPLOAD) return false;
-  return true;
-}
-
-void uploadData(WiFiClientSecure* client, String json) {
+// Given a serialized JSON payload, upload the data to webcomand
+int uploadData(WiFiClientSecure* client, String json)
+{
   if (client) {
     client->setCACert(cert_ISRG_Root_X1);
     {
@@ -302,14 +326,19 @@ void uploadData(WiFiClientSecure* client, String json) {
           if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
             String payload = https.getString();
             SERIAL.println(payload);
+          } else {
+            SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
+            return -1;
           }
         } else {
           SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
+          return -1;
         }
 
         https.end();
       } else {
         SERIAL.printf("[HTTPS] Unable to connect\n");
+        return -1;
       }
 
       // End extra scoping block
@@ -318,12 +347,11 @@ void uploadData(WiFiClientSecure* client, String json) {
     // delete client;
   } else {
     SERIAL.println("Unable to create client");
+    return -1;
   }
 
-  long now = millis();
-  lastUploadMillis = now;
-  packet = DataPacket();
-};  // Given a serialized JSON payload, upload the data to webcomand
+  return 0;
+}
 
 //
 // I2S Microphone sampling setup
@@ -413,7 +441,7 @@ void readMicrophoneData() {
     Leq_samples = 0;
 
     printReadingToConsole(Leq_dB);
-    packet.add(Leq_dB);
+    packets.front().add(Leq_dB);
 
     digitalWrite(PIN_LED2, LOW);
     delay(30);
