@@ -16,10 +16,6 @@ struct DataPacket
         average += (sample - average) / count;
     }
 
-    void setTimestamp() noexcept {
-        timestamp = Timestamp();
-    }
-
     int count = 0;
     float minimum = 999.f;
     float maximum = 0.f;

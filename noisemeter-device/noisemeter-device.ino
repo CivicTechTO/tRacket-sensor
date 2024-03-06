@@ -39,8 +39,8 @@ static Storage Creds;
 // Uncomment these to disable WiFi and/or data upload
 //#define UPLOAD_DISABLED
 
-const unsigned long UPLOAD_INTERVAL_MS = 60000 * 5;  // Upload every 5 mins
-// const unsigned long UPLOAD_INTERVAL_MS = 30000;  // Upload every 30 secs
+const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5;  // Upload every 5 mins
+// const unsigned long UPLOAD_INTERVAL_SEC = 30;  // Upload every 30 secs
 
 //
 // Constants & Config
@@ -98,7 +98,7 @@ double Leq_dB = 0;
 
 // Noise Level Readings
 static std::forward_list<DataPacket> packets;
-static unsigned long lastUploadMillis = 0;
+static Timestamp lastUpload = Timestamp::invalidTimestamp();
 
 /**
  * Initialization routine.
@@ -167,8 +167,9 @@ void setup() {
 
   SERIAL.println("Waiting for NTP time sync...");
   Timestamp::synchronize();
+  lastUpload = Timestamp();
   SERIAL.print("Current time: ");
-  SERIAL.println(Timestamp());
+  SERIAL.println(lastUpload);
 #endif // !UPLOAD_DISABLED
 
   digitalWrite(PIN_LED1, HIGH);
@@ -179,36 +180,28 @@ void loop() {
 
 #ifndef UPLOAD_DISABLED
   // Has it been at least the upload interval since we uploaded data?
-  const auto now = millis();
-  if (now - lastUploadMillis >= UPLOAD_INTERVAL_MS) {
-    lastUploadMillis = millis();
-    packets.front().setTimestamp();
+  const auto now = Timestamp();
+  if (lastUpload.secondsBetween(now) >= UPLOAD_INTERVAL_SEC) {
+    lastUpload = now;
+    packets.front().timestamp = now;
 
-    if (++packets.begin() != packets.end()) {
-      // Try to reconnect to the WiFi network.
+    if (WiFi.status() != WL_CONNECTED) {
       SERIAL.println("Attempting WiFi reconnect...");
       WiFi.reconnect();
       delay(5000);
     }
 
-    int sent = 0;
-    for (const auto& packet : packets) {
-      const auto payload = createJSONPayload(DEVICE_ID, packet);
+    if (WiFi.status() == WL_CONNECTED) {
+      packets.remove_if([](const auto& pkt) {
+        const auto payload = createJSONPayload(DEVICE_ID, pkt);
 
-      WiFiClientSecure client;
-      if (uploadData(&client, payload) < 0) {
-        break;
-      }
-
-      sent++;
-    }
-
-    for (; sent > 0; sent--) {
-      packets.pop_front();
+        WiFiClientSecure client;
+        return uploadData(&client, payload) == 0;
+      });
     }
 
     if (!packets.empty()) {
-      SERIAL.print(std::distance(packets.begin(), packets.end()));
+      SERIAL.print(std::distance(packets.cbegin(), packets.cend()));
       SERIAL.println(" packets still need to be sent!");
     }
 

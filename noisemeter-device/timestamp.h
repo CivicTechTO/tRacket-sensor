@@ -22,6 +22,10 @@ public:
         return success ? tsbuf : "(error)";
     }
 
+    auto secondsBetween(Timestamp ts) const noexcept {
+        return std::difftime(ts.tm, tm);
+    }
+
     static void synchronize() {
         configTime(0, 0, "pool.ntp.org");
 
