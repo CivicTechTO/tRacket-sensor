@@ -160,16 +160,13 @@ void setup() {
 #ifndef UPLOAD_DISABLED
   // Run the access point if it is requested or if there are no valid credentials.
   bool resetPressed = !digitalRead(PIN_BUTTON);
-  if (resetPressed || !Creds.valid()) {
-    AccessPoint ap;
+  if (resetPressed || !Creds.valid() || Creds.get(Storage::Entry::SSID).isEmpty()) {
+    AccessPoint ap (saveNetworkCreds);
 
-    SERIAL.println("Erasing stored credentials...");
+    SERIAL.print("Erasing stored credentials...");
     Creds.clear();
-    SERIAL.print("Stored Credentials after erasing: ");
-    SERIAL.println(Creds);
+    SERIAL.println(" done.");
 
-    ap.onCredentialsReceived(saveNetworkCreds);
-    ap.begin();
     ap.run(); // does not return
   }
 
