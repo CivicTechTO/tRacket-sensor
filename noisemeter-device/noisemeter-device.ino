@@ -4,10 +4,9 @@
  * Open source dB meter code taken from Ivan Kostoski (https://github.com/ikostoski/esp32-i2s-slm)
  * 
  * TODO:
- *  - Use DNS to make a "captive portal" that brings users directly to the credentials form.
  *  - Encrypt the stored credentials (simple XOR with a long key?).
  *  - Add second step to Access Point flow - to gather users email, generate a UUID and upload them to the cloud. UUID to be saved in EEPROM
- *  - Add functionality to reset the device periodically (eg every 24 hours)
+ *  - Add functionality to reset the device periodically (eg every 24 hours)?
  */
 #include <ArduinoJson.h> // https://arduinojson.org/
 #include <ArduinoJson.hpp>
