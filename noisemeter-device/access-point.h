@@ -11,7 +11,7 @@ class AccessPoint
 
 public:
     AccessPoint():
-        server(80) {}
+        server(80), funcOnCredentialsReceived(nullptr) {}
 
     // Configure the WiFi radio to be an access point.
     void begin();
