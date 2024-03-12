@@ -4,10 +4,9 @@
  * Open source dB meter code taken from Ivan Kostoski (https://github.com/ikostoski/esp32-i2s-slm)
  * 
  * TODO:
- *  - Use DNS to make a "captive portal" that brings users directly to the credentials form.
  *  - Encrypt the stored credentials (simple XOR with a long key?).
  *  - Add second step to Access Point flow - to gather users email, generate a UUID and upload them to the cloud. UUID to be saved in EEPROM
- *  - Add functionality to reset the device periodically (eg every 24 hours)
+ *  - Add functionality to reset the device periodically (eg every 24 hours)?
  */
 #include <ArduinoJson.h> // https://arduinojson.org/
 #include <ArduinoJson.hpp>
@@ -133,16 +132,13 @@ void setup() {
 #ifndef UPLOAD_DISABLED
   // Run the access point if it is requested or if there are no valid credentials.
   bool resetPressed = !digitalRead(PIN_BUTTON);
-  if (resetPressed || !Creds.valid()) {
-    AccessPoint ap;
+  if (resetPressed || !Creds.valid() || Creds.get(Storage::Entry::SSID).isEmpty()) {
+    AccessPoint ap (saveNetworkCreds);
 
-    SERIAL.println("Erasing stored credentials...");
+    SERIAL.print("Erasing stored credentials...");
     Creds.clear();
-    SERIAL.print("Stored Credentials after erasing: ");
-    SERIAL.println(Creds);
+    SERIAL.println(" done.");
 
-    ap.onCredentialsReceived(saveNetworkCreds);
-    ap.begin();
     ap.run(); // does not return
   }
 
