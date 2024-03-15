@@ -40,9 +40,10 @@ static Storage Creds;
 // Uncomment these to disable WiFi and/or data upload
 //#define UPLOAD_DISABLED
 
-constexpr auto UpdateEndpoint  = "https://www.bitgloo.com/files/noisemeter-update.bin";
-constexpr auto VersionEndpoint = "https://www.bitgloo.com/files/noisemeter-update.txt";
-constexpr auto VersionNumber   = "v0.2";
+#define OTA_ROOT_URL "https://github.com/CivicTechTO/proj-noisemeter-device/releases/latest/download"
+constexpr auto UpdateEndpoint  = OTA_ROOT_URL "/firmware.bin";
+constexpr auto VersionEndpoint = OTA_ROOT_URL "/version.txt";
+constexpr auto VersionNumber   = "0.0.1"; // semantic versioning
 
 const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5;  // Upload every 5 mins
 // const unsigned long UPLOAD_INTERVAL_SEC = 30;  // Upload every 30 secs
