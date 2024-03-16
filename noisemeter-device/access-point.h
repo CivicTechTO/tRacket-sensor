@@ -1,30 +1,32 @@
 #ifndef ACCESS_POINT_H
 #define ACCESS_POINT_H
 
+#include <DNSServer.h>
 #include <WebServer.h>
 
-class AccessPoint
+class AccessPoint : public RequestHandler
 {
     static constexpr auto SSID = "Noise meter";
     static constexpr auto Passkey = "noisemeter";
-    // IP address set in access-point.cpp
 
 public:
-    AccessPoint():
-        server(80) {}
+    // Begins hosting a WiFi access point with the credentials form as a
+    // captive portal.
+    AccessPoint(void (*func)(WebServer&)):
+        server(80),
+        onCredentialsReceived(func) {}
 
-    // Configure the WiFi radio to be an access point.
-    void begin();
-
-    // Enter main loop for executing the access point and web server.
+    // Enters an infinite loop to handle the access point and web server.
     [[noreturn]] void run();
 
-    // Set handler for reception of WiFi credentials.
-    void onCredentialsReceived(void (*func)(WebServer&));
+    // RequestHandler implementation for web server functionality.
+    bool canHandle(HTTPMethod, String) override;
+    bool handle(WebServer&, HTTPMethod, String) override;
 
 private:
+    DNSServer dns;
     WebServer server;
-    void (*funcOnCredentialsReceived)(WebServer&);
+    void (*onCredentialsReceived)(WebServer&);
 
     static const IPAddress IP;
     static const IPAddress Netmask;

@@ -4,26 +4,23 @@
  * Open source dB meter code taken from Ivan Kostoski (https://github.com/ikostoski/esp32-i2s-slm)
  * 
  * TODO:
- *  - Use DNS to make a "captive portal" that brings users directly to the credentials form.
  *  - Encrypt the stored credentials (simple XOR with a long key?).
  *  - Add second step to Access Point flow - to gather users email, generate a UUID and upload them to the cloud. UUID to be saved in EEPROM
- *  - Add functionality to reset the device periodically (eg every 24 hours)
+ *  - Add functionality to reset the device periodically (eg every 24 hours)?
  */
-#include "config.h"
-
 #include <ArduinoJson.h> // https://arduinojson.org/
 #include <ArduinoJson.hpp>
 #include <HTTPClient.h>
 #include <UUID.h> // https://github.com/RobTillaart/UUID
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
-#include <WiFiMulti.h>
 #include <dummy.h> // ESP32 core
 #include <driver/i2s.h> // ESP32 core
 #include <mbedtls/aes.h>
 
 #include "access-point.h"
 #include "board.h"
+#include "data-packet.h"
 #include "sos-iir-filter.h"
 #include "certs.h"
 #include "secret.h"
@@ -31,20 +28,20 @@
 #include "storage.h"
 
 #include <cstdint>
+#include <forward_list>
+#include <iterator>
 
 #if defined(BUILD_PLATFORMIO) && defined(BOARD_ESP32_PCB)
 HWCDC USBSerial;
 #endif
 
 static Storage Creds;
-static WiFiMulti WiFiMulti;
 
 // Uncomment these to disable WiFi and/or data upload
 //#define UPLOAD_DISABLED
 
-const unsigned long UPLOAD_INTERVAL_MS = 60000 * 5;  // Upload every 5 mins
-// const unsigned long UPLOAD_INTERVAL_MS = 30000;  // Upload every 30 secs
-const unsigned long MIN_READINGS_BEFORE_UPLOAD = 20;
+const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5;  // Upload every 5 mins
+// const unsigned long UPLOAD_INTERVAL_SEC = 30;  // Upload every 30 secs
 
 //
 // Constants & Config
@@ -90,47 +87,19 @@ struct sum_queue_t {
 };
 
 // Static buffer for block of samples
-float samples[SAMPLES_SHORT] __attribute__((aligned(4)));
-
-// Not sure if WiFiClientSecure checks the validity date of the certificate.
-// Setting clock just to be sure...
-void setClock() {
-  configTime(0, 0, "pool.ntp.org");
-
-  SERIAL.print(F("Waiting for NTP time sync: "));
-  time_t nowSecs = time(nullptr);
-  while (nowSecs < 8 * 3600 * 2) {
-    delay(500);
-    SERIAL.print(F("."));
-    yield();
-    nowSecs = time(nullptr);
-  }
-
-  SERIAL.println();
-  struct tm timeinfo;
-  gmtime_r(&nowSecs, &timeinfo);
-  SERIAL.print(F("Current time: "));
-  SERIAL.print(asctime(&timeinfo));
-}
-
-/**
- * Returns true if the "reset" button is pressed, meaning the user wants to input new credentials.
- */
-bool isCredsResetPressed();
+static_assert(sizeof(float) == sizeof(int32_t));
+using SampleBuffer alignas(4) = float[SAMPLES_SHORT];
+static SampleBuffer samples;
 
 // Sampling Buffers & accumulators
 sum_queue_t q;
 uint32_t Leq_samples = 0;
 double Leq_sum_sqr = 0;
 double Leq_dB = 0;
-size_t bytes_read = 0;
 
 // Noise Level Readings
-int numberOfReadings = 0;
-float minReading = MIC_OVERLOAD_DB;
-float maxReading = MIC_NOISE_DB;
-float sumReadings = 0;
-unsigned long lastUploadMillis = 0;
+static std::forward_list<DataPacket> packets;
+static Timestamp lastUpload = Timestamp::invalidTimestamp();
 
 /**
  * Initialization routine.
@@ -160,36 +129,32 @@ void setup() {
 
   initMicrophone();
 
+  packets.emplace_front();
+
 #ifndef UPLOAD_DISABLED
   // Run the access point if it is requested or if there are no valid credentials.
-  if (isCredsResetPressed() || !Creds.valid()) {
-    AccessPoint ap;
+  bool resetPressed = !digitalRead(PIN_BUTTON);
+  if (resetPressed || !Creds.valid() || Creds.get(Storage::Entry::SSID).isEmpty()) {
+    AccessPoint ap (saveNetworkCreds);
 
-    SERIAL.println("Erasing stored credentials...");
+    SERIAL.print("Erasing stored credentials...");
     Creds.clear();
-    SERIAL.print("Stored Credentials after erasing: ");
-    SERIAL.println(Creds);
+    SERIAL.println(" done.");
 
-    ap.onCredentialsReceived(saveNetworkCreds);
-    ap.begin();
     ap.run(); // does not return
   }
 
-  // Valid credentials: Next step would be to connect to the network.
-  const auto ssid = Creds.get(Storage::Entry::SSID);
-
-  SERIAL.print("Ready to connect to ");
-  SERIAL.println(ssid);
-
+  // Valid credentials: Next step is to connect to the network.
   WiFi.mode(WIFI_STA);
   {
+    const auto ssid = Creds.get(Storage::Entry::SSID);
     const auto psk = Creds.get(Storage::Entry::Passkey);
-    WiFiMulti.addAP(ssid.c_str(), Secret().decrypt(psk).c_str());
+    WiFi.begin(Secret().decrypt(ssid).c_str(), Secret().decrypt(psk).c_str());
   }
 
   // wait for WiFi connection
   SERIAL.print("Waiting for WiFi to connect...");
-  while ((WiFiMulti.run() != WL_CONNECTED)) {
+  while (WiFi.status() != WL_CONNECTED) {
     SERIAL.print(".");
     delay(500);
   }
@@ -197,7 +162,11 @@ void setup() {
   SERIAL.print("Local ESP32 IP: ");
   SERIAL.println(WiFi.localIP());
 
-  setClock();
+  SERIAL.println("Waiting for NTP time sync...");
+  Timestamp::synchronize();
+  lastUpload = Timestamp();
+  SERIAL.print("Current time: ");
+  SERIAL.println(lastUpload);
 #endif // !UPLOAD_DISABLED
 
   digitalWrite(PIN_LED1, HIGH);
@@ -207,12 +176,34 @@ void loop() {
   readMicrophoneData();
 
 #ifndef UPLOAD_DISABLED
-  if (canUploadData()) {
-    WiFiClientSecure* client = new WiFiClientSecure;
-    float average = sumReadings / numberOfReadings;
-    String payload = createJSONPayload(DEVICE_ID, minReading, maxReading, average);
-    uploadData(client, payload);
-    delete client;
+  // Has it been at least the upload interval since we uploaded data?
+  const auto now = Timestamp();
+  if (lastUpload.secondsBetween(now) >= UPLOAD_INTERVAL_SEC) {
+    lastUpload = now;
+    packets.front().timestamp = now;
+
+    if (WiFi.status() != WL_CONNECTED) {
+      SERIAL.println("Attempting WiFi reconnect...");
+      WiFi.reconnect();
+      delay(5000);
+    }
+
+    if (WiFi.status() == WL_CONNECTED) {
+      packets.remove_if([](const auto& pkt) {
+        const auto payload = createJSONPayload(DEVICE_ID, pkt);
+
+        WiFiClientSecure client;
+        return uploadData(&client, payload) == 0;
+      });
+    }
+
+    if (!packets.empty()) {
+      SERIAL.print(std::distance(packets.cbegin(), packets.cend()));
+      SERIAL.println(" packets still need to be sent!");
+    }
+
+    // Create new packet for next measurements
+    packets.emplace_front();
   }
 #endif // !UPLOAD_DISABLED
 }
@@ -231,28 +222,20 @@ void printReadingToConsole(double reading) {
   String output = "";
   output += reading;
   output += "dB";
-  if (numberOfReadings > 1) {
-    output += " [+" + String(numberOfReadings - 1) + " more]";
+
+  const auto currentCount = packets.front().count;
+  if (currentCount > 1) {
+    output += " [+" + String(currentCount - 1) + " more]";
   }
   SERIAL.println(output);
-}
-
-bool isCredsResetPressed() {
-  bool pressed = !digitalRead(PIN_BUTTON);
-
-  SERIAL.println();
-  SERIAL.print("Is reset detected: ");
-  SERIAL.println(pressed);
-  return pressed;
 }
 
 void saveNetworkCreds(WebServer& httpServer) {
   // Confirm that the form was actually submitted.
   if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
-    const auto ssid = httpServer.arg("ssid");
+    const auto ssid = Secret().encrypt(httpServer.arg("ssid"));
     const auto psk = Secret().encrypt(httpServer.arg("psk"));
     UUID uuid; // generates random UUID
-    SERIAL.println(uuid.toCharArray());
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
     if (Creds.canStore(ssid) && Creds.canStore(psk)) {
@@ -274,20 +257,23 @@ void saveNetworkCreds(WebServer& httpServer) {
   SERIAL.println("Error: Invalid network credentials!");
 }
 
-String createJSONPayload(String deviceId, float min, float max, float average) {
+String createJSONPayload(String deviceId, const DataPacket& dp)
+{
 #ifdef BUILD_PLATFORMIO
   JsonDocument doc;
 #else
   DynamicJsonDocument doc (2048);
 #endif
+
   doc["parent"] = "/Bases/nm1";
   doc["data"]["type"] = "comand";
   doc["data"]["version"] = "1.0";
   doc["data"]["contents"][0]["Type"] = "Noise";
-  doc["data"]["contents"][0]["Min"] = min;
-  doc["data"]["contents"][0]["Max"] = max;
-  doc["data"]["contents"][0]["Mean"] = average;
+  doc["data"]["contents"][0]["Min"] = dp.minimum;
+  doc["data"]["contents"][0]["Max"] = dp.maximum;
+  doc["data"]["contents"][0]["Mean"] = dp.average;
   doc["data"]["contents"][0]["DeviceID"] = deviceId;  // TODO
+  doc["data"]["contents"][0]["Timestamp"] = String(dp.timestamp);
 
   // Serialize JSON document
   String json;
@@ -295,18 +281,9 @@ String createJSONPayload(String deviceId, float min, float max, float average) {
   return json;
 }
 
-bool canUploadData() {
-  // Has it been at least the upload interval since we uploaded data?
-  long now = millis();
-  long msSinceLastUpload = now - lastUploadMillis;
-  if (msSinceLastUpload < UPLOAD_INTERVAL_MS) return false;
-
-  // Do we have the minimum number of readings stored to form a resonable average?
-  if (numberOfReadings < MIN_READINGS_BEFORE_UPLOAD) return false;
-  return true;
-}
-
-void uploadData(WiFiClientSecure* client, String json) {
+// Given a serialized JSON payload, upload the data to webcomand
+int uploadData(WiFiClientSecure* client, String json)
+{
   if (client) {
     client->setCACert(cert_ISRG_Root_X1);
     {
@@ -339,14 +316,19 @@ void uploadData(WiFiClientSecure* client, String json) {
           if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
             String payload = https.getString();
             SERIAL.println(payload);
+          } else {
+            SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
+            return -1;
           }
         } else {
           SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
+          return -1;
         }
 
         https.end();
       } else {
         SERIAL.printf("[HTTPS] Unable to connect\n");
+        return -1;
       }
 
       // End extra scoping block
@@ -355,21 +337,11 @@ void uploadData(WiFiClientSecure* client, String json) {
     // delete client;
   } else {
     SERIAL.println("Unable to create client");
+    return -1;
   }
 
-  long now = millis();
-  lastUploadMillis = now;
-  resetReading();
-};  // Given a serialized JSON payload, upload the data to webcomand
-
-void resetReading() {
-  SERIAL.println("Resetting readings cache...");
-  numberOfReadings = 0;
-  minReading = MIC_OVERLOAD_DB;
-  maxReading = MIC_NOISE_DB;
-  sumReadings = 0;
-  SERIAL.println("Reset complete");
-};
+  return 0;
+}
 
 //
 // I2S Microphone sampling setup
@@ -389,7 +361,9 @@ void initMicrophone() {
     dma_buf_len: DMA_BANK_SIZE,
     use_apll: true,
     tx_desc_auto_clear: false,
-    fixed_mclk: 0
+    fixed_mclk: 0,
+    mclk_multiple: I2S_MCLK_MULTIPLE_DEFAULT,
+    bits_per_chan: I2S_BITS_PER_CHAN_DEFAULT,
   };
 
   // I2S pin mapping
@@ -405,7 +379,8 @@ void initMicrophone() {
   i2s_set_pin(I2S_PORT, &pin_config);
 
   // Discard first block, microphone may need time to startup and settle.
-  i2s_read(I2S_PORT, &samples, SAMPLES_SHORT * sizeof(int32_t), &bytes_read, portMAX_DELAY);
+  size_t bytes_read;
+  i2s_read(I2S_PORT, samples, sizeof(samples), &bytes_read, portMAX_DELAY);
 }
 
 void readMicrophoneData() {
@@ -416,12 +391,13 @@ void readMicrophoneData() {
   //
   // Note: i2s_read does not care it is writing in float[] buffer, it will write
   //       integer values to the given address, as received from the hardware peripheral.
-  i2s_read(I2S_PORT, &samples, SAMPLES_SHORT * sizeof(SAMPLE_T), &bytes_read, portMAX_DELAY);
+  size_t bytes_read;
+  i2s_read(I2S_PORT, samples, sizeof(samples), &bytes_read, portMAX_DELAY);
 
   // Convert (including shifting) integer microphone values to floats,
   // using the same buffer (assumed sample size is same as size of float),
   // to save a bit of memory
-  SAMPLE_T* int_samples = (SAMPLE_T*)&samples;
+  auto int_samples = reinterpret_cast<SAMPLE_T*>(samples);
 
   for (int i = 0; i < SAMPLES_SHORT; i++) samples[i] = MIC_CONVERT(int_samples[i]);
 
@@ -454,13 +430,8 @@ void readMicrophoneData() {
     Leq_sum_sqr = 0;
     Leq_samples = 0;
 
-    // SERIAL.printf("Calculated dB: %.1fdB\n", Leq_dB);
     printReadingToConsole(Leq_dB);
-
-    if (Leq_dB < minReading) minReading = Leq_dB;
-    if (Leq_dB > maxReading) maxReading = Leq_dB;
-    sumReadings += Leq_dB;
-    numberOfReadings++;
+    packets.front().add(Leq_dB);
 
     digitalWrite(PIN_LED2, LOW);
     delay(30);
