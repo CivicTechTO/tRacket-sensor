@@ -124,11 +124,10 @@ void setup() {
   SERIAL.println("Initializing...");
 
   Creds.begin();
-  SERIAL.print("Stored credentials: ");
-  SERIAL.println(Creds);
+  SERIAL.print("ID: ");
+  SERIAL.println(Creds.get(Storage::Entry::UUID));
 
   initMicrophone();
-
   packets.emplace_front();
 
 #ifndef UPLOAD_DISABLED
@@ -145,19 +144,20 @@ void setup() {
   }
 
   // Valid credentials: Next step is to connect to the network.
+  SERIAL.print("Waiting for WiFi to connect...");
+
+  const auto ssid = Creds.get(Storage::Entry::SSID);
+  const auto psk = Creds.get(Storage::Entry::Passkey);
+
   WiFi.mode(WIFI_STA);
-  {
-    const auto ssid = Creds.get(Storage::Entry::SSID);
-    const auto psk = Creds.get(Storage::Entry::Passkey);
-    WiFi.begin(Secret().decrypt(ssid).c_str(), Secret().decrypt(psk).c_str());
-  }
+  WiFi.begin(Secret().decrypt(ssid).c_str(), Secret().decrypt(psk).c_str());
 
   // wait for WiFi connection
-  SERIAL.print("Waiting for WiFi to connect...");
   while (WiFi.status() != WL_CONNECTED) {
-    SERIAL.print(".");
+    // TODO timeout
     delay(500);
   }
+
   SERIAL.println("\nConnected to the WiFi network");
   SERIAL.print("Local ESP32 IP: ");
   SERIAL.println(WiFi.localIP());
@@ -244,12 +244,7 @@ void saveNetworkCreds(WebServer& httpServer) {
       Creds.set(Storage::Entry::UUID, uuid.toCharArray());
       Creds.commit();
 
-      SERIAL.print("Saving ");
-      SERIAL.println(Creds);
-
-      SERIAL.println("Saved network credentials. Restarting...");
-      delay(2000);
-      ESP.restart();  // Software reset.
+      ESP.restart(); // Software reset.
     }
   }
 
