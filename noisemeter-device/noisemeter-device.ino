@@ -12,7 +12,6 @@
 #include <ArduinoJson.h> // https://arduinojson.org/
 #include <ArduinoJson.hpp>
 #include <HTTPClient.h>
-#include <Update.h>
 #include <UUID.h> // https://github.com/RobTillaart/UUID
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
@@ -26,6 +25,7 @@
 #include "certs.h"
 #include "secret.h"
 #include "storage.h"
+#include "ota-update.h"
 
 #include <cstdint>
 #include <forward_list>
@@ -39,11 +39,6 @@ static Storage Creds;
 
 // Uncomment these to disable WiFi and/or data upload
 //#define UPLOAD_DISABLED
-
-#define OTA_ROOT_URL "https://github.com/CivicTechTO/proj-noisemeter-device/releases/latest/download"
-constexpr auto UpdateEndpoint  = OTA_ROOT_URL "/firmware.bin";
-constexpr auto VersionEndpoint = OTA_ROOT_URL "/version.txt";
-constexpr auto VersionNumber   = "0.0.1"; // semantic versioning
 
 const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5;  // Upload every 5 mins
 // const unsigned long UPLOAD_INTERVAL_SEC = 30;  // Upload every 30 secs
@@ -128,7 +123,7 @@ void setup() {
   delay(2000);
   SERIAL.println();
   SERIAL.print("Noisemeter ");
-  SERIAL.println(VersionNumber);
+  SERIAL.println(NOISEMETER_VERSION);
   SERIAL.println("Initializing...");
 
   Creds.begin();
@@ -184,44 +179,6 @@ void setup() {
   digitalWrite(PIN_LED1, HIGH);
 }
 
-class HTTPClientGet
-{
-  WiFiClientSecure secure;
-  HTTPClient client;
-
-public:
-  HTTPClientGet() {
-    secure.setCACert(cert_ISRG_Root_X1);
-  }
-  ~HTTPClientGet() {
-    client.end();
-  }
-
-  int begin(const char *endpoint) {
-    return client.begin(secure, endpoint) ? client.GET() : -1;
-  }
-
-  int available() {
-    return secure.available();
-  }
-
-  String getString() {
-    return client.getString();
-  }
-
-  int read(uint8_t *buf, unsigned size) {
-    return secure.read(buf, size);
-  }
-
-  int getSize() {
-    return client.getSize();
-  }
-
-  bool connected() {
-    return client.connected();
-  }
-};
-
 void loop() {
   readMicrophoneData();
 
@@ -229,81 +186,23 @@ void loop() {
     SERIAL.println("Update check!");
     delay(2000);
 
-    bool shouldUpdate = false;
-
-    {
-      HTTPClientGet client;
-      const auto code = client.begin(VersionEndpoint);
-
-      SERIAL.printf("[HTTPS] GET... code: %d\n", code);
-      if (code == HTTP_CODE_OK) {
-        auto response = client.getString();
-        response.trim();
-
-        if (!response.isEmpty() && response.compareTo(String(VersionNumber)) > 0) {
-          shouldUpdate = true;
-          SERIAL.print(response);
-          SERIAL.println(" available!");
-        } else {
-          SERIAL.println("No new vesion available.");
-        }
-      } else {
-        SERIAL.println("[HTTPS] Unable to connect");
-      }
-    }
-
     digitalWrite(PIN_LED1, LOW);
     delay(500);
 
-    if (shouldUpdate) {
-      HTTPClientGet client;
-      SERIAL.println("Downloading latest update...");
+    OTAUpdate ota (cert_ISRG_Root_X1);
 
-      const auto code = client.begin(UpdateEndpoint);
-      SERIAL.printf("[HTTPS] GET... code: %d\n", code);
+    if (ota.available()) {
+        SERIAL.print(ota.version);
+        SERIAL.println(" available!");
 
-      if (code == HTTP_CODE_OK) {
-        auto totalSize = client.getSize();
-
-        if (!Update.begin(totalSize > 0 ? totalSize : UPDATE_SIZE_UNKNOWN)) {
-          Update.printError(SERIAL);
-          return;
+        if (ota.download()) {
+            SERIAL.println("Download success! Restarting...");
+            digitalWrite(PIN_LED1, HIGH);
+            delay(2000);
+            ESP.restart();
         }
-
-        // create buffer for read
-        uint8_t buff[128] = {0};
-
-        // read all data from server
-        while (client.connected() && (totalSize > 0 || totalSize == -1)) {
-          const auto size = client.available();
-
-          if (size) {
-            const auto bytesRead = client.read(buff, std::min(static_cast<int>(sizeof(buff)), size));
-
-            if (!Update.write(buff, bytesRead)) {
-              Update.printError(SERIAL);
-              break;
-            }
-
-            if (totalSize > 0)
-              totalSize -= bytesRead;
-
-            delay(1);
-          }
-        }
-
-        if (totalSize == 0) {
-          SERIAL.println("Success? Restarting...");
-          Update.end(true);
-          digitalWrite(PIN_LED1, HIGH);
-          delay(2000);
-          ESP.restart();
-        } else {
-          SERIAL.println("[HTTP] connection closed or incomplete file download.");
-        }
-      } else {
-        SERIAL.println("[HTTPS] Unable to connect");
-      }
+    } else {
+        SERIAL.println("No update available.");
     }
 
     digitalWrite(PIN_LED1, HIGH);
