@@ -16,10 +16,9 @@
     "</body>" \
     "</html>"
 
-// The ESP32's IP address within its access point will be "4.3.2.1".
-// Once connected to the access point, open up 4.3.2.1 in a browser to get
-// to the credentials form.
-const IPAddress AccessPoint::IP (4, 3, 2, 1);
+constexpr int DNSPort = 53;
+
+const IPAddress AccessPoint::IP (8, 8, 4, 4);
 const IPAddress AccessPoint::Netmask (255, 255, 255, 0);
 
 // Main webpage HTML with form to collect WiFi credentials.
@@ -42,37 +41,72 @@ const char *AccessPoint::htmlSubmit =
     "<p>Connecting...</p>"
     HTML_FOOTER;
 
-void AccessPoint::begin()
+[[noreturn]]
+void AccessPoint::run()
 {
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(IP, IP, Netmask);
     WiFi.softAP(SSID, Passkey);
 
-    // GET request means user wants to see the form.
-    // POST request means user has submitted data through the form.
-    server.on("/", HTTP_GET,
-        [this] { server.send_P(200, PSTR("text/html"), htmlSetup); });
-    server.on("/", HTTP_POST,
-        [this] {
-            server.client().setNoDelay(true);
-            server.send_P(200, PSTR("text/html"), htmlSubmit);
-            if (funcOnCredentialsReceived)
-                funcOnCredentialsReceived(server);
-        });
+    dns.start(DNSPort, "*", IP);
+
+    server.addHandler(this);
     server.begin();
 
     SERIAL.println("Running setup access point.");
-}
 
-[[noreturn]]
-void AccessPoint::run()
-{
-    while (1)
+    while (1) {
+        dns.processNextRequest();
         server.handleClient();
+        delay(10);
+    }
 }
 
-void AccessPoint::onCredentialsReceived(void (*func)(WebServer&))
+bool AccessPoint::canHandle(HTTPMethod, String)
 {
-    funcOnCredentialsReceived = func;
+    return true;
+}
+
+bool AccessPoint::handle(WebServer& server, HTTPMethod method, String uri)
+{
+    if (method == HTTP_POST) {
+        if (uri == "/") {
+            server.client().setNoDelay(true);
+            server.send_P(200, PSTR("text/html"), htmlSubmit);
+            if (onCredentialsReceived)
+                onCredentialsReceived(server);
+        } else {
+            server.sendHeader("Location", "http://8.8.4.4/");
+            server.send(301);
+        }
+    } else if (method == HTTP_GET) {
+        // Redirects taken from https://github.com/CDFER/Captive-Portal-ESP32
+
+        if (uri == "/") {
+            server.send_P(200, PSTR("text/html"), htmlSetup);
+        } else if (uri == "/connecttest.txt") {
+            // windows 11 captive portal workaround
+            server.sendHeader("Location", "http://logout.net");
+            server.send(301);
+        } else if (uri == "/wpad.dat") {
+            // Honestly don't understand what this is but a 404 stops win 10
+            // keep calling this repeatedly and panicking the esp32 :)
+            server.send(404);
+        } else if (uri == "/success.txt") {
+            // firefox captive portal call home
+            server.send(200);
+        } else if (uri == "/favicon.ico") {
+            // return 404 to webpage icon
+            server.send(404);
+        } else {
+            server.sendHeader("Location", "http://8.8.4.4/");
+            server.send(301);
+        }
+    } else {
+        server.sendHeader("Location", "http://8.8.4.4/");
+        server.send(301);
+    }
+
+    return true;
 }
 
