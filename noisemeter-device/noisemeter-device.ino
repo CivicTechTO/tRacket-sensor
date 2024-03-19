@@ -41,6 +41,7 @@ static Storage Creds;
 
 const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5;  // Upload every 5 mins
 // const unsigned long UPLOAD_INTERVAL_SEC = 30;  // Upload every 30 secs
+const unsigned long OTA_INTERVAL_SEC = 60 * 60 * 24; // Check for updates daily
 
 //
 // Constants & Config
@@ -99,6 +100,7 @@ double Leq_dB = 0;
 // Noise Level Readings
 static std::forward_list<DataPacket> packets;
 static Timestamp lastUpload = Timestamp::invalidTimestamp();
+static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
 
 /**
  * Initialization routine.
@@ -167,7 +169,9 @@ void setup() {
 
   SERIAL.println("Waiting for NTP time sync...");
   Timestamp::synchronize();
-  lastUpload = Timestamp();
+  Timestamp now;
+  lastUpload = now;
+  lastOTACheck = now;
   SERIAL.print("Current time: ");
   SERIAL.println(lastUpload);
 #endif // !UPLOAD_DISABLED
@@ -178,35 +182,34 @@ void setup() {
 void loop() {
   readMicrophoneData();
 
-  if (!digitalRead(PIN_BUTTON)) {
-    SERIAL.println("Update check!");
-    delay(2000);
+#ifndef UPLOAD_DISABLED
+  const auto now = Timestamp();
 
-    digitalWrite(PIN_LED1, LOW);
-    delay(500);
+  if (lastOTACheck.secondsBetween(now) >= OTA_INTERVAL_SEC) {
+    lastOTACheck = now;
+
+    SERIAL.println("Checking for updates...");
 
     OTAUpdate ota (cert_ISRG_Root_X1);
-
     if (ota.available()) {
-        SERIAL.print(ota.version);
-        SERIAL.println(" available!");
+      SERIAL.print(ota.version);
+      SERIAL.println(" available!");
+      digitalWrite(PIN_LED1, LOW);
 
-        if (ota.download()) {
-            SERIAL.println("Download success! Restarting...");
-            digitalWrite(PIN_LED1, HIGH);
-            delay(2000);
-            ESP.restart();
-        }
+      if (ota.download()) {
+        SERIAL.println("Download success! Restarting...");
+        digitalWrite(PIN_LED1, HIGH);
+        delay(1000);
+        ESP.restart();
+      } else {
+        SERIAL.println("Update download failed.");
+        digitalWrite(PIN_LED1, HIGH);
+      }
     } else {
-        SERIAL.println("No update available.");
+      SERIAL.println("No update available.");
     }
-
-    digitalWrite(PIN_LED1, HIGH);
   }
 
-#ifndef UPLOAD_DISABLED
-  // Has it been at least the upload interval since we uploaded data?
-  const auto now = Timestamp();
   if (lastUpload.secondsBetween(now) >= UPLOAD_INTERVAL_SEC) {
     lastUpload = now;
     packets.front().timestamp = now;
