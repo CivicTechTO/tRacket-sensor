@@ -24,6 +24,7 @@
 #include "certs.h"
 #include "secret.h"
 #include "storage.h"
+#include "ota-update.h"
 
 #include <cstdint>
 #include <list>
@@ -40,6 +41,7 @@ static Storage Creds;
 
 const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5;  // Upload every 5 mins
 // const unsigned long UPLOAD_INTERVAL_SEC = 30;  // Upload every 30 secs
+const unsigned long OTA_INTERVAL_SEC = 60 * 60 * 24; // Check for updates daily
 
 // Remember up to two weeks of measurement data.
 constexpr unsigned MAX_SAVED_PACKETS = 14 * 24 * 60 * 60 / UPLOAD_INTERVAL_SEC;
@@ -101,6 +103,7 @@ double Leq_dB = 0;
 // Noise Level Readings
 static std::list<DataPacket> packets;
 static Timestamp lastUpload = Timestamp::invalidTimestamp();
+static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
 
 /**
  * Initialization routine.
@@ -121,7 +124,10 @@ void setup() {
   // setCpuFrequencyMhz(80);  // It should run as low as 80MHz
 
   SERIAL.begin(115200);
+  delay(2000);
   SERIAL.println();
+  SERIAL.print("Noisemeter ");
+  SERIAL.println(NOISEMETER_VERSION);
   SERIAL.println("Initializing...");
 
   Creds.begin();
@@ -166,7 +172,9 @@ void setup() {
 
   SERIAL.println("Waiting for NTP time sync...");
   Timestamp::synchronize();
-  lastUpload = Timestamp();
+  Timestamp now;
+  lastUpload = now;
+  lastOTACheck = now;
   SERIAL.print("Current time: ");
   SERIAL.println(lastUpload);
 #endif // !UPLOAD_DISABLED
@@ -178,8 +186,8 @@ void loop() {
   readMicrophoneData();
 
 #ifndef UPLOAD_DISABLED
-  // Has it been at least the upload interval since we uploaded data?
   const auto now = Timestamp();
+
   if (lastUpload.secondsBetween(now) >= UPLOAD_INTERVAL_SEC) {
     packets.front().timestamp = now;
 
@@ -199,6 +207,33 @@ void loop() {
           return true; // Discard empty packets
         }
       });
+
+#if defined(BOARD_ESP32_PCB)
+      // We have WiFi: also check for software updates
+      if (lastOTACheck.secondsBetween(now) >= OTA_INTERVAL_SEC) {
+        lastOTACheck = now;
+        SERIAL.println("Checking for updates...");
+
+        OTAUpdate ota (cert_ISRG_Root_X1);
+        if (ota.available()) {
+          SERIAL.print(ota.version);
+          SERIAL.println(" available!");
+          digitalWrite(PIN_LED1, LOW);
+
+          if (ota.download()) {
+            SERIAL.println("Download success! Restarting...");
+            digitalWrite(PIN_LED1, HIGH);
+            delay(1000);
+            ESP.restart();
+          } else {
+            SERIAL.println("Update download failed.");
+            digitalWrite(PIN_LED1, HIGH);
+          }
+        } else {
+          SERIAL.println("No update available.");
+        }
+      }
+#endif // BOARD_ESP32_PCB
     }
 
     if (!packets.empty()) {
