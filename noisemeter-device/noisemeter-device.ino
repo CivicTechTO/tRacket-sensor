@@ -188,31 +188,6 @@ void loop() {
 #ifndef UPLOAD_DISABLED
   const auto now = Timestamp();
 
-  if (lastOTACheck.secondsBetween(now) >= OTA_INTERVAL_SEC) {
-    lastOTACheck = now;
-
-    SERIAL.println("Checking for updates...");
-
-    OTAUpdate ota (cert_ISRG_Root_X1);
-    if (ota.available()) {
-      SERIAL.print(ota.version);
-      SERIAL.println(" available!");
-      digitalWrite(PIN_LED1, LOW);
-
-      if (ota.download()) {
-        SERIAL.println("Download success! Restarting...");
-        digitalWrite(PIN_LED1, HIGH);
-        delay(1000);
-        ESP.restart();
-      } else {
-        SERIAL.println("Update download failed.");
-        digitalWrite(PIN_LED1, HIGH);
-      }
-    } else {
-      SERIAL.println("No update available.");
-    }
-  }
-
   if (lastUpload.secondsBetween(now) >= UPLOAD_INTERVAL_SEC) {
     packets.front().timestamp = now;
 
@@ -232,6 +207,32 @@ void loop() {
           return true; // Discard empty packets
         }
       });
+
+      // We have WiFi: also check for software updates
+      if (lastOTACheck.secondsBetween(now) >= OTA_INTERVAL_SEC) {
+        lastOTACheck = now;
+        SERIAL.println("Checking for updates...");
+
+        OTAUpdate ota (cert_ISRG_Root_X1);
+        if (ota.available()) {
+          SERIAL.print(ota.version);
+          SERIAL.println(" available!");
+          digitalWrite(PIN_LED1, LOW);
+
+          if (ota.download()) {
+            SERIAL.println("Download success! Restarting...");
+            digitalWrite(PIN_LED1, HIGH);
+            delay(1000);
+            ESP.restart();
+          } else {
+            SERIAL.println("Update download failed.");
+            digitalWrite(PIN_LED1, HIGH);
+          }
+        } else {
+          SERIAL.println("No update available.");
+        }
+      }
+
     }
 
     if (!packets.empty()) {
