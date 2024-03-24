@@ -26,7 +26,7 @@
 #include "storage.h"
 
 #include <cstdint>
-#include <forward_list>
+#include <list>
 #include <iterator>
 
 #if defined(BUILD_PLATFORMIO) && defined(BOARD_ESP32_PCB)
@@ -40,6 +40,9 @@ static Storage Creds;
 
 const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5;  // Upload every 5 mins
 // const unsigned long UPLOAD_INTERVAL_SEC = 30;  // Upload every 30 secs
+
+// Remember up to two weeks of measurement data.
+constexpr unsigned MAX_SAVED_PACKETS = 14 * 24 * 60 * 60 / UPLOAD_INTERVAL_SEC;
 
 //
 // Constants & Config
@@ -96,7 +99,7 @@ double Leq_sum_sqr = 0;
 double Leq_dB = 0;
 
 // Noise Level Readings
-static std::forward_list<DataPacket> packets;
+static std::list<DataPacket> packets;
 static Timestamp lastUpload = Timestamp::invalidTimestamp();
 
 /**
@@ -178,7 +181,6 @@ void loop() {
   // Has it been at least the upload interval since we uploaded data?
   const auto now = Timestamp();
   if (lastUpload.secondsBetween(now) >= UPLOAD_INTERVAL_SEC) {
-    lastUpload = now;
     packets.front().timestamp = now;
 
     if (WiFi.status() != WL_CONNECTED) {
@@ -189,20 +191,30 @@ void loop() {
 
     if (WiFi.status() == WL_CONNECTED) {
       packets.remove_if([](const auto& pkt) {
-        const auto payload = createJSONPayload(DEVICE_ID, pkt);
-
-        WiFiClientSecure client;
-        return uploadData(&client, payload) == 0;
+        if (pkt.count > 0) {
+          const auto payload = createJSONPayload(DEVICE_ID, pkt);
+          WiFiClientSecure client;
+          return uploadData(&client, payload) == 0;
+        } else {
+          return true; // Discard empty packets
+        }
       });
     }
 
     if (!packets.empty()) {
-      SERIAL.print(std::distance(packets.cbegin(), packets.cend()));
+      const auto count = std::distance(packets.cbegin(), packets.cend());
+      SERIAL.print(count);
       SERIAL.println(" packets still need to be sent!");
+
+      if (count >= MAX_SAVED_PACKETS) {
+        SERIAL.println("Discarded a packet!");
+        packets.pop_back();
+      }
     }
 
     // Create new packet for next measurements
     packets.emplace_front();
+    lastUpload = now;
   }
 #endif // !UPLOAD_DISABLED
 }
