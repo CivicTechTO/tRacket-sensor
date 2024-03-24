@@ -208,6 +208,7 @@ void loop() {
         }
       });
 
+#if defined(BOARD_ESP32_PCB)
       // We have WiFi: also check for software updates
       if (lastOTACheck.secondsBetween(now) >= OTA_INTERVAL_SEC) {
         lastOTACheck = now;
@@ -232,7 +233,7 @@ void loop() {
           SERIAL.println("No update available.");
         }
       }
-
+#endif // BOARD_ESP32_PCB
     }
 
     if (!packets.empty()) {
