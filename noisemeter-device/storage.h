@@ -6,8 +6,7 @@
 #include <cstdint>
 
 /**
- * Manages the storage of persistent settings including WiFi credentials and
- * device UUID.
+ * Manages the storage of persistent settings e.g. WiFi credentials.
  */
 class Storage : protected EEPROMClass
 {
@@ -18,8 +17,7 @@ public:
         Checksum  = 0,
         SSID      = Checksum + sizeof(uint32_t),
         Passkey   = SSID     + StringSize,
-        UUID      = Passkey  + StringSize,
-        TotalSize = UUID     + StringSize
+        TotalSize = Passkey  + StringSize
     };
 
     // Prepares flash memory for access.

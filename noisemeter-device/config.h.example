@@ -1,9 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// Device ID to identify this board with the server.
-#define DEVICE_ID   "my-board"
-
 // Uncomment to print passkey over serial (for debugging).
 //#define STORAGE_SHOW_PASSKEY
 

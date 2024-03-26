@@ -11,11 +11,12 @@
 #include <ArduinoJson.h> // https://arduinojson.org/
 #include <ArduinoJson.hpp>
 #include <HTTPClient.h>
-#include <UUID.h> // https://github.com/RobTillaart/UUID
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <dummy.h> // ESP32 core
 #include <driver/i2s.h> // ESP32 core
+#include <esp_efuse.h>
+#include <esp_efuse_table.h>
 
 #include "access-point.h"
 #include "board.h"
@@ -25,6 +26,7 @@
 #include "secret.h"
 #include "storage.h"
 #include "ota-update.h"
+#include "UUID/UUID.h"
 
 #include <cstdint>
 #include <list>
@@ -105,6 +107,8 @@ static std::list<DataPacket> packets;
 static Timestamp lastUpload = Timestamp::invalidTimestamp();
 static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
 
+static UUID buildDeviceId();
+
 /**
  * Initialization routine.
  */
@@ -127,7 +131,9 @@ void setup() {
   delay(2000);
   SERIAL.println();
   SERIAL.print("Noisemeter ");
-  SERIAL.println(NOISEMETER_VERSION);
+  SERIAL.print(NOISEMETER_VERSION);
+  SERIAL.print(' ');
+  SERIAL.println(buildDeviceId());
   SERIAL.println("Initializing...");
 
   Creds.begin();
@@ -200,7 +206,7 @@ void loop() {
     if (WiFi.status() == WL_CONNECTED) {
       packets.remove_if([](const auto& pkt) {
         if (pkt.count > 0) {
-          const auto payload = createJSONPayload(DEVICE_ID, pkt);
+          const auto payload = createJSONPayload(pkt);
           WiFiClientSecure client;
           return uploadData(&client, payload) == 0;
         } else {
@@ -281,13 +287,11 @@ void saveNetworkCreds(WebServer& httpServer) {
   if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
     const auto ssid = httpServer.arg("ssid");
     const auto psk = httpServer.arg("psk");
-    UUID uuid; // generates random UUID
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
     if (Creds.canStore(ssid) && Creds.canStore(psk)) {
       Creds.set(Storage::Entry::SSID, ssid);
       Creds.set(Storage::Entry::Passkey, psk);
-      Creds.set(Storage::Entry::UUID, uuid.toCharArray());
       Creds.commit();
 
       SERIAL.print("Saving ");
@@ -303,7 +307,14 @@ void saveNetworkCreds(WebServer& httpServer) {
   SERIAL.println("Error: Invalid network credentials!");
 }
 
-String createJSONPayload(String deviceId, const DataPacket& dp)
+UUID buildDeviceId()
+{
+  std::array<uint8_t, 6> mac;
+  esp_efuse_read_field_blob(ESP_EFUSE_MAC_FACTORY, mac.data(), /* bits */ mac.size() * 8);
+  return UUID(mac[0] | (mac[1] << 8) | (mac[2] << 16), mac[3] | (mac[4] << 8) | (mac[5] << 16));
+}
+
+String createJSONPayload(const DataPacket& dp)
 {
 #ifdef BUILD_PLATFORMIO
   JsonDocument doc;
@@ -318,7 +329,7 @@ String createJSONPayload(String deviceId, const DataPacket& dp)
   doc["data"]["contents"][0]["Min"] = dp.minimum;
   doc["data"]["contents"][0]["Max"] = dp.maximum;
   doc["data"]["contents"][0]["Mean"] = dp.average;
-  doc["data"]["contents"][0]["DeviceID"] = deviceId;  // TODO
+  doc["data"]["contents"][0]["DeviceID"] = String(buildDeviceId());
   doc["data"]["contents"][0]["Timestamp"] = String(dp.timestamp);
 
   // Serialize JSON document

@@ -65,7 +65,6 @@ Storage::operator String() const noexcept
 #ifdef STORAGE_SHOW_PASSKEY
            "\" Passkey \"" + get(Entry::Passkey) +
 #endif
-           "\" UUID \"" + get(Entry::UUID) +
            '\"';
 }
 
