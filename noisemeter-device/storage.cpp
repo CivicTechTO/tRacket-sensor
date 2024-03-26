@@ -27,9 +27,9 @@ bool Storage::canStore(String str) const noexcept
 void Storage::clear() noexcept
 {
     for (auto i = 0u; i < addrOf(Entry::TotalSize); ++i)
-        writeByte(i, 0);
+        writeByte(i, 0xFF);
 
-    commit();
+    EEPROMClass::commit();
 }
 
 String Storage::get(Entry entry) const noexcept
