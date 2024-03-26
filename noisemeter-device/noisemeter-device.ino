@@ -41,6 +41,8 @@ static Storage Creds;
 // Uncomment these to disable WiFi and/or data upload
 //#define UPLOAD_DISABLED
 
+constexpr auto WIFI_CONNECT_TIMEOUT_MS = 20 * 1000;
+
 const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5;  // Upload every 5 mins
 // const unsigned long UPLOAD_INTERVAL_SEC = 30;  // Upload every 30 secs
 const unsigned long OTA_INTERVAL_SEC = 60 * 60 * 24; // Check for updates daily
@@ -108,6 +110,9 @@ static Timestamp lastUpload = Timestamp::invalidTimestamp();
 static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
 
 static UUID buildDeviceId();
+[[noreturn]]
+static void enterAccessPointMode();
+static int tryWifiConnection();
 
 /**
  * Initialization routine.
@@ -145,44 +150,32 @@ void setup() {
   packets.emplace_front();
 
 #ifndef UPLOAD_DISABLED
-  // Run the access point if it is requested or if there are no valid credentials.
-  bool resetPressed = !digitalRead(PIN_BUTTON);
-  if (resetPressed || !Creds.valid() || Creds.get(Storage::Entry::SSID).isEmpty()) {
-    AccessPoint ap (saveNetworkCreds);
+  bool isAPNeeded = false;
 
+  if (!digitalRead(PIN_BUTTON) || !Creds.valid()) {
     SERIAL.print("Erasing stored credentials...");
     Creds.clear();
     SERIAL.println(" done.");
 
-    ap.run(); // does not return
+    isAPNeeded = true;
+  } else if (tryWifiConnection() < 0 || Timestamp::synchronize() < 0) {
+    isAPNeeded = true;
   }
 
-  // Valid credentials: Next step would be to connect to the network.
-  const auto ssid = Creds.get(Storage::Entry::SSID);
-
-  SERIAL.print("Ready to connect to ");
-  SERIAL.println(ssid);
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid.c_str(), Creds.get(Storage::Entry::Passkey).c_str());
-
-  // wait for WiFi connection
-  SERIAL.print("Waiting for WiFi to connect...");
-  while (WiFi.status() != WL_CONNECTED) {
-    SERIAL.print(".");
-    delay(500);
+  // Run the access point if it is requested or if there are no valid credentials.
+  if (isAPNeeded) {
+    enterAccessPointMode(); // Does not return
   }
-  SERIAL.println("\nConnected to the WiFi network");
-  SERIAL.print("Local ESP32 IP: ");
-  SERIAL.println(WiFi.localIP());
 
-  SERIAL.println("Waiting for NTP time sync...");
-  Timestamp::synchronize();
   Timestamp now;
   lastUpload = now;
   lastOTACheck = now;
+
+  SERIAL.println("Connected to the WiFi network.");
+  SERIAL.print("Local ESP32 IP: ");
+  SERIAL.println(WiFi.localIP());
   SERIAL.print("Current time: ");
-  SERIAL.println(lastUpload);
+  SERIAL.println(now);
 #endif // !UPLOAD_DISABLED
 
   digitalWrite(PIN_LED1, HIGH);
@@ -289,7 +282,7 @@ void saveNetworkCreds(WebServer& httpServer) {
     const auto psk = httpServer.arg("psk");
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
-    if (Creds.canStore(ssid) && Creds.canStore(psk)) {
+    if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk)) {
       Creds.set(Storage::Entry::SSID, ssid);
       Creds.set(Storage::Entry::Passkey, psk);
       Creds.commit();
@@ -312,6 +305,41 @@ UUID buildDeviceId()
   std::array<uint8_t, 6> mac;
   esp_efuse_read_field_blob(ESP_EFUSE_MAC_FACTORY, mac.data(), /* bits */ mac.size() * 8);
   return UUID(mac[0] | (mac[1] << 8) | (mac[2] << 16), mac[3] | (mac[4] << 8) | (mac[5] << 16));
+}
+
+void enterAccessPointMode()
+{
+    AccessPoint ap (saveNetworkCreds);
+
+    SERIAL.print("Erasing stored credentials...");
+    Creds.clear();
+    SERIAL.println(" done.");
+
+    ap.run(); // does not return
+}
+
+int tryWifiConnection()
+{
+  const auto ssid = Creds.get(Storage::Entry::SSID);
+
+  SERIAL.print("Ready to connect to ");
+  SERIAL.println(ssid);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid.c_str(), Creds.get(Storage::Entry::Passkey).c_str());
+
+  // wait for WiFi connection
+  SERIAL.print("Waiting for WiFi to connect...");
+  const auto start = millis();
+  bool connected;
+
+  do {
+    connected = WiFi.status() != WL_CONNECTED;
+    SERIAL.print(".");
+    delay(500);
+  } while (!connected && millis() - start < WIFI_CONNECT_TIMEOUT_MS);
+
+  return connected ? 0 : -1;
 }
 
 String createJSONPayload(const DataPacket& dp)

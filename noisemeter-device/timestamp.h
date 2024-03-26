@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include <ctime>
 
+constexpr auto NTP_CONNECT_TIMEOUT_MS = 20 * 1000;
+
 class Timestamp
 {
 public:
@@ -26,12 +28,18 @@ public:
         return std::difftime(ts.tm, tm);
     }
 
-    static void synchronize() {
+    static int synchronize() {
         configTime(0, 0, "pool.ntp.org");
+
+        const auto start = millis();
+        bool connected;
 
         do {
             delay(1000);
-        } while (!Timestamp().valid());
+            connected = Timestamp().valid();
+        } while (!connected && millis() - start < NTP_CONNECT_TIMEOUT_MS);
+
+        return connected ? 0 : -1;
     }
 
     static Timestamp invalidTimestamp() {
