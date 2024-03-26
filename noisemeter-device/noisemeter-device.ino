@@ -11,6 +11,7 @@
 #include <ArduinoJson.h> // https://arduinojson.org/
 #include <ArduinoJson.hpp>
 #include <HTTPClient.h>
+#include <Ticker.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <dummy.h> // ESP32 core
@@ -110,8 +111,6 @@ static Timestamp lastUpload = Timestamp::invalidTimestamp();
 static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
 
 static UUID buildDeviceId();
-[[noreturn]]
-static void enterAccessPointMode();
 static int tryWifiConnection();
 
 /**
@@ -119,10 +118,7 @@ static int tryWifiConnection();
  */
 void setup() {
   pinMode(PIN_LED1, OUTPUT);
-  pinMode(PIN_LED2, OUTPUT);
-
   digitalWrite(PIN_LED1, LOW);
-  digitalWrite(PIN_LED2, HIGH);
 
   // Grounding this pin (e.g. with a button) will force access open to start.
   // Useful as a "reset" button to overwrite currently saved credentials.
@@ -142,11 +138,8 @@ void setup() {
   SERIAL.println("Initializing...");
 
   Creds.begin();
-  SERIAL.print("Stored credentials: ");
-  SERIAL.println(Creds);
 
   initMicrophone();
-
   packets.emplace_front();
 
 #ifndef UPLOAD_DISABLED
@@ -164,7 +157,14 @@ void setup() {
 
   // Run the access point if it is requested or if there are no valid credentials.
   if (isAPNeeded) {
-    enterAccessPointMode(); // Does not return
+    AccessPoint ap (saveNetworkCreds);
+    Ticker blink;
+
+    blink.attach_ms(500, [] {
+      static bool state = HIGH;
+      digitalWrite(PIN_LED1, state ^= HIGH);
+    });
+    ap.run(); // does not return
   }
 
   Timestamp now;
@@ -307,26 +307,19 @@ UUID buildDeviceId()
   return UUID(mac[0] | (mac[1] << 8) | (mac[2] << 16), mac[3] | (mac[4] << 8) | (mac[5] << 16));
 }
 
-void enterAccessPointMode()
-{
-    AccessPoint ap (saveNetworkCreds);
-
-    SERIAL.print("Erasing stored credentials...");
-    Creds.clear();
-    SERIAL.println(" done.");
-
-    ap.run(); // does not return
-}
-
 int tryWifiConnection()
 {
   const auto ssid = Creds.get(Storage::Entry::SSID);
+
+  if (ssid.isEmpty())
+    return -1;
 
   SERIAL.print("Ready to connect to ");
   SERIAL.println(ssid);
 
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid.c_str(), Creds.get(Storage::Entry::Passkey).c_str());
+  if (WiFi.begin(ssid.c_str(), Creds.get(Storage::Entry::Passkey).c_str()) == WL_CONNECT_FAILED)
+    return -1;
 
   // wait for WiFi connection
   SERIAL.print("Waiting for WiFi to connect...");
@@ -517,9 +510,5 @@ void readMicrophoneData() {
 
     printReadingToConsole(Leq_dB);
     packets.front().add(Leq_dB);
-
-    digitalWrite(PIN_LED2, LOW);
-    delay(30);
-    digitalWrite(PIN_LED2, HIGH);
   }
 }
