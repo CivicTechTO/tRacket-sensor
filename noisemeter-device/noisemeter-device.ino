@@ -11,11 +11,13 @@
 #include <ArduinoJson.h> // https://arduinojson.org/
 #include <ArduinoJson.hpp>
 #include <HTTPClient.h>
-#include <UUID.h> // https://github.com/RobTillaart/UUID
+#include <Ticker.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <dummy.h> // ESP32 core
 #include <driver/i2s.h> // ESP32 core
+#include <esp_efuse.h>
+#include <esp_efuse_table.h>
 
 #include "access-point.h"
 #include "board.h"
@@ -25,6 +27,7 @@
 #include "secret.h"
 #include "storage.h"
 #include "ota-update.h"
+#include "UUID/UUID.h"
 
 #include <cstdint>
 #include <list>
@@ -38,6 +41,8 @@ static Storage Creds;
 
 // Uncomment these to disable WiFi and/or data upload
 //#define UPLOAD_DISABLED
+
+constexpr auto WIFI_CONNECT_TIMEOUT_MS = 20 * 1000;
 
 const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5;  // Upload every 5 mins
 // const unsigned long UPLOAD_INTERVAL_SEC = 30;  // Upload every 30 secs
@@ -105,15 +110,15 @@ static std::list<DataPacket> packets;
 static Timestamp lastUpload = Timestamp::invalidTimestamp();
 static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
 
+static UUID buildDeviceId();
+static int tryWifiConnection();
+
 /**
  * Initialization routine.
  */
 void setup() {
   pinMode(PIN_LED1, OUTPUT);
-  pinMode(PIN_LED2, OUTPUT);
-
   digitalWrite(PIN_LED1, LOW);
-  digitalWrite(PIN_LED2, HIGH);
 
   // Grounding this pin (e.g. with a button) will force access open to start.
   // Useful as a "reset" button to overwrite currently saved credentials.
@@ -127,56 +132,50 @@ void setup() {
   delay(2000);
   SERIAL.println();
   SERIAL.print("Noisemeter ");
-  SERIAL.println(NOISEMETER_VERSION);
+  SERIAL.print(NOISEMETER_VERSION);
+  SERIAL.print(' ');
+  SERIAL.println(buildDeviceId());
   SERIAL.println("Initializing...");
 
   Creds.begin();
-  SERIAL.print("Stored credentials: ");
-  SERIAL.println(Creds);
 
   initMicrophone();
-
   packets.emplace_front();
 
 #ifndef UPLOAD_DISABLED
-  // Run the access point if it is requested or if there are no valid credentials.
-  bool resetPressed = !digitalRead(PIN_BUTTON);
-  if (resetPressed || !Creds.valid() || Creds.get(Storage::Entry::SSID).isEmpty()) {
-    AccessPoint ap (saveNetworkCreds);
+  bool isAPNeeded = false;
 
+  if (!digitalRead(PIN_BUTTON) || !Creds.valid()) {
     SERIAL.print("Erasing stored credentials...");
     Creds.clear();
     SERIAL.println(" done.");
 
+    isAPNeeded = true;
+  } else if (tryWifiConnection() < 0 || Timestamp::synchronize() < 0) {
+    isAPNeeded = true;
+  }
+
+  // Run the access point if it is requested or if there are no valid credentials.
+  if (isAPNeeded) {
+    AccessPoint ap (saveNetworkCreds);
+    Ticker blink;
+
+    blink.attach_ms(500, [] {
+      static bool state = HIGH;
+      digitalWrite(PIN_LED1, state ^= HIGH);
+    });
     ap.run(); // does not return
   }
 
-  // Valid credentials: Next step would be to connect to the network.
-  const auto ssid = Creds.get(Storage::Entry::SSID);
-
-  SERIAL.print("Ready to connect to ");
-  SERIAL.println(ssid);
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid.c_str(), Creds.get(Storage::Entry::Passkey).c_str());
-
-  // wait for WiFi connection
-  SERIAL.print("Waiting for WiFi to connect...");
-  while (WiFi.status() != WL_CONNECTED) {
-    SERIAL.print(".");
-    delay(500);
-  }
-  SERIAL.println("\nConnected to the WiFi network");
-  SERIAL.print("Local ESP32 IP: ");
-  SERIAL.println(WiFi.localIP());
-
-  SERIAL.println("Waiting for NTP time sync...");
-  Timestamp::synchronize();
   Timestamp now;
   lastUpload = now;
   lastOTACheck = now;
+
+  SERIAL.println("Connected to the WiFi network.");
+  SERIAL.print("Local ESP32 IP: ");
+  SERIAL.println(WiFi.localIP());
   SERIAL.print("Current time: ");
-  SERIAL.println(lastUpload);
+  SERIAL.println(now);
 #endif // !UPLOAD_DISABLED
 
   digitalWrite(PIN_LED1, HIGH);
@@ -200,7 +199,7 @@ void loop() {
     if (WiFi.status() == WL_CONNECTED) {
       packets.remove_if([](const auto& pkt) {
         if (pkt.count > 0) {
-          const auto payload = createJSONPayload(DEVICE_ID, pkt);
+          const auto payload = createJSONPayload(pkt);
           WiFiClientSecure client;
           return uploadData(&client, payload) == 0;
         } else {
@@ -281,13 +280,11 @@ void saveNetworkCreds(WebServer& httpServer) {
   if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
     const auto ssid = httpServer.arg("ssid");
     const auto psk = httpServer.arg("psk");
-    UUID uuid; // generates random UUID
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
-    if (Creds.canStore(ssid) && Creds.canStore(psk)) {
+    if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk)) {
       Creds.set(Storage::Entry::SSID, ssid);
       Creds.set(Storage::Entry::Passkey, psk);
-      Creds.set(Storage::Entry::UUID, uuid.toCharArray());
       Creds.commit();
 
       SERIAL.print("Saving ");
@@ -303,7 +300,42 @@ void saveNetworkCreds(WebServer& httpServer) {
   SERIAL.println("Error: Invalid network credentials!");
 }
 
-String createJSONPayload(String deviceId, const DataPacket& dp)
+UUID buildDeviceId()
+{
+  std::array<uint8_t, 6> mac;
+  esp_efuse_read_field_blob(ESP_EFUSE_MAC_FACTORY, mac.data(), /* bits */ mac.size() * 8);
+  return UUID(mac[0] | (mac[1] << 8) | (mac[2] << 16), mac[3] | (mac[4] << 8) | (mac[5] << 16));
+}
+
+int tryWifiConnection()
+{
+  const auto ssid = Creds.get(Storage::Entry::SSID);
+
+  if (ssid.isEmpty())
+    return -1;
+
+  SERIAL.print("Ready to connect to ");
+  SERIAL.println(ssid);
+
+  WiFi.mode(WIFI_STA);
+  if (WiFi.begin(ssid.c_str(), Creds.get(Storage::Entry::Passkey).c_str()) == WL_CONNECT_FAILED)
+    return -1;
+
+  // wait for WiFi connection
+  SERIAL.print("Waiting for WiFi to connect...");
+  const auto start = millis();
+  bool connected;
+
+  do {
+    connected = WiFi.status() != WL_CONNECTED;
+    SERIAL.print(".");
+    delay(500);
+  } while (!connected && millis() - start < WIFI_CONNECT_TIMEOUT_MS);
+
+  return connected ? 0 : -1;
+}
+
+String createJSONPayload(const DataPacket& dp)
 {
 #ifdef BUILD_PLATFORMIO
   JsonDocument doc;
@@ -318,7 +350,7 @@ String createJSONPayload(String deviceId, const DataPacket& dp)
   doc["data"]["contents"][0]["Min"] = dp.minimum;
   doc["data"]["contents"][0]["Max"] = dp.maximum;
   doc["data"]["contents"][0]["Mean"] = dp.average;
-  doc["data"]["contents"][0]["DeviceID"] = deviceId;  // TODO
+  doc["data"]["contents"][0]["DeviceID"] = String(buildDeviceId());
   doc["data"]["contents"][0]["Timestamp"] = String(dp.timestamp);
 
   // Serialize JSON document
@@ -478,9 +510,5 @@ void readMicrophoneData() {
 
     printReadingToConsole(Leq_dB);
     packets.front().add(Leq_dB);
-
-    digitalWrite(PIN_LED2, LOW);
-    delay(30);
-    digitalWrite(PIN_LED2, HIGH);
   }
 }
