@@ -327,7 +327,7 @@ int tryWifiConnection()
   bool connected;
 
   do {
-    connected = WiFi.status() != WL_CONNECTED;
+    connected = WiFi.status() == WL_CONNECTED;
     SERIAL.print(".");
     delay(500);
   } while (!connected && millis() - start < WIFI_CONNECT_TIMEOUT_MS);
