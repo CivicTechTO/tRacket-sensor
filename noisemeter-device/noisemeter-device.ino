@@ -509,7 +509,7 @@ void readMicrophoneData() {
     Leq_sum_sqr = 0;
     Leq_samples = 0;
 
-    printReadingToConsole(Leq_dB);
     packets.front().add(Leq_dB);
+    printReadingToConsole(Leq_dB);
   }
 }
