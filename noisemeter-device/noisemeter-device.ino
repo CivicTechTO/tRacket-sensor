@@ -29,6 +29,7 @@
 #include "ota-update.h"
 #include "UUID/UUID.h"
 
+#include <cmath>
 #include <cstdint>
 #include <list>
 #include <iterator>
@@ -265,7 +266,7 @@ void printArray(float arr[], unsigned long length) {
 
 void printReadingToConsole(double reading) {
   String output = "";
-  output += reading;
+  output += std::lround(reading);
   output += "dB";
 
   const auto currentCount = packets.front().count;
@@ -347,9 +348,9 @@ String createJSONPayload(const DataPacket& dp)
   doc["data"]["type"] = "comand";
   doc["data"]["version"] = "1.0";
   doc["data"]["contents"][0]["Type"] = "Noise";
-  doc["data"]["contents"][0]["Min"] = dp.minimum;
-  doc["data"]["contents"][0]["Max"] = dp.maximum;
-  doc["data"]["contents"][0]["Mean"] = dp.average;
+  doc["data"]["contents"][0]["Min"] = std::lround(dp.minimum);
+  doc["data"]["contents"][0]["Max"] = std::lround(dp.maximum);
+  doc["data"]["contents"][0]["Mean"] = std::lround(dp.average);
   doc["data"]["contents"][0]["DeviceID"] = String(buildDeviceId());
   doc["data"]["contents"][0]["Timestamp"] = String(dp.timestamp);
 
@@ -508,7 +509,7 @@ void readMicrophoneData() {
     Leq_sum_sqr = 0;
     Leq_samples = 0;
 
-    printReadingToConsole(Leq_dB);
     packets.front().add(Leq_dB);
+    printReadingToConsole(Leq_dB);
   }
 }
