@@ -11,7 +11,6 @@
 #include <ArduinoJson.h> // https://arduinojson.org/
 #include <ArduinoJson.hpp>
 #include <HTTPClient.h>
-#include <Ticker.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <dummy.h> // ESP32 core
@@ -20,6 +19,7 @@
 #include <esp_efuse_table.h>
 
 #include "access-point.h"
+#include "blinker.h"
 #include "board.h"
 #include "data-packet.h"
 #include "sos-iir-filter.h"
@@ -33,6 +33,7 @@
 #include <cstdint>
 #include <list>
 #include <iterator>
+#include <optional>
 
 #if defined(BUILD_PLATFORMIO) && defined(BOARD_ESP32_PCB)
 HWCDC USBSerial;
@@ -159,12 +160,8 @@ void setup() {
   // Run the access point if it is requested or if there are no valid credentials.
   if (isAPNeeded) {
     AccessPoint ap (saveNetworkCreds);
-    Ticker blink;
+    Blinker bl (500);
 
-    blink.attach_ms(500, [] {
-      static bool state = HIGH;
-      digitalWrite(PIN_LED1, state ^= HIGH);
-    });
     ap.run(); // does not return
   }
 
@@ -198,15 +195,23 @@ void loop() {
     }
 
     if (WiFi.status() == WL_CONNECTED) {
-      packets.remove_if([](const auto& pkt) {
-        if (pkt.count > 0) {
-          const auto payload = createJSONPayload(pkt);
-          WiFiClientSecure client;
-          return uploadData(&client, payload) == 0;
-        } else {
-          return true; // Discard empty packets
-        }
-      });
+      {
+        std::optional<Blinker> bl;
+
+        // Only blink if there's multiple packets to send
+        if (++packets.cbegin() != packets.cend())
+          bl.emplace(300);
+
+        packets.remove_if([](const auto& pkt) {
+          if (pkt.count > 0) {
+            const auto payload = createJSONPayload(pkt);
+            WiFiClientSecure client;
+            return uploadData(&client, payload) == 0;
+          } else {
+            return true; // Discard empty packets
+          }
+        });
+      }
 
 #if defined(BOARD_ESP32_PCB)
       // We have WiFi: also check for software updates
@@ -218,16 +223,13 @@ void loop() {
         if (ota.available()) {
           SERIAL.print(ota.version);
           SERIAL.println(" available!");
-          digitalWrite(PIN_LED1, LOW);
 
           if (ota.download()) {
             SERIAL.println("Download success! Restarting...");
-            digitalWrite(PIN_LED1, HIGH);
             delay(1000);
             ESP.restart();
           } else {
             SERIAL.println("Update download failed.");
-            digitalWrite(PIN_LED1, HIGH);
           }
         } else {
           SERIAL.println("No update available.");
