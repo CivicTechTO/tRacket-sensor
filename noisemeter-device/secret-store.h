@@ -1,15 +1,15 @@
+#include <esp_hmac.h>
 #include <mbedtls/aes.h>
 
 class Secret
 {
-  constexpr static int BITS = 128;
+  constexpr static int BITS = 256; // do not change
   mbedtls_aes_context aes;
-  unsigned char key[BITS / 8];
+  uint8_t hmac[BITS / 8];
 
-  void generateKey() {
-    const auto id = String(DEVICE_ID);
-    for (unsigned i = 0; i < sizeof(key); ++i)
-      key[i] = id[i % id.length()];
+  bool generateKey(String key) {
+    const auto result = esp_hmac_calculate(HMAC_KEY4, key.c_str(), key.length(), hmac);
+    return result == ESP_OK;
   }
 
   String process(String in, int mode) {
@@ -19,9 +19,9 @@ class Secret
   }
 
 public:
-  Secret() {
+  Secret(String key) {
     mbedtls_aes_init(&aes);
-    generateKey();
+    generateKey(key);
   }
 
   ~Secret() {
@@ -29,12 +29,12 @@ public:
   }
 
   String encrypt(String in) {
-    mbedtls_aes_setkey_enc(&aes, key, BITS);
+    mbedtls_aes_setkey_enc(&aes, hmac, BITS);
     return process(in, MBEDTLS_AES_ENCRYPT);
   }
 
   String decrypt(String in) {
-    mbedtls_aes_setkey_dec(&aes, key, BITS);
+    mbedtls_aes_setkey_dec(&aes, hmac, BITS);
     return process(in, MBEDTLS_AES_DECRYPT);
   }
 };

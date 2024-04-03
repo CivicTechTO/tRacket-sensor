@@ -283,8 +283,9 @@ void printReadingToConsole(double reading) {
 void saveNetworkCreds(WebServer& httpServer) {
   // Confirm that the form was actually submitted.
   if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
-    const auto ssid = Secret().encrypt(httpServer.arg("ssid"));
-    const auto psk = Secret().encrypt(httpServer.arg("psk"));
+    const auto id = String(buildDeviceId());
+    const auto ssid = Secret(id).encrypt(httpServer.arg("ssid"));
+    const auto psk = Secret(id).encrypt(httpServer.arg("psk"));
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
     if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk)) {
@@ -321,7 +322,8 @@ int tryWifiConnection()
   const auto psk = Creds.get(Storage::Entry::Passkey);
 
   WiFi.mode(WIFI_STA);
-  const auto stat = WiFi.begin(Secret().decrypt(ssid).c_str(), Secret().decrypt(psk).c_str());
+  const auto id = String(buildDeviceId());
+  const auto stat = WiFi.begin(Secret(id).decrypt(ssid).c_str(), Secret(id).decrypt(psk).c_str());
   if (stat == WL_CONNECT_FAILED)
     return -1;
 
