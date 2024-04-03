@@ -1,4 +1,7 @@
+#include "board.h"
 #include "secret-store.h"
+
+#if defined(BOARD_ESP32_PCB)
 
 #include <esp_hmac.h>
 #include <mbedtls/aes.h>
@@ -48,4 +51,22 @@ String decrypt(String key, String in)
 }
 
 } // namespace Secret
+
+#else // !defined(BOARD_ESP32_PCB)
+
+namespace Secret {
+
+String encrypt([[maybe_unused]] String key, String in)
+{
+    return in;
+}
+
+String decrypt([[maybe_unused]] String key, String in)
+{
+    return in;
+}
+
+} // namespace Secret
+
+#endif // defined(BOARD_ESP32_PCB)
 
