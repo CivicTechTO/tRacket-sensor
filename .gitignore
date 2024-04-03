@@ -13,5 +13,6 @@ hardware/pcb-*/sym-lib-table
 *.step
 *.lck
 *.sw*
+*.bin
 *.FCBak
 .pio

@@ -11,14 +11,16 @@
 #include <ArduinoJson.h> // https://arduinojson.org/
 #include <ArduinoJson.hpp>
 #include <HTTPClient.h>
-#include <UUID.h> // https://github.com/RobTillaart/UUID
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <dummy.h> // ESP32 core
 #include <driver/i2s.h> // ESP32 core
 #include <mbedtls/aes.h>
+#include <esp_efuse.h>
+#include <esp_efuse_table.h>
 
 #include "access-point.h"
+#include "blinker.h"
 #include "board.h"
 #include "data-packet.h"
 #include "sos-iir-filter.h"
@@ -26,10 +28,14 @@
 #include "secret.h"
 #include "secret-store.h"
 #include "storage.h"
+#include "ota-update.h"
+#include "UUID/UUID.h"
 
+#include <cmath>
 #include <cstdint>
-#include <forward_list>
+#include <list>
 #include <iterator>
+#include <optional>
 
 #if defined(BUILD_PLATFORMIO) && defined(BOARD_ESP32_PCB)
 HWCDC USBSerial;
@@ -40,8 +46,14 @@ static Storage Creds;
 // Uncomment these to disable WiFi and/or data upload
 //#define UPLOAD_DISABLED
 
+constexpr auto WIFI_CONNECT_TIMEOUT_MS = 20 * 1000;
+
 const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5;  // Upload every 5 mins
 // const unsigned long UPLOAD_INTERVAL_SEC = 30;  // Upload every 30 secs
+const unsigned long OTA_INTERVAL_SEC = 60 * 60 * 24; // Check for updates daily
+
+// Remember up to two weeks of measurement data.
+constexpr unsigned MAX_SAVED_PACKETS = 14 * 24 * 60 * 60 / UPLOAD_INTERVAL_SEC;
 
 //
 // Constants & Config
@@ -98,18 +110,19 @@ double Leq_sum_sqr = 0;
 double Leq_dB = 0;
 
 // Noise Level Readings
-static std::forward_list<DataPacket> packets;
+static std::list<DataPacket> packets;
 static Timestamp lastUpload = Timestamp::invalidTimestamp();
+static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
+
+static UUID buildDeviceId();
+static int tryWifiConnection();
 
 /**
  * Initialization routine.
  */
 void setup() {
   pinMode(PIN_LED1, OUTPUT);
-  pinMode(PIN_LED2, OUTPUT);
-
   digitalWrite(PIN_LED1, LOW);
-  digitalWrite(PIN_LED2, HIGH);
 
   // Grounding this pin (e.g. with a button) will force access open to start.
   // Useful as a "reset" button to overwrite currently saved credentials.
@@ -120,53 +133,49 @@ void setup() {
   // setCpuFrequencyMhz(80);  // It should run as low as 80MHz
 
   SERIAL.begin(115200);
+  delay(2000);
   SERIAL.println();
+  SERIAL.print("Noisemeter ");
+  SERIAL.print(NOISEMETER_VERSION);
+  SERIAL.print(' ');
+  SERIAL.println(buildDeviceId());
   SERIAL.println("Initializing...");
 
   Creds.begin();
-  SERIAL.print("ID: ");
-  SERIAL.println(Creds.get(Storage::Entry::UUID));
 
   initMicrophone();
   packets.emplace_front();
 
 #ifndef UPLOAD_DISABLED
-  // Run the access point if it is requested or if there are no valid credentials.
-  bool resetPressed = !digitalRead(PIN_BUTTON);
-  if (resetPressed || !Creds.valid() || Creds.get(Storage::Entry::SSID).isEmpty()) {
-    AccessPoint ap (saveNetworkCreds);
+  bool isAPNeeded = false;
 
+  if (!digitalRead(PIN_BUTTON) || !Creds.valid()) {
     SERIAL.print("Erasing stored credentials...");
     Creds.clear();
     SERIAL.println(" done.");
 
+    isAPNeeded = true;
+  } else if (tryWifiConnection() < 0 || Timestamp::synchronize() < 0) {
+    isAPNeeded = true;
+  }
+
+  // Run the access point if it is requested or if there are no valid credentials.
+  if (isAPNeeded) {
+    AccessPoint ap (saveNetworkCreds);
+    Blinker bl (500);
+
     ap.run(); // does not return
   }
 
-  // Valid credentials: Next step is to connect to the network.
-  SERIAL.print("Waiting for WiFi to connect...");
+  Timestamp now;
+  lastUpload = now;
+  lastOTACheck = now;
 
-  const auto ssid = Creds.get(Storage::Entry::SSID);
-  const auto psk = Creds.get(Storage::Entry::Passkey);
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(Secret().decrypt(ssid).c_str(), Secret().decrypt(psk).c_str());
-
-  // wait for WiFi connection
-  while (WiFi.status() != WL_CONNECTED) {
-    // TODO timeout
-    delay(500);
-  }
-
-  SERIAL.println("\nConnected to the WiFi network");
+  SERIAL.println("Connected to the WiFi network.");
   SERIAL.print("Local ESP32 IP: ");
   SERIAL.println(WiFi.localIP());
-
-  SERIAL.println("Waiting for NTP time sync...");
-  Timestamp::synchronize();
-  lastUpload = Timestamp();
   SERIAL.print("Current time: ");
-  SERIAL.println(lastUpload);
+  SERIAL.println(now);
 #endif // !UPLOAD_DISABLED
 
   digitalWrite(PIN_LED1, HIGH);
@@ -176,10 +185,9 @@ void loop() {
   readMicrophoneData();
 
 #ifndef UPLOAD_DISABLED
-  // Has it been at least the upload interval since we uploaded data?
   const auto now = Timestamp();
+
   if (lastUpload.secondsBetween(now) >= UPLOAD_INTERVAL_SEC) {
-    lastUpload = now;
     packets.front().timestamp = now;
 
     if (WiFi.status() != WL_CONNECTED) {
@@ -189,21 +197,63 @@ void loop() {
     }
 
     if (WiFi.status() == WL_CONNECTED) {
-      packets.remove_if([](const auto& pkt) {
-        const auto payload = createJSONPayload(DEVICE_ID, pkt);
+      {
+        std::optional<Blinker> bl;
 
-        WiFiClientSecure client;
-        return uploadData(&client, payload) == 0;
-      });
+        // Only blink if there's multiple packets to send
+        if (++packets.cbegin() != packets.cend())
+          bl.emplace(300);
+
+        packets.remove_if([](const auto& pkt) {
+          if (pkt.count > 0) {
+            const auto payload = createJSONPayload(pkt);
+            WiFiClientSecure client;
+            return uploadData(&client, payload) == 0;
+          } else {
+            return true; // Discard empty packets
+          }
+        });
+      }
+
+#if defined(BOARD_ESP32_PCB)
+      // We have WiFi: also check for software updates
+      if (lastOTACheck.secondsBetween(now) >= OTA_INTERVAL_SEC) {
+        lastOTACheck = now;
+        SERIAL.println("Checking for updates...");
+
+        OTAUpdate ota (cert_ISRG_Root_X1);
+        if (ota.available()) {
+          SERIAL.print(ota.version);
+          SERIAL.println(" available!");
+
+          if (ota.download()) {
+            SERIAL.println("Download success! Restarting...");
+            delay(1000);
+            ESP.restart();
+          } else {
+            SERIAL.println("Update download failed.");
+          }
+        } else {
+          SERIAL.println("No update available.");
+        }
+      }
+#endif // BOARD_ESP32_PCB
     }
 
     if (!packets.empty()) {
-      SERIAL.print(std::distance(packets.cbegin(), packets.cend()));
+      const auto count = std::distance(packets.cbegin(), packets.cend());
+      SERIAL.print(count);
       SERIAL.println(" packets still need to be sent!");
+
+      if (count >= MAX_SAVED_PACKETS) {
+        SERIAL.println("Discarded a packet!");
+        packets.pop_back();
+      }
     }
 
     // Create new packet for next measurements
     packets.emplace_front();
+    lastUpload = now;
   }
 #endif // !UPLOAD_DISABLED
 }
@@ -220,7 +270,7 @@ void printArray(float arr[], unsigned long length) {
 
 void printReadingToConsole(double reading) {
   String output = "";
-  output += reading;
+  output += std::lround(reading);
   output += "dB";
 
   const auto currentCount = packets.front().count;
@@ -235,13 +285,11 @@ void saveNetworkCreds(WebServer& httpServer) {
   if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
     const auto ssid = Secret().encrypt(httpServer.arg("ssid"));
     const auto psk = Secret().encrypt(httpServer.arg("psk"));
-    UUID uuid; // generates random UUID
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
-    if (Creds.canStore(ssid) && Creds.canStore(psk)) {
+    if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk)) {
       Creds.set(Storage::Entry::SSID, ssid);
       Creds.set(Storage::Entry::Passkey, psk);
-      Creds.set(Storage::Entry::UUID, uuid.toCharArray());
       Creds.commit();
 
       ESP.restart(); // Software reset.
@@ -252,7 +300,46 @@ void saveNetworkCreds(WebServer& httpServer) {
   SERIAL.println("Error: Invalid network credentials!");
 }
 
-String createJSONPayload(String deviceId, const DataPacket& dp)
+UUID buildDeviceId()
+{
+  std::array<uint8_t, 6> mac;
+  esp_efuse_read_field_blob(ESP_EFUSE_MAC_FACTORY, mac.data(), /* bits */ mac.size() * 8);
+  return UUID(mac[0] | (mac[1] << 8) | (mac[2] << 16), mac[3] | (mac[4] << 8) | (mac[5] << 16));
+}
+
+int tryWifiConnection()
+{
+  //const auto ssid = Creds.get(Storage::Entry::SSID);
+
+  //if (ssid.isEmpty())
+  //  return -1;
+
+  //SERIAL.print("Ready to connect to ");
+  //SERIAL.println(ssid);
+
+  const auto ssid = Creds.get(Storage::Entry::SSID);
+  const auto psk = Creds.get(Storage::Entry::Passkey);
+
+  WiFi.mode(WIFI_STA);
+  const auto stat = WiFi.begin(Secret().decrypt(ssid).c_str(), Secret().decrypt(psk).c_str());
+  if (stat == WL_CONNECT_FAILED)
+    return -1;
+
+  // wait for WiFi connection
+  SERIAL.print("Waiting for WiFi to connect...");
+  const auto start = millis();
+  bool connected;
+
+  do {
+    connected = WiFi.status() == WL_CONNECTED;
+    SERIAL.print(".");
+    delay(500);
+  } while (!connected && millis() - start < WIFI_CONNECT_TIMEOUT_MS);
+
+  return connected ? 0 : -1;
+}
+
+String createJSONPayload(const DataPacket& dp)
 {
 #ifdef BUILD_PLATFORMIO
   JsonDocument doc;
@@ -264,10 +351,10 @@ String createJSONPayload(String deviceId, const DataPacket& dp)
   doc["data"]["type"] = "comand";
   doc["data"]["version"] = "1.0";
   doc["data"]["contents"][0]["Type"] = "Noise";
-  doc["data"]["contents"][0]["Min"] = dp.minimum;
-  doc["data"]["contents"][0]["Max"] = dp.maximum;
-  doc["data"]["contents"][0]["Mean"] = dp.average;
-  doc["data"]["contents"][0]["DeviceID"] = deviceId;  // TODO
+  doc["data"]["contents"][0]["Min"] = std::lround(dp.minimum);
+  doc["data"]["contents"][0]["Max"] = std::lround(dp.maximum);
+  doc["data"]["contents"][0]["Mean"] = std::lround(dp.average);
+  doc["data"]["contents"][0]["DeviceID"] = String(buildDeviceId());
   doc["data"]["contents"][0]["Timestamp"] = String(dp.timestamp);
 
   // Serialize JSON document
@@ -425,11 +512,7 @@ void readMicrophoneData() {
     Leq_sum_sqr = 0;
     Leq_samples = 0;
 
-    printReadingToConsole(Leq_dB);
     packets.front().add(Leq_dB);
-
-    digitalWrite(PIN_LED2, LOW);
-    delay(30);
-    digitalWrite(PIN_LED2, HIGH);
+    printReadingToConsole(Leq_dB);
   }
 }
