@@ -18,11 +18,32 @@ const char* API_TOKEN = "Your API token here";
 
 ## Code compiling and upload
 
+### PlatformIO
+
+1. [Install PlatformIO](https://platformio.org/install).
+
+2. Run `pio run` to compile for the PCB. A breadboard target is available too: `pio run -e esp32-breadboard`.
+
+3. Run `pio run -t upload` to upload to the device (this also compiles the code if there have been any changes).
+
+### Arduino
+
 1. Install the Arduino IDE and [follow these instructions](https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html) to add support for ESP32 microcontrollers.
 
 2. Under "Tools" > "Board: " > "ESP32 Arduino", select either "ESP32C3 Dev Module" for the PCB boards or "ESP32-WROOM-DA Module" for the ESP32 breadboard prototype.
 
 3. Compile the sketch and upload it to the device.
+
+## HMAC encryption key
+
+Data stored on the device (e.g. WiFi credentials) are encrypted with an "eFuse" key. This key can only be written once, and is not be read or written after that. 
+
+Using PlatformIO:
+
+```bash
+dd if=/dev/urandom of=hmac_key bs=1 count=32
+pio pkg exec -- espefuse.py --port /dev/ttyACM0 burn_key BLOCK4 hmac_key HMAC_UP
+```
 
 # Operating Instructions:
 
