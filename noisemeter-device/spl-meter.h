@@ -2,6 +2,7 @@
 #define SPL_METER_H
 
 #include <cstdint>
+#include <optional>
 
 #define SAMPLE_RATE 48000  // Hz, fixed to design of IIR filters
 #define SAMPLE_BITS 32     // bits
@@ -36,7 +37,7 @@ struct SPLMeter
     void initMicrophone() noexcept;
 
     // Reads data to Microphones buffer
-    void readMicrophoneData() noexcept;
+    std::optional<float> readMicrophoneData() noexcept;
 
     // Buffer for block of samples
     SampleBuffer samples;

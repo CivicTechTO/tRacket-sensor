@@ -23,18 +23,12 @@
 // Customize these values from microphone datasheet
 #define MIC_SENSITIVITY -26    // dBFS value expected at MIC_REF_DB (Sensitivity value from datasheet)
 #define MIC_REF_DB 94.0        // Value at which point sensitivity is specified in datasheet (dB)
-#define MIC_OVERLOAD_DB 120.0  // dB - Acoustic overload point
-#define MIC_NOISE_DB 29        // dB - Noise floor
 #define MIC_BITS 24            // valid number of bits in I2S data
 #define MIC_CONVERT(s) (s >> (SAMPLE_BITS - MIC_BITS))
 
 //
 // Sampling
 //
-#define SAMPLE_RATE 48000  // Hz, fixed to design of IIR filters
-#define SAMPLE_BITS 32     // bits
-#define SAMPLE_T int32_t
-#define SAMPLES_SHORT (SAMPLE_RATE / 8)  // ~125ms
 #define SAMPLES_LEQ (SAMPLE_RATE * LEQ_PERIOD)
 #define DMA_BANK_SIZE (SAMPLES_SHORT / 16)
 #define DMA_BANKS 32
@@ -80,7 +74,7 @@ void SPLMeter::initMicrophone() noexcept
   i2s_read(I2S_PORT, samples, sizeof(samples), &bytes_read, portMAX_DELAY);
 }
 
-void SPLMeter::readMicrophoneData() noexcept
+std::optional<float> SPLMeter::readMicrophoneData() noexcept
 {
   // Block and wait for microphone values from I2S
   //
@@ -124,14 +118,13 @@ void SPLMeter::readMicrophoneData() noexcept
   // When we gather enough samples, calculate new Leq value
   if (Leq_samples >= SAMPLE_RATE * LEQ_PERIOD) {
     double Leq_RMS = sqrt(Leq_sum_sqr / Leq_samples);
-    Leq_dB = MIC_OFFSET_DB + MIC_REF_DB + 20 * log10(Leq_RMS / MIC_REF_AMPL);
     Leq_sum_sqr = 0;
     Leq_samples = 0;
 
-    if (Leq_dB < minReading) minReading = Leq_dB;
-    if (Leq_dB > maxReading) maxReading = Leq_dB;
-    sumReadings += Leq_dB;
-    numberOfReadings++;
+    Leq_dB = MIC_OFFSET_DB + MIC_REF_DB + 20 * log10(Leq_RMS / MIC_REF_AMPL);
+    return Leq_dB;
+  } else {
+    return {};
   }
 }
 
