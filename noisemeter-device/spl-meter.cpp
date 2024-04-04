@@ -13,8 +13,6 @@
 //
 #define LEQ_PERIOD 1           // second(s)
 #define WEIGHTING A_weighting  // Also avaliable: 'C_weighting' or 'None' (Z_weighting)
-#define LEQ_UNITS "LAeq"       // customize based on above weighting used
-#define DB_UNITS "dBA"         // customize based on above weighting used
 
 // NOTE: Some microphones require at least DC-Blocker filter
 #define MIC_EQUALIZER SPH0645LM4H_B_RB  // See below for defined IIR filters or set to 'None' to disable
@@ -70,21 +68,12 @@ void SPLMeter::initMicrophone() noexcept
   i2s_set_pin(I2S_PORT, &pin_config);
 
   // Discard first block, microphone may need time to startup and settle.
-  size_t bytes_read;
-  i2s_read(I2S_PORT, samples, sizeof(samples), &bytes_read, portMAX_DELAY);
+  i2sRead();
 }
 
 std::optional<float> SPLMeter::readMicrophoneData() noexcept
 {
-  // Block and wait for microphone values from I2S
-  //
-  // Data is moved from DMA buffers to our 'samples' buffer by the driver ISR
-  // and when there is requested ammount of data, task is unblocked
-  //
-  // Note: i2s_read does not care it is writing in float[] buffer, it will write
-  //       integer values to the given address, as received from the hardware peripheral.
-  size_t bytes_read;
-  i2s_read(I2S_PORT, samples, sizeof(samples), &bytes_read, portMAX_DELAY);
+  i2sRead();
 
   // Convert (including shifting) integer microphone values to floats,
   // using the same buffer (assumed sample size is same as size of float),
@@ -95,10 +84,10 @@ std::optional<float> SPLMeter::readMicrophoneData() noexcept
 
   // Apply equalization and calculate Z-weighted sum of squares,
   // writes filtered samples back to the same buffer.
-  sum_sqr_SPL = MIC_EQUALIZER.filter(samples, samples, SAMPLES_SHORT);
+  const auto sum_sqr_SPL = MIC_EQUALIZER.filter(samples, samples, SAMPLES_SHORT);
 
   // Apply weighting and calucate weigthed sum of squares
-  sum_sqr_weighted = WEIGHTING.filter(samples, samples, SAMPLES_SHORT);
+  const auto sum_sqr_weighted = WEIGHTING.filter(samples, samples, SAMPLES_SHORT);
 
   // Calculate dB values relative to MIC_REF_AMPL and adjust for microphone reference
   double short_RMS = sqrt(double(sum_sqr_SPL) / SAMPLES_SHORT);
@@ -121,10 +110,22 @@ std::optional<float> SPLMeter::readMicrophoneData() noexcept
     Leq_sum_sqr = 0;
     Leq_samples = 0;
 
-    Leq_dB = MIC_OFFSET_DB + MIC_REF_DB + 20 * log10(Leq_RMS / MIC_REF_AMPL);
-    return Leq_dB;
+    return MIC_OFFSET_DB + MIC_REF_DB + 20 * log10(Leq_RMS / MIC_REF_AMPL); // Leq dB
   } else {
     return {};
   }
+}
+
+void SPLMeter::i2sRead()
+{
+  // Block and wait for microphone values from I2S
+  //
+  // Data is moved from DMA buffers to our 'samples' buffer by the driver ISR
+  // and when there is requested ammount of data, task is unblocked
+  //
+  // Note: i2s_read does not care it is writing in float[] buffer, it will write
+  //       integer values to the given address, as received from the hardware peripheral.
+  size_t bytes_read;
+  i2s_read(I2S_PORT, samples, sizeof(samples), &bytes_read, portMAX_DELAY);
 }
 

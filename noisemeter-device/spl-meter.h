@@ -15,32 +15,24 @@
 static_assert(sizeof(float) == sizeof(SAMPLE_T));
 using SampleBuffer alignas(4) = float[SAMPLES_SHORT];
 
-struct SPLMeter
+class SPLMeter
 {
-    // Sampling Buffers & accumulators
-    uint32_t Leq_samples = 0;
-    double Leq_sum_sqr = 0;
-    double Leq_dB = 0;
-    
-    // Noise Level Readings
-    int numberOfReadings = 0;
-    float minReading = MIC_OVERLOAD_DB;
-    float maxReading = MIC_NOISE_DB;
-    float sumReadings = 0;
-
-    // Sum of squares of mic samples, after Equalizer filter
-    float sum_sqr_SPL;
-    // Sum of squares of weighted mic samples
-    float sum_sqr_weighted;
-
+public:
     // Prepares I2S Driver and mic config.
     void initMicrophone() noexcept;
 
     // Reads data to Microphones buffer
     std::optional<float> readMicrophoneData() noexcept;
 
+private:
     // Buffer for block of samples
     SampleBuffer samples;
+
+    // Sampling accumulators
+    unsigned Leq_samples = 0;
+    double Leq_sum_sqr = 0;
+
+    void i2sRead();
 };
 
 #endif // SPL_METER_H
