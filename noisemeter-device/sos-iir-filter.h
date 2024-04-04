@@ -20,7 +20,8 @@
 #ifndef SOS_IIR_FILTER_H
 #define SOS_IIR_FILTER_H
 
-#include <stdint.h>
+#include <cstdint>
+#include <cstring>
 
 struct SOS_Coefficients {
   float b1;
