@@ -1,3 +1,5 @@
+/// @file
+/// @brief Main firmware code
 /* noisemeter-device - Firmware for CivicTechTO's Noisemeter Device
  * Copyright (C) 2024  Clyne Sullivan, Nick Barnard
  *
@@ -47,84 +49,162 @@
 HWCDC USBSerial;
 #endif
 
-static Storage Creds;
-
 // Uncomment these to disable WiFi and/or data upload
 //#define UPLOAD_DISABLED
 
+/** Maximum number of milliseconds to wait for successful WiFi connection. */
 constexpr auto WIFI_CONNECT_TIMEOUT_MS = 20 * 1000;
-
-const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5;  // Upload every 5 mins
-// const unsigned long UPLOAD_INTERVAL_SEC = 30;  // Upload every 30 secs
+/** Specifies how frequently to upload data points to the server. */
+const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5; // Upload every 5 mins
+/** Specifies how frequently to check for OTA updates from our server. */
 const unsigned long OTA_INTERVAL_SEC = 60 * 60 * 24; // Check for updates daily
-
-// Remember up to two weeks of measurement data.
+/** Maximum number of data packets to retain when WiFi is unavailable. */
 constexpr unsigned MAX_SAVED_PACKETS = 14 * 24 * 60 * 60 / UPLOAD_INTERVAL_SEC;
 
 //
 // Constants & Config
 //
+/** Sample size duration to use for Leq calculation. */
 #define LEQ_PERIOD 1           // second(s)
+/** Specifies the type of weighting to use for decibel calculation. */
 #define WEIGHTING A_weighting  // Also avaliable: 'C_weighting' or 'None' (Z_weighting)
-#define LEQ_UNITS "LAeq"       // customize based on above weighting used
-#define DB_UNITS "dBA"         // customize based on above weighting used
-#define USE_DISPLAY 0
+/** Specifies the microphone's equalization filter. */
+#define MIC_EQUALIZER SPH0645LM4H_B_RB  // See defined IIR filters or set to 'None' to disable
+/** Linear calibration offset to apply to calculated decibel values. */
+#define MIC_OFFSET_DB 0        // Default offset (sine-wave RMS vs. dBFS). Modify this value for linear calibration
 
-// NOTE: Some microphones require at least DC-Blocker filter
-#define MIC_EQUALIZER SPH0645LM4H_B_RB  // See below for defined IIR filters or set to 'None' to disable
-#define MIC_OFFSET_DB 0                 // Default offset (sine-wave RMS vs. dBFS). Modify this value for linear calibration
-
-// Customize these values from microphone datasheet
-#define MIC_SENSITIVITY -26    // dBFS value expected at MIC_REF_DB (Sensitivity value from datasheet)
-#define MIC_REF_DB 94.0        // Value at which point sensitivity is specified in datasheet (dB)
-#define MIC_OVERLOAD_DB 120.0  // dB - Acoustic overload point
-#define MIC_NOISE_DB 29        // dB - Noise floor
-#define MIC_BITS 24            // valid number of bits in I2S data
+/** dBFS value expected at MIC_REF_DB (Sensitivity value from datasheet). */
+#define MIC_SENSITIVITY -26
+/** Value at which point sensitivity is specified in datasheet (dB). */
+#define MIC_REF_DB 94.0
+/** Acoustic overload point (dB). */
+#define MIC_OVERLOAD_DB 120.0
+/** Noise floor (dB). */
+#define MIC_NOISE_DB 29
+/** Valid number of bits in a received I2S data sample. */
+#define MIC_BITS 24
+/** Drops unused bits from a raw microphone reading. */
 #define MIC_CONVERT(s) (s >> (SAMPLE_BITS - MIC_BITS))
 
-// Calculate reference amplitude value at compile time
+/** Reference amplitude level for the microphone. */
 constexpr double MIC_REF_AMPL = pow(10, double(MIC_SENSITIVITY) / 20) * ((1 << (MIC_BITS - 1)) - 1);
 
 //
 // Sampling
 //
-#define SAMPLE_RATE 48000  // Hz, fixed to design of IIR filters
-#define SAMPLE_BITS 32     // bits
+/** Sample rate for driving the microphone. IIR Filters depend on this value. */
+#define SAMPLE_RATE 48000
+/** Number of bits in a microphone sample. */
+#define SAMPLE_BITS 32
+/** Data type to use to store a microphone sample. */
 #define SAMPLE_T int32_t
+/** Number of samples to process in a batch microphone read. */
 #define SAMPLES_SHORT (SAMPLE_RATE / 8)  // ~125ms
+/** Number of samples to be collected in an LEQ_PERIOD. */
 #define SAMPLES_LEQ (SAMPLE_RATE * LEQ_PERIOD)
+/** Size of DMA bank for I2S reading. */
 #define DMA_BANK_SIZE (SAMPLES_SHORT / 16)
+/** Number of DMA bank to allocate to I2S. */
 #define DMA_BANKS 32
 
-// Data we push to 'samples_queue'
+/**
+ * Stores accumulators for decibel calculations.
+ */
 struct sum_queue_t {
-  // Sum of squares of mic samples, after Equalizer filter
+  /** Sum of squares of mic samples, after Equalizer filter */
   float sum_sqr_SPL;
-  // Sum of squares of weighted mic samples
+  /** Sum of squares of weighted mic samples */
   float sum_sqr_weighted;
 };
 
 // Static buffer for block of samples
 static_assert(sizeof(float) == sizeof(int32_t));
+/** @typedef alignas
+ * This is actually a typedef for SampleBuffer, an aligned array of floats. */
 using SampleBuffer alignas(4) = float[SAMPLES_SHORT];
+/** Single instance of a SampleBuffer. */
 static SampleBuffer samples;
 
-// Sampling Buffers & accumulators
+/** Storage instance to manage stored credentials. */
+static Storage Creds;
+
+/** Stores accumulators for decibel calculations. */
 sum_queue_t q;
+/** Number of samples included within current calculation. */
 uint32_t Leq_samples = 0;
+/** Sum of squares for current Leq calculation. */
 double Leq_sum_sqr = 0;
+/** Decibel value for current Leq calculation. */
 double Leq_dB = 0;
 
-// Noise Level Readings
+/** Linked list of completed data packets.
+ * This list should only grow if WiFi is unavailable. */
 static std::list<DataPacket> packets;
+/** Tracks when the last measurement upload occurred. */
 static Timestamp lastUpload = Timestamp::invalidTimestamp();
+/** Tracks when the last OTA update check occurred. */
 static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
 
-static UUID buildDeviceId();
-static int tryWifiConnection();
+/**
+ * Outputs an array of floating-point values over serial.
+ * @deprecated Unused and unlikely to be used in the future
+ * @param arr The array to output
+ * @param length Number of values from arr to display
+ */
+void printArray(float arr[], unsigned long length);
 
 /**
- * Initialization routine.
+ * Outputs the given decibel reading over serial.
+ * @param reading The decibel reading to display
+ */
+void printReadingToConsole(double reading);
+
+/**
+ * Callback for AccessPoint that verifies and stores the submitted credentials.
+ * @param httpServer HTTP server which served the setup form
+ */
+void saveNetworkCreds(WebServer& httpServer);
+
+/**
+ * Generates a UUID that is unique to the hardware running this firmware.
+ * @return A device-unique UUID object
+ */
+UUID buildDeviceId();
+
+/**
+ * Attempt to establish a WiFi connected using the stored credentials.
+ * @return Zero on success or a negative number on failure
+ */
+int tryWifiConnection();
+
+/**
+ * Creates a serialized JSON payload containing the given data.
+ * @param dp DataPacket containing the data to serialize
+ * @return String containing the resulting JSON payload
+ */
+String createJSONPayload(const DataPacket& dp);
+
+/**
+ * Upload a serialized JSON payload to our server.
+ * @param client Pointer to newly allocated WiFiClientSecure object
+ * @param json JSON payload to be sent
+ * @return Zero on success or a negative number on failure
+ */
+int uploadData(WiFiClientSecure* client, String json);
+
+/**
+ * Prepares the I2S peripheral for reading microphone data.
+ */
+void initMicrophone();
+
+/**
+ * Reads a set number of samples from the microphone and factors them into
+ * our decibel calculations and statistics.
+ */
+void readMicrophoneData();
+
+/**
+ * Firmware entry point and initialization routine.
  */
 void setup() {
   pinMode(PIN_LED1, OUTPUT);
@@ -187,6 +267,10 @@ void setup() {
   digitalWrite(PIN_LED1, HIGH);
 }
 
+/**
+ * Main loop for the firmware.
+ * This function is run continuously, getting called within an infinite loop.
+ */
 void loop() {
   readMicrophoneData();
 

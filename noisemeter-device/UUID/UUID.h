@@ -1,3 +1,6 @@
+/// @file
+/// @brief Arduino Library for generating UUID's
+/// @author Rob Tillaart
 #pragma once
 //
 //    FILE: UUID.h
@@ -31,22 +34,36 @@ const uint8_t UUID_MODE_RANDOM   = 1;
 class UUID : public Printable
 {
 public:
+  /**
+   * Generates a new UUID using the given seeds.
+   * @param s1 Seed 1
+   * @param s2 Seed 2
+   */
   explicit UUID(uint32_t s1 = 1, uint32_t s2 = 2);
 
-  //  generate a new UUID
+  /** Generate a new UUID */
   void     generate();
-  //  make a UUID string
+  /**
+   * Make a UUID string
+   * @return String representation of UUID
+   */
   char *   toCharArray();
+  /**
+   * Implicit conversion to a String object.
+   */
   operator String() {
     return toCharArray();
   }
 
   //  MODE
+  /** Sets UUID generation to Variant4 mode. */
   void     setVariant4Mode();
+  /** Sets UUID generation to Random mode. */
   void     setRandomMode();
+  /** Get the current generation mode. */
   uint8_t  getMode();
 
-  //  Printable interface
+  /** Printable interface */
   size_t   printTo(Print& p) const;
 
 

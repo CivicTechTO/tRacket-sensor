@@ -1,3 +1,5 @@
+/// @file
+/// @brief Captive portal implementation for device setup.
 /* noisemeter-device - Firmware for CivicTechTO's Noisemeter Device
  * Copyright (C) 2024  Clyne Sullivan, Nick Barnard
  *
@@ -20,34 +22,62 @@
 #include <DNSServer.h>
 #include <WebServer.h>
 
+/**
+ * @brief Manages the WiFi access point, captive portal, and user setup form.
+ *
+ * The access point is used to provide the user with a way to configure and set
+ * up their device. After the user connects to the network using the fixed SSID
+ * and passkey, they will be redirected to a setup form via a captive portal.
+ * The form collects the user's WiFi credentials and any other needed
+ * information (e.g. email address for first-time setup), then allows the
+ * firmware to store the submitted response and connect to the internet.
+ *
+ * At the moment, once the access point is started it cannot be exited. The
+ * firmware needs to do a software reset after handling a form submission to
+ * begin normal operation.
+ */
 class AccessPoint : public RequestHandler
 {
+    /** Hard-coded SSID for the access point. */
     static constexpr auto SSID = "Noise meter";
+    /** Hard-coded passkey for the access point. */
     static constexpr auto Passkey = "noisemeter";
 
 public:
-    // Begins hosting a WiFi access point with the credentials form as a
-    // captive portal.
+    /**
+     * Starts the WiFi access point using the fixed credentials.
+     * @param func Callback to handle user setup form submission.
+     */
     AccessPoint(void (*func)(WebServer&)):
         server(80),
         onCredentialsReceived(func) {}
 
-    // Enters an infinite loop to handle the access point and web server.
+    /**
+     * Enters an infinite loop to handle the access point and web server.
+     */
     [[noreturn]] void run();
 
-    // RequestHandler implementation for web server functionality.
-    bool canHandle(HTTPMethod, String) override;
-    bool handle(WebServer&, HTTPMethod, String) override;
-
 private:
+    /** DNS server object for captive portal redirection. */
     DNSServer dns;
+    /** Web server object for running the setup form. */
     WebServer server;
+    /** Callback for setup form completion. */
     void (*onCredentialsReceived)(WebServer&);
 
+    /** Hard-coded IP address for the ESP32 when hosting the access point. */
     static const IPAddress IP;
+    /** Hard-coded netmask for access point configuration. */
     static const IPAddress Netmask;
+    /** Hard-coded HTML for the setup form page. */
     static const char *htmlSetup;
+    /** Hard-coded HTML for the page shown after completing the form. */
     static const char *htmlSubmit;
+
+    /** Determines which HTTP requests should be handled. */
+    bool canHandle(HTTPMethod, String) override;
+    /** Handles requests by redirecting to the setup page. */
+    bool handle(WebServer&, HTTPMethod, String) override;
 };
 
 #endif // ACCESS_POINT_H

@@ -1,3 +1,5 @@
+/// @file
+/// @brief Utility to indicate status with the board's LED.
 /* noisemeter-device - Firmware for CivicTechTO's Noisemeter Device
  * Copyright (C) 2024  Clyne Sullivan
  *
@@ -21,23 +23,38 @@
 
 #include <Ticker.h>
 
+/**
+ * Automates the blinking of the board's LED indicator.
+ */
 class Blinker : public Ticker
 {
 public:
+  /**
+   * Starts a timer to toggle the LED.
+   * @param ms Milliseconds to delay between toggles.
+   */
   Blinker(unsigned ms):
     Ticker()
   {
     attach_ms(ms, callback, &state);
   }
 
+  /**
+   * Detaches the LED toggle routine.
+   */
   ~Blinker() {
     // turn off the LED
     digitalWrite(PIN_LED1, HIGH);
   }
 
 private:
+  /** State of the LED */
   int state = HIGH;
 
+  /**
+   * Ticker callback to toggle the LED every time interval.
+   * @param st Pointer to the active Blinker instance's state
+   */
   static void callback(int *st) {
     digitalWrite(PIN_LED1, *st);
     *st ^= HIGH;

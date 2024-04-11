@@ -1,3 +1,5 @@
+/// @file
+/// @brief Management of timestamping and NTP synchronization
 /* noisemeter-device - Firmware for CivicTechTO's Noisemeter Device
  * Copyright (C) 2024  Clyne Sullivan, Nick Barnard
  *
@@ -20,18 +22,34 @@
 #include <Arduino.h>
 #include <ctime>
 
+/** Maximum number of milliseconds to wait for NTP sync to succeed. */
 constexpr auto NTP_CONNECT_TIMEOUT_MS = 20 * 1000;
 
+/**
+ * Timestamping facility that uses NTP to provide accurate date and time.
+ */
 class Timestamp
 {
 public:
+    /**
+     * Creates a new timestamp.
+     * @param tm_ time_t value for timestamp, default to now.
+     */
     Timestamp(std::time_t tm_ = std::time(nullptr)):
         tm(tm_) {}
 
+    /**
+     * Determines if the timestamp is valid.
+     * @return True if the timestamp is valid.
+     */
     bool valid() const noexcept {
         return tm >= 8 * 3600 * 2;
     }
 
+    /**
+     * Converts the timestamp to a human-readable string.
+     * Useful for serialization and timestamping of data packets.
+     */
     operator String() const noexcept {
         char tsbuf[32];
         const auto timeinfo = std::gmtime(&tm);
@@ -40,10 +58,22 @@ public:
         return success ? tsbuf : "(error)";
     }
 
+    /**
+     * Determines the number of seconds between this and the given timestamp.
+     * @param ts Timestamp to compare against
+     * @return Time difference in seconds as a floating point value
+     */
     auto secondsBetween(Timestamp ts) const noexcept {
         return std::difftime(ts.tm, tm);
     }
 
+    /**
+     * Synchronizes system time with an NTP time server.
+     * Requires the device to be connected to the general internet.
+     * Will eventually timeout if synchronization does not succeed.
+     * @see NTP_CONNECT_TIMEOUT_MS
+     * @return Zero on success or a negative number on failure
+     */
     static int synchronize() {
         configTime(0, 0, "pool.ntp.org");
 
@@ -58,11 +88,16 @@ public:
         return connected ? 0 : -1;
     }
 
+    /**
+     * Provides a timestamp that is guaranteed to be invalid.
+     * @return The invalid timestamp
+     */
     static Timestamp invalidTimestamp() {
         return Timestamp(0);
     }
 
 private:
+    /** Stores system time */
     std::time_t tm;
 };
 

@@ -1,3 +1,5 @@
+/// @file
+/// @brief Management for storage of collected data points
 /* noisemeter-device - Firmware for CivicTechTO's Noisemeter Device
  * Copyright (C) 2024  Clyne Sullivan
  *
@@ -21,10 +23,20 @@
 
 #include <algorithm>
 
+/**
+ * Stores data points included in an uploaded "measurement".
+ */
 struct DataPacket
 {
+    /**
+     * Creates a new DataPacket with sane defaults and an invalid timestamp.
+     */
     constexpr DataPacket() = default;
 
+    /**
+     * Factors a sample into the packet's data points.
+     * @param sample The dB sample value to add.
+     */
     void add(float sample) noexcept {
         count++;
         minimum = std::min(minimum, sample);
@@ -32,10 +44,23 @@ struct DataPacket
         average += (sample - average) / count;
     }
 
+    /** Number of data points added to this DataPacket. */
     int count = 0;
+
+    /** Minimum decibel value within the aggregated points. */
     float minimum = 999.f;
+
+    /** Maximum decibel value within the aggregated points. */
     float maximum = 0.f;
+
+    /** Average decibel value of the aggregated points. */
     float average = 0.f;
+
+    /**
+     * Timestamp to indicate the ending time point of this DataPacket's
+     * aggregation. This should be manually set before the DataPacket is
+     * uploaded to the server.
+     */
     Timestamp timestamp = Timestamp::invalidTimestamp();
 };
 

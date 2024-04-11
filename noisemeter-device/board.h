@@ -1,3 +1,9 @@
+/// @file
+/// @brief Pre-defined hardware configurations
+///
+/// Each supported board must have a defined section here to specify the
+/// hardware pins and peripherals being used. Selecting a board for
+/// compilation is done either through PlatformIO or config.h.
 /* noisemeter-device - Firmware for CivicTechTO's Noisemeter Device
  * Copyright (C) 2024  Clyne Sullivan, Nick Barnard
  *
@@ -23,19 +29,27 @@
 
 #if defined(BOARD_ESP32_PCB)
 
-// Pin definitions
+/** Pin number for the board's LED. */
 #define PIN_LED1    (0)
+/** Pin number for the board's second LED.
+ * @deprecated No longer used; production board only has one LED. */
 #define PIN_LED2    (3)
+/** Pin number for the board's factory reset button. */
 #define PIN_BUTTON  (1)
+/** Pin number for the microphone's WS pin. */
 #define I2S_WS      (4)
+/** Pin number for the microphone's clock pin. */
 #define I2S_SCK     (5)
+/** Pin number for the microphone's data out pin. */
 #define I2S_SD      (6)
 
-// ESP32C3 only has one I2S peripheral
+/** I2S peripheral instance to be used. */
 #define I2S_PORT    I2S_NUM_0
+/** Channel format for the incoming microphone data.
+ * There is only one microphone, so this must be either only left or right. */
 #define I2S_FORMAT  I2S_CHANNEL_FMT_ONLY_LEFT
 
-// Use USB for serial log
+/** Serial instance to use for logging output. */
 #define SERIAL      USBSerial
 
 #if defined(BUILD_PLATFORMIO)

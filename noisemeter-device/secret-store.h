@@ -1,3 +1,5 @@
+/// @file
+/// @brief Facilities for encrypting sensitive stored data
 /* noisemeter-device - Firmware for CivicTechTO's Noisemeter Device
  * Copyright (C) 2024  Clyne Sullivan
  *
@@ -21,7 +23,22 @@
 
 namespace Secret
 {
+    /**
+     * Encrypts the given string with the given key.
+     * Uses the HMAC peripheral to modify the key in a secure way.
+     * @param key Key to use for encryption.
+     * @param in String of data to be encrypted.
+     * @return The encrypted string.
+     */
     String encrypt(String key, String in);
+
+    /**
+     * Decrypts the given string with the given key.
+     * Uses the HMAC peripheral to modify the key in a secure way.
+     * @param key Key to use for decryption.
+     * @param in String of data to be decrypted.
+     * @return The decrypted string.
+     */
     String decrypt(String key, String in);
 }
 
