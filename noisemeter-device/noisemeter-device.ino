@@ -1,12 +1,18 @@
-/**
- * Civic Tech TO - Noisemeter Device (ESP32 Version) v1
- * Written by Clyne Sullivan and Nick Barnard.
- * Open source dB meter code taken from Ivan Kostoski (https://github.com/ikostoski/esp32-i2s-slm)
- * 
- * TODO:
- *  - Encrypt the stored credentials (simple XOR with a long key?).
- *  - Add second step to Access Point flow - to gather users email, generate a UUID and upload them to the cloud. UUID to be saved in EEPROM
- *  - Add functionality to reset the device periodically (eg every 24 hours)?
+/* noisemeter-device - Firmware for CivicTechTO's Noisemeter Device
+ * Copyright (C) 2024  Clyne Sullivan, Nick Barnard
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include <ArduinoJson.h> // https://arduinojson.org/
 #include <ArduinoJson.hpp>
