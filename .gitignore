@@ -1,9 +1,6 @@
-**/[Ss]ecrets*
-**/[Ss]ecret*
-**/[Cc]erts.h
-**/[Cc]ert.h
-
 noisemeter-device/config.h
+noisemeter-device/secret.h
+noisemeter-device/certs.h
 hardware/pcb-*/noisemeter-backups
 hardware/pcb-*/production
 hardware/pcb-*/fp-info-cache

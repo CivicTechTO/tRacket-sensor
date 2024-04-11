@@ -15,6 +15,7 @@
 #include <WiFiClientSecure.h>
 #include <dummy.h> // ESP32 core
 #include <driver/i2s.h> // ESP32 core
+#include <mbedtls/aes.h>
 #include <esp_efuse.h>
 #include <esp_efuse_table.h>
 
@@ -25,6 +26,7 @@
 #include "sos-iir-filter.h"
 #include "certs.h"
 #include "secret.h"
+#include "secret-store.h"
 #include "storage.h"
 #include "ota-update.h"
 #include "UUID/UUID.h"
@@ -281,8 +283,9 @@ void printReadingToConsole(double reading) {
 void saveNetworkCreds(WebServer& httpServer) {
   // Confirm that the form was actually submitted.
   if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
-    const auto ssid = httpServer.arg("ssid");
-    const auto psk = httpServer.arg("psk");
+    const auto id = String(buildDeviceId());
+    const auto ssid = Secret::encrypt(id, httpServer.arg("ssid"));
+    const auto psk = Secret::encrypt(id, httpServer.arg("psk"));
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
     if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk)) {
@@ -290,12 +293,7 @@ void saveNetworkCreds(WebServer& httpServer) {
       Creds.set(Storage::Entry::Passkey, psk);
       Creds.commit();
 
-      SERIAL.print("Saving ");
-      SERIAL.println(Creds);
-
-      SERIAL.println("Saved network credentials. Restarting...");
-      delay(2000);
-      ESP.restart();  // Software reset.
+      ESP.restart(); // Software reset.
     }
   }
 
@@ -312,16 +310,21 @@ UUID buildDeviceId()
 
 int tryWifiConnection()
 {
+  //const auto ssid = Creds.get(Storage::Entry::SSID);
+
+  //if (ssid.isEmpty())
+  //  return -1;
+
+  //SERIAL.print("Ready to connect to ");
+  //SERIAL.println(ssid);
+
   const auto ssid = Creds.get(Storage::Entry::SSID);
-
-  if (ssid.isEmpty())
-    return -1;
-
-  SERIAL.print("Ready to connect to ");
-  SERIAL.println(ssid);
+  const auto psk = Creds.get(Storage::Entry::Passkey);
 
   WiFi.mode(WIFI_STA);
-  if (WiFi.begin(ssid.c_str(), Creds.get(Storage::Entry::Passkey).c_str()) == WL_CONNECT_FAILED)
+  const auto id = String(buildDeviceId());
+  const auto stat = WiFi.begin(Secret::decrypt(id, ssid).c_str(), Secret::decrypt(id, psk).c_str());
+  if (stat == WL_CONNECT_FAILED)
     return -1;
 
   // wait for WiFi connection
