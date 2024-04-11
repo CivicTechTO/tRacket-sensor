@@ -1,4 +1,4 @@
-noisemeter-device/doc
+doc
 noisemeter-device/config.h
 noisemeter-device/secret.h
 noisemeter-device/certs.h
