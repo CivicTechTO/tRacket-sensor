@@ -1,3 +1,21 @@
+/// @file
+/// @brief Manages pesistent storage of WiFi credentials and other data
+/* noisemeter-device - Firmware for CivicTechTO's Noisemeter Device
+ * Copyright (C) 2024  Clyne Sullivan, Nick Barnard
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 #ifndef STORAGE_H
 #define STORAGE_H
 
@@ -6,49 +24,82 @@
 #include <cstdint>
 
 /**
- * Manages the storage of persistent settings e.g. WiFi credentials.
+ * Manages the storage of persistent settings.
+ * At the moment, this is only used to store WiFi credentials.
  */
 class Storage : protected EEPROMClass
 {
+    /** Maximum length of a stored String. */
     static constexpr unsigned StringSize = 64;
 
 public:
+    /** Tags to identify the stored settings. */
     enum class Entry : unsigned {
-        Checksum  = 0,
-        SSID      = Checksum + sizeof(uint32_t),
-        Passkey   = SSID     + StringSize,
-        TotalSize = Passkey  + StringSize
+        Checksum  = 0,                           /** Storage CRC32 Checksum */
+        SSID      = Checksum + sizeof(uint32_t), /** User's WiFi SSID */
+        Passkey   = SSID     + StringSize,       /** User's WiFi passkey */
+        TotalSize = Passkey  + StringSize        /** Marks storage end address */
     };
 
-    // Prepares flash memory for access.
+    /**
+     * Prepares flash memory for access.
+     */
     void begin() noexcept;
 
-    // Returns true if the stored data matches its checksum.
+    /**
+     * Validates the stored settings against the stored checksum.
+     * @return True if the validation is successful.
+     */
     bool valid() const noexcept;
 
-    // Returns true if the given string can fit in a string entry.
+    /**
+     * Checks if the given string can be stored via Storage.
+     * @param str The string to check
+     * @return True if the string can be stored
+     */
     bool canStore(String str) const noexcept;
 
-    // Clears/wipes all stored settings.
+    /**
+     * Clears/wipes all stored settings.
+     */
     void clear() noexcept;
 
-    // Gets the string value of the stored entry.
+    /**
+     * Gets the string value of the stored entry.
+     * @param entry The storage entry to get
+     * @return The string stored in the given entry
+     */
     String get(Entry entry) const noexcept;
 
-    // Sets the value of the given entry. Must call commit() to write to flash.
+    /**
+     * Sets the value of the given entry. Must call commit() to write to flash.
+     * @param entry The storage entry to set
+     * @param str The string to store in the entry
+     */
     void set(Entry entry, String str) noexcept;
 
-    // Commits all settings to flash and recalculates the checksum.
+    /**
+     * Commits all settings to flash and recalculates the checksum.
+     */
     void commit() noexcept;
 
-    // Returns a string describing the stored settings.
+    /**
+     * Returns a string describing the stored settings.
+     */
     operator String() const noexcept;
 
 private:
-    // Calculates a CRC32 checksum of all stored settings.
+    /**
+     * Calculates a CRC32 checksum of all stored settings.
+     * @return The checksum for the stored settings
+     */
     uint32_t calculateChecksum() const noexcept;
 
-    // Gets the memory address/offset of the given entry.
+    /**
+     * Gets the memory address/offset of the given entry.
+     * @param entry The entry to locate
+     * @return The address of the entry within the storage address space
+     */
     constexpr unsigned addrOf(Entry entry) const noexcept {
         return static_cast<unsigned>(entry);
     }

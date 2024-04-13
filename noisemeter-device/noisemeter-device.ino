@@ -1,12 +1,20 @@
-/**
- * Civic Tech TO - Noisemeter Device (ESP32 Version) v1
- * Written by Clyne Sullivan and Nick Barnard.
- * Open source dB meter code taken from Ivan Kostoski (https://github.com/ikostoski/esp32-i2s-slm)
- * 
- * TODO:
- *  - Encrypt the stored credentials (simple XOR with a long key?).
- *  - Add second step to Access Point flow - to gather users email, generate a UUID and upload them to the cloud. UUID to be saved in EEPROM
- *  - Add functionality to reset the device periodically (eg every 24 hours)?
+/// @file
+/// @brief Main firmware code
+/* noisemeter-device - Firmware for CivicTechTO's Noisemeter Device
+ * Copyright (C) 2024  Clyne Sullivan, Nick Barnard
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include <ArduinoJson.h> // https://arduinojson.org/
 #include <ArduinoJson.hpp>
@@ -23,6 +31,7 @@
 #include "certs.h"
 #include "secret.h"
 #include "spl-meter.h"
+#include "secret-store.h"
 #include "storage.h"
 #include "ota-update.h"
 #include "UUID/UUID.h"
@@ -37,31 +46,89 @@
 HWCDC USBSerial;
 #endif
 
-static SPLMeter SPL;
-static Storage Creds;
-
 // Uncomment these to disable WiFi and/or data upload
 //#define UPLOAD_DISABLED
 
+/** Maximum number of milliseconds to wait for successful WiFi connection. */
 constexpr auto WIFI_CONNECT_TIMEOUT_MS = 20 * 1000;
-
-const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5;  // Upload every 5 mins
-// const unsigned long UPLOAD_INTERVAL_SEC = 30;  // Upload every 30 secs
+/** Specifies how frequently to upload data points to the server. */
+const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5; // Upload every 5 mins
+/** Specifies how frequently to check for OTA updates from our server. */
 const unsigned long OTA_INTERVAL_SEC = 60 * 60 * 24; // Check for updates daily
-
-// Remember up to two weeks of measurement data.
+/** Maximum number of data packets to retain when WiFi is unavailable. */
 constexpr unsigned MAX_SAVED_PACKETS = 14 * 24 * 60 * 60 / UPLOAD_INTERVAL_SEC;
 
-// Noise Level Readings
+/** SPLMeter instance to manage decibel level measurement. */
+static SPLMeter SPL;
+/** Storage instance to manage stored credentials. */
+static Storage Creds;
+/** Linked list of completed data packets.
+ * This list should only grow if WiFi is unavailable. */
 static std::list<DataPacket> packets;
+/** Tracks when the last measurement upload occurred. */
 static Timestamp lastUpload = Timestamp::invalidTimestamp();
+/** Tracks when the last OTA update check occurred. */
 static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
 
-static UUID buildDeviceId();
-static int tryWifiConnection();
+/**
+ * Outputs an array of floating-point values over serial.
+ * @deprecated Unused and unlikely to be used in the future
+ * @param arr The array to output
+ * @param length Number of values from arr to display
+ */
+void printArray(float arr[], unsigned long length);
 
 /**
- * Initialization routine.
+ * Outputs the given decibel reading over serial.
+ * @param reading The decibel reading to display
+ */
+void printReadingToConsole(double reading);
+
+/**
+ * Callback for AccessPoint that verifies and stores the submitted credentials.
+ * @param httpServer HTTP server which served the setup form
+ */
+void saveNetworkCreds(WebServer& httpServer);
+
+/**
+ * Generates a UUID that is unique to the hardware running this firmware.
+ * @return A device-unique UUID object
+ */
+UUID buildDeviceId();
+
+/**
+ * Attempt to establish a WiFi connected using the stored credentials.
+ * @return Zero on success or a negative number on failure
+ */
+int tryWifiConnection();
+
+/**
+ * Creates a serialized JSON payload containing the given data.
+ * @param dp DataPacket containing the data to serialize
+ * @return String containing the resulting JSON payload
+ */
+String createJSONPayload(const DataPacket& dp);
+
+/**
+ * Upload a serialized JSON payload to our server.
+ * @param json JSON payload to be sent
+ * @return Zero on success or a negative number on failure
+ */
+int uploadData(String json);
+
+/**
+ * Prepares the I2S peripheral for reading microphone data.
+ */
+void initMicrophone();
+
+/**
+ * Reads a set number of samples from the microphone and factors them into
+ * our decibel calculations and statistics.
+ */
+void readMicrophoneData();
+
+/**
+ * Firmware entry point and initialization routine.
  */
 void setup() {
   pinMode(PIN_LED1, OUTPUT);
@@ -124,6 +191,10 @@ void setup() {
   digitalWrite(PIN_LED1, HIGH);
 }
 
+/**
+ * Main loop for the firmware.
+ * This function is run continuously, getting called within an infinite loop.
+ */
 void loop() {
   if (auto db = SPL.readMicrophoneData(); db) {
     packets.front().add(*db);
@@ -153,8 +224,7 @@ void loop() {
         packets.remove_if([](const auto& pkt) {
           if (pkt.count > 0) {
             const auto payload = createJSONPayload(pkt);
-            WiFiClientSecure client;
-            return uploadData(&client, payload) == 0;
+            return uploadData(payload) == 0;
           } else {
             return true; // Discard empty packets
           }
@@ -229,8 +299,9 @@ void printReadingToConsole(double reading) {
 void saveNetworkCreds(WebServer& httpServer) {
   // Confirm that the form was actually submitted.
   if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
-    const auto ssid = httpServer.arg("ssid");
-    const auto psk = httpServer.arg("psk");
+    const auto id = String(buildDeviceId());
+    const auto ssid = Secret::encrypt(id, httpServer.arg("ssid"));
+    const auto psk = Secret::encrypt(id, httpServer.arg("psk"));
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
     if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk)) {
@@ -238,12 +309,7 @@ void saveNetworkCreds(WebServer& httpServer) {
       Creds.set(Storage::Entry::Passkey, psk);
       Creds.commit();
 
-      SERIAL.print("Saving ");
-      SERIAL.println(Creds);
-
-      SERIAL.println("Saved network credentials. Restarting...");
-      delay(2000);
-      ESP.restart();  // Software reset.
+      ESP.restart(); // Software reset.
     }
   }
 
@@ -260,16 +326,21 @@ UUID buildDeviceId()
 
 int tryWifiConnection()
 {
+  //const auto ssid = Creds.get(Storage::Entry::SSID);
+
+  //if (ssid.isEmpty())
+  //  return -1;
+
+  //SERIAL.print("Ready to connect to ");
+  //SERIAL.println(ssid);
+
   const auto ssid = Creds.get(Storage::Entry::SSID);
-
-  if (ssid.isEmpty())
-    return -1;
-
-  SERIAL.print("Ready to connect to ");
-  SERIAL.println(ssid);
+  const auto psk = Creds.get(Storage::Entry::Passkey);
 
   WiFi.mode(WIFI_STA);
-  if (WiFi.begin(ssid.c_str(), Creds.get(Storage::Entry::Passkey).c_str()) == WL_CONNECT_FAILED)
+  const auto id = String(buildDeviceId());
+  const auto stat = WiFi.begin(Secret::decrypt(id, ssid).c_str(), Secret::decrypt(id, psk).c_str());
+  if (stat == WL_CONNECT_FAILED)
     return -1;
 
   // wait for WiFi connection
@@ -311,61 +382,46 @@ String createJSONPayload(const DataPacket& dp)
 }
 
 // Given a serialized JSON payload, upload the data to webcomand
-int uploadData(WiFiClientSecure* client, String json)
+int uploadData(String json)
 {
-  if (client) {
-    client->setCACert(cert_ISRG_Root_X1);
-    {
-      // Add a scoping block for HTTPClient https to make sure it is destroyed before WiFiClientSecure *client is
-      HTTPClient https;
-      // void addHeader(const String& name, const String& value, bool first = false, bool replace = true);
+  WiFiClientSecure client;
+  HTTPClient https;
 
-      SERIAL.print("[HTTPS] begin...\n");
-      if (https.begin(*client, "https://noisemeter.webcomand.com/ws/put")) {  // HTTPS
-        SERIAL.print("[HTTPS] POST...\n");
-        // start connection and send HTTP header
+  client.setCACert(cert_ISRG_Root_X1);
 
+  SERIAL.print("[HTTPS] begin...\n");
+  if (https.begin(client, "https://noisemeter.webcomand.com/ws/put")) {
+    SERIAL.print("[HTTPS] POST...\n");
 
-        // void addHeader(const String& name, const String& value, bool first = false, bool replace = true);
-        https.addHeader("Authorization", String("Token ") + API_TOKEN);
-        https.addHeader("Content-Type", "application/json");
-        https.addHeader("Content-Length", String(json.length()));
-        https.addHeader("User-Agent", "ESP32");
+    // start connection and send HTTP header
+    https.addHeader("Authorization", String("Token ") + API_TOKEN);
+    https.addHeader("Content-Type", "application/json");
+    https.addHeader("Content-Length", String(json.length()));
+    https.addHeader("User-Agent", "ESP32");
 
-        int httpCode = https.POST(json);
-        // int POST(uint8_t * payload, size_t size);
-        // int POST(String payload);
+    int httpCode = https.POST(json);
 
-        // httpCode will be negative on error
-        if (httpCode > 0) {
-          // HTTP header has been send and Server response header has been handled
-          SERIAL.printf("[HTTPS] POST... code: %d\n", httpCode);
+    // httpCode will be negative on error
+    if (httpCode > 0) {
+      // HTTP header has been send and Server response header has been handled
+      SERIAL.printf("[HTTPS] POST... code: %d\n", httpCode);
 
-          // file found at server
-          if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
-            String payload = https.getString();
-            SERIAL.println(payload);
-          } else {
-            SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
-            return -1;
-          }
-        } else {
-          SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
-          return -1;
-        }
-
-        https.end();
+      // file found at server
+      if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
+        String payload = https.getString();
+        SERIAL.println(payload);
       } else {
-        SERIAL.printf("[HTTPS] Unable to connect\n");
+        SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
         return -1;
       }
-
-      // End extra scoping block
+    } else {
+      SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
+      return -1;
     }
 
-    // delete client;
+    https.end();
   } else {
-    SERIAL.println("Unable to create client");
+    SERIAL.printf("[HTTPS] Unable to connect\n");
     return -1;
   }
 

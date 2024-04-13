@@ -1,3 +1,6 @@
+/// @file
+/// @brief ESP32 Second-Order Sections (SOS) IIR Filter implementation
+/// @author Ivan Kostoski
 /*
  * ESP32 Second-Order Sections IIR Filter implementation
  *
@@ -23,28 +26,37 @@
 #include <cstdint>
 #include <cstring>
 
+/** Coefficients for the SOS filters. */
 struct SOS_Coefficients {
+  /** b1 coefficient */
   float b1;
+  /** b2 coefficient */
   float b2;
+  /** a1 coefficient */
   float a1;
+  /** a2 coefficient */
   float a2;
 };
 
+/** Delay state for the SOS filters. */
 struct SOS_Delay_State {
+  /** w0 */
   float w0 = 0;
+  /** w1 */
   float w1 = 0;
 };
 
+/**
+ * Applies an SOS filter to a set of floating-point data.
+ * @param input Input data to process
+ * @param output Allocated destination of filtered data (can reuse input)
+ * @param len Number of samples in input to process
+ * @param coeffs Coefficients of the SOS filter
+ * @param w Mutable delay state for the SOS filter
+ * @return Zero
+ */
 int sos_filter_f32(float *input, float *output, int len, const SOS_Coefficients &coeffs, SOS_Delay_State &w) {
   // Assumes a0 and b0 coefficients are one (1.0)
-  //
-  // float* a2 = input;
-  // float* a3 = output;
-  // int    a4 = len;
-  // float* a5 = coeffs;
-  // float* a6 = w;
-  // float  a7 = gain;
-  //
   float f0 = coeffs.b1;
   float f1 = coeffs.b2;
   float f2 = coeffs.a1;
@@ -67,17 +79,18 @@ int sos_filter_f32(float *input, float *output, int len, const SOS_Coefficients 
   return 0;
 };
 
+/**
+ * Applies an SOS filter while also calculating the output's sum of squares.
+ * @param input Input data to process
+ * @param output Allocated destination of filtered data (can reuse input)
+ * @param len Number of samples in input to process
+ * @param coeffs Coefficients of the SOS filter
+ * @param w Mutable delay state for the SOS filter
+ * @param gain Gain factor to apply to output samples
+ * @return Sum of squares for the output data
+ */
 float sos_filter_sum_sqr_f32(float *input, float *output, int len, const SOS_Coefficients &coeffs, SOS_Delay_State &w, float gain) {
   // Assumes a0 and b0 coefficients are one (1.0)
-  // Returns sum of squares of filtered samples
-  //
-  // float* a2 = input;
-  // float* a3 = output;
-  // int    a4 = len;
-  // float* a5 = coeffs;
-  // float* a6 = w;
-  // float  a7 = gain;
-  //
   float f0 = coeffs.b1;
   float f1 = coeffs.b2;
   float f2 = coeffs.a1;
@@ -106,16 +119,24 @@ float sos_filter_sum_sqr_f32(float *input, float *output, int len, const SOS_Coe
 
 
 /**
- * Envelops above asm functions into C++ class
+ * Envelops SOS filter functionailty into a C++ class.
  */
 struct SOS_IIR_Filter {
-
+  /** Number of stages in the SOS filter. */
   const int num_sos;
+  /** Gain factor for the filter's output. */
   const float gain;
+  /** Pointer to array of SOS coefficients. */
   SOS_Coefficients *sos = NULL;
+  /** Pointer to array of SOS delay states. */
   SOS_Delay_State *w = NULL;
 
-  // Dynamic constructor
+  /**
+   * Dynamic constructor.
+   * @param num_sos Number of filter stages
+   * @param gain Gain factor for filter's output
+   * @param _sos Allocated array of num_sos coefficients that define the filter
+   */
   SOS_IIR_Filter(size_t num_sos, const float gain, const SOS_Coefficients _sos[] = NULL)
     : num_sos(num_sos), gain(gain) {
     if (num_sos > 0) {
@@ -125,14 +146,21 @@ struct SOS_IIR_Filter {
     }
   };
 
-  // Template constructor for const filter declaration
+  /**
+   * Template constructor for const filter declaration.
+   * @param gain Gain factor for filter's output
+   * @param sos Array of coefficients that define the filter
+   */
   template<size_t Array_Size>
   SOS_IIR_Filter(const float gain, const SOS_Coefficients (&sos)[Array_Size])
     : SOS_IIR_Filter(Array_Size, gain, sos){};
 
   /** 
-   * Apply defined IIR Filter to input array of floats, write filtered values to output, 
-   * and return sum of squares of all filtered values 
+   * Apply defined IIR Filter to an array of floats.
+   * @param input Input array to process
+   * @param output Address to store output data (can reuse input)
+   * @param len Size of the array
+   * @return The sum of squares of all filtered values 
    */
   inline float filter(float *input, float *output, size_t len) {
     if ((num_sos < 1) || (sos == NULL) || (w == NULL)) return 0;
@@ -146,21 +174,34 @@ struct SOS_IIR_Filter {
     return sos_filter_sum_sqr_f32(source, output, len, sos[num_sos - 1], w[num_sos - 1], gain);
   }
 
+  /**
+   * Releases allocated buffers of coefficients and delay states.
+   */
   ~SOS_IIR_Filter() {
     if (w != NULL) delete[] w;
     if (sos != NULL) delete[] sos;
   }
 };
 
-//
-// For testing only
-//
+/**
+ * Passthrough IIR filter for testing only.
+ */
 struct No_IIR_Filter {
+  /** Number of stages in the SOS filter. */
   const int num_sos = 0;
+  /** Gain factor for the filter's output. */
   const float gain = 1.0;
 
-  No_IIR_Filter(){};
+  No_IIR_Filter() = default;
 
+
+  /** 
+   * Apply passthrough filter to an array of floats.
+   * @param input Input array to process
+   * @param output Address to store output data (can reuse input)
+   * @param len Size of the array
+   * @return The sum of squares of all filtered values 
+   */
   inline float filter(float *input, float *output, size_t len) {
     float sum_sqr = 0;
     float s;

@@ -12,7 +12,7 @@ We will try to maintain up-to-date documentation within each hardware/version fo
 
 ## Source Code
 
-The [noisemeter-device](/noisemeter-device) folder contains the device's source code. The code can be built with the Arduino IDE or PlatformIO, and supports two ESP32 targets: a "breadboard" target for the early prototype, and a "pcb" target for the official circuit boards. See the source code's [README](/noisemeter-device/README.md) for build instructions.
+The [noisemeter-device](/noisemeter-device) folder contains the device's source code. The code can be built with the Arduino IDE or PlatformIO, and supports two ESP32 targets: a "breadboard" target for the early prototype, and a "pcb" target for the official circuit boards. See the source code's [BUILD.md](/noisemeter-device/BUILD.md) file for build instructions. The source code is released under the [GNU GPL v3 license](/noisemeter-device/LICENSE).
 
 ## Hardware Files
 
