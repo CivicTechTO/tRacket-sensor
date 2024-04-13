@@ -23,7 +23,8 @@
 #ifndef SOS_IIR_FILTER_H
 #define SOS_IIR_FILTER_H
 
-#include <stdint.h>
+#include <cstdint>
+#include <cstring>
 
 /** Coefficients for the SOS filters. */
 struct SOS_Coefficients {

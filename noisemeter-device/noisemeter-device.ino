@@ -21,9 +21,6 @@
 #include <HTTPClient.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
-#include <dummy.h> // ESP32 core
-#include <driver/i2s.h> // ESP32 core
-#include <mbedtls/aes.h>
 #include <esp_efuse.h>
 #include <esp_efuse_table.h>
 
@@ -31,9 +28,9 @@
 #include "blinker.h"
 #include "board.h"
 #include "data-packet.h"
-#include "sos-iir-filter.h"
 #include "certs.h"
 #include "secret.h"
+#include "spl-meter.h"
 #include "secret-store.h"
 #include "storage.h"
 #include "ota-update.h"
@@ -61,82 +58,10 @@ const unsigned long OTA_INTERVAL_SEC = 60 * 60 * 24; // Check for updates daily
 /** Maximum number of data packets to retain when WiFi is unavailable. */
 constexpr unsigned MAX_SAVED_PACKETS = 14 * 24 * 60 * 60 / UPLOAD_INTERVAL_SEC;
 
-//
-// Constants & Config
-//
-/** Sample size duration to use for Leq calculation. */
-#define LEQ_PERIOD 1           // second(s)
-/** Specifies the type of weighting to use for decibel calculation. */
-#define WEIGHTING A_weighting  // Also avaliable: 'C_weighting' or 'None' (Z_weighting)
-/** Specifies the microphone's equalization filter. */
-#define MIC_EQUALIZER SPH0645LM4H_B_RB  // See defined IIR filters or set to 'None' to disable
-/** Linear calibration offset to apply to calculated decibel values. */
-#define MIC_OFFSET_DB 0        // Default offset (sine-wave RMS vs. dBFS). Modify this value for linear calibration
-
-/** dBFS value expected at MIC_REF_DB (Sensitivity value from datasheet). */
-#define MIC_SENSITIVITY -26
-/** Value at which point sensitivity is specified in datasheet (dB). */
-#define MIC_REF_DB 94.0
-/** Acoustic overload point (dB). */
-#define MIC_OVERLOAD_DB 120.0
-/** Noise floor (dB). */
-#define MIC_NOISE_DB 29
-/** Valid number of bits in a received I2S data sample. */
-#define MIC_BITS 24
-/** Drops unused bits from a raw microphone reading. */
-#define MIC_CONVERT(s) (s >> (SAMPLE_BITS - MIC_BITS))
-
-/** Reference amplitude level for the microphone. */
-constexpr double MIC_REF_AMPL = pow(10, double(MIC_SENSITIVITY) / 20) * ((1 << (MIC_BITS - 1)) - 1);
-
-//
-// Sampling
-//
-/** Sample rate for driving the microphone. IIR Filters depend on this value. */
-#define SAMPLE_RATE 48000
-/** Number of bits in a microphone sample. */
-#define SAMPLE_BITS 32
-/** Data type to use to store a microphone sample. */
-#define SAMPLE_T int32_t
-/** Number of samples to process in a batch microphone read. */
-#define SAMPLES_SHORT (SAMPLE_RATE / 8)  // ~125ms
-/** Number of samples to be collected in an LEQ_PERIOD. */
-#define SAMPLES_LEQ (SAMPLE_RATE * LEQ_PERIOD)
-/** Size of DMA bank for I2S reading. */
-#define DMA_BANK_SIZE (SAMPLES_SHORT / 16)
-/** Number of DMA bank to allocate to I2S. */
-#define DMA_BANKS 32
-
-/**
- * Stores accumulators for decibel calculations.
- */
-struct sum_queue_t {
-  /** Sum of squares of mic samples, after Equalizer filter */
-  float sum_sqr_SPL;
-  /** Sum of squares of weighted mic samples */
-  float sum_sqr_weighted;
-};
-
-// Static buffer for block of samples
-static_assert(sizeof(float) == sizeof(int32_t));
-/** @typedef alignas
- * This is actually a typedef for SampleBuffer, an aligned array of floats. */
-using SampleBuffer alignas(4) = float[SAMPLES_SHORT];
-/** Single instance of a SampleBuffer. */
-static SampleBuffer samples;
-
+/** SPLMeter instance to manage decibel level measurement. */
+static SPLMeter SPL;
 /** Storage instance to manage stored credentials. */
 static Storage Creds;
-
-/** Stores accumulators for decibel calculations. */
-sum_queue_t q;
-/** Number of samples included within current calculation. */
-uint32_t Leq_samples = 0;
-/** Sum of squares for current Leq calculation. */
-double Leq_sum_sqr = 0;
-/** Decibel value for current Leq calculation. */
-double Leq_dB = 0;
-
 /** Linked list of completed data packets.
  * This list should only grow if WiFi is unavailable. */
 static std::list<DataPacket> packets;
@@ -228,7 +153,7 @@ void setup() {
 
   Creds.begin();
 
-  initMicrophone();
+  SPL.initMicrophone();
   packets.emplace_front();
 
 #ifndef UPLOAD_DISABLED
@@ -271,7 +196,10 @@ void setup() {
  * This function is run continuously, getting called within an infinite loop.
  */
 void loop() {
-  readMicrophoneData();
+  if (auto db = SPL.readMicrophoneData(); db) {
+    packets.front().add(*db);
+    printReadingToConsole(*db);
+  }
 
 #ifndef UPLOAD_DISABLED
   const auto now = Timestamp();
@@ -500,94 +428,3 @@ int uploadData(String json)
   return 0;
 }
 
-//
-// I2S Microphone sampling setup
-//
-void initMicrophone() {
-  // Setup I2S to sample mono channel for SAMPLE_RATE * SAMPLE_BITS
-  // NOTE: Recent update to Arduino_esp32 (1.0.2 -> 1.0.3)
-  //       seems to have swapped ONLY_LEFT and ONLY_RIGHT channels
-  const i2s_config_t i2s_config = {
-    mode: i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_RX),
-    sample_rate: SAMPLE_RATE,
-    bits_per_sample: i2s_bits_per_sample_t(SAMPLE_BITS),
-    channel_format: I2S_FORMAT,
-    communication_format: i2s_comm_format_t(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
-    intr_alloc_flags: ESP_INTR_FLAG_LEVEL1,
-    dma_buf_count: DMA_BANKS,
-    dma_buf_len: DMA_BANK_SIZE,
-    use_apll: true,
-    tx_desc_auto_clear: false,
-    fixed_mclk: 0,
-    mclk_multiple: I2S_MCLK_MULTIPLE_DEFAULT,
-    bits_per_chan: I2S_BITS_PER_CHAN_DEFAULT,
-  };
-
-  // I2S pin mapping
-  const i2s_pin_config_t pin_config = {
-    mck_io_num: -1, // not used
-    bck_io_num: I2S_SCK,
-    ws_io_num: I2S_WS,
-    data_out_num: -1,  // not used
-    data_in_num: I2S_SD
-  };
-
-  i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
-  i2s_set_pin(I2S_PORT, &pin_config);
-
-  // Discard first block, microphone may need time to startup and settle.
-  size_t bytes_read;
-  i2s_read(I2S_PORT, samples, sizeof(samples), &bytes_read, portMAX_DELAY);
-}
-
-void readMicrophoneData() {
-  // Block and wait for microphone values from I2S
-  //
-  // Data is moved from DMA buffers to our 'samples' buffer by the driver ISR
-  // and when there is requested ammount of data, task is unblocked
-  //
-  // Note: i2s_read does not care it is writing in float[] buffer, it will write
-  //       integer values to the given address, as received from the hardware peripheral.
-  size_t bytes_read;
-  i2s_read(I2S_PORT, samples, sizeof(samples), &bytes_read, portMAX_DELAY);
-
-  // Convert (including shifting) integer microphone values to floats,
-  // using the same buffer (assumed sample size is same as size of float),
-  // to save a bit of memory
-  auto int_samples = reinterpret_cast<SAMPLE_T*>(samples);
-
-  for (int i = 0; i < SAMPLES_SHORT; i++) samples[i] = MIC_CONVERT(int_samples[i]);
-
-  // Apply equalization and calculate Z-weighted sum of squares,
-  // writes filtered samples back to the same buffer.
-  q.sum_sqr_SPL = MIC_EQUALIZER.filter(samples, samples, SAMPLES_SHORT);
-
-  // Apply weighting and calucate weigthed sum of squares
-  q.sum_sqr_weighted = WEIGHTING.filter(samples, samples, SAMPLES_SHORT);
-
-  // Calculate dB values relative to MIC_REF_AMPL and adjust for microphone reference
-  double short_RMS = sqrt(double(q.sum_sqr_SPL) / SAMPLES_SHORT);
-  double short_SPL_dB = MIC_OFFSET_DB + MIC_REF_DB + 20 * log10(short_RMS / MIC_REF_AMPL);
-
-  // In case of acoustic overload or below noise floor measurement, report infinty Leq value
-  if (short_SPL_dB > MIC_OVERLOAD_DB) {
-    Leq_sum_sqr = MIC_OVERLOAD_DB;
-  } else if (isnan(short_SPL_dB) || (short_SPL_dB < MIC_NOISE_DB)) {
-    Leq_sum_sqr = MIC_NOISE_DB;
-  }
-
-  // Accumulate Leq sum
-  Leq_sum_sqr += q.sum_sqr_weighted;
-  Leq_samples += SAMPLES_SHORT;
-
-  // When we gather enough samples, calculate new Leq value
-  if (Leq_samples >= SAMPLE_RATE * LEQ_PERIOD) {
-    double Leq_RMS = sqrt(Leq_sum_sqr / Leq_samples);
-    Leq_dB = MIC_OFFSET_DB + MIC_REF_DB + 20 * log10(Leq_RMS / MIC_REF_AMPL);
-    Leq_sum_sqr = 0;
-    Leq_samples = 0;
-
-    packets.front().add(Leq_dB);
-    printReadingToConsole(Leq_dB);
-  }
-}
