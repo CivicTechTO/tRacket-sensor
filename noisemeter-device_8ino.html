@@ -211,9 +211,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ae246ec49a4fb8f4f01921d5daa492255"><td class="memItemLeft" align="right" valign="top">String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#ae246ec49a4fb8f4f01921d5daa492255">createJSONPayload</a> (const <a class="el" href="structDataPacket.html">DataPacket</a> &amp;dp)</td></tr>
 <tr class="memdesc:ae246ec49a4fb8f4f01921d5daa492255"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a serialized JSON payload containing the given data.  <a href="noisemeter-device_8ino.html#ae246ec49a4fb8f4f01921d5daa492255">More...</a><br /></td></tr>
 <tr class="separator:ae246ec49a4fb8f4f01921d5daa492255"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abc3f55c9c5bd472c4a3dbd8178d73475"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#abc3f55c9c5bd472c4a3dbd8178d73475">uploadData</a> (WiFiClientSecure *client, String json)</td></tr>
-<tr class="memdesc:abc3f55c9c5bd472c4a3dbd8178d73475"><td class="mdescLeft">&#160;</td><td class="mdescRight">Upload a serialized JSON payload to our server.  <a href="noisemeter-device_8ino.html#abc3f55c9c5bd472c4a3dbd8178d73475">More...</a><br /></td></tr>
-<tr class="separator:abc3f55c9c5bd472c4a3dbd8178d73475"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29f94be472c52e98a58c19bb5acc6ba2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a29f94be472c52e98a58c19bb5acc6ba2">uploadData</a> (String json)</td></tr>
+<tr class="memdesc:a29f94be472c52e98a58c19bb5acc6ba2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Upload a serialized JSON payload to our server.  <a href="noisemeter-device_8ino.html#a29f94be472c52e98a58c19bb5acc6ba2">More...</a><br /></td></tr>
+<tr class="separator:a29f94be472c52e98a58c19bb5acc6ba2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1cc0c82f2d9cb9e41c1d2750204a7819"><td class="memItemLeft" align="right" valign="top"><a id="a1cc0c82f2d9cb9e41c1d2750204a7819"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a1cc0c82f2d9cb9e41c1d2750204a7819">initMicrophone</a> ()</td></tr>
 <tr class="memdesc:a1cc0c82f2d9cb9e41c1d2750204a7819"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the I2S peripheral for reading microphone data. <br /></td></tr>
@@ -331,7 +331,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 <p>Generates a <a class="el" href="classUUID.html">UUID</a> that is unique to the hardware running this firmware. </p>
 <dl class="section return"><dt>Returns</dt><dd>A device-unique <a class="el" href="classUUID.html">UUID</a> object </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00394">394</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00392">392</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -360,7 +360,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>String containing the resulting JSON payload </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00434">434</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00432">432</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -382,7 +382,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 <p>Main loop for the firmware. </p>
 <p>This function is run continuously, getting called within an infinite loop. </p>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00274">274</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00273">273</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -422,7 +422,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00351">351</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00349">349</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -450,7 +450,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00361">361</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00359">359</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -478,7 +478,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00373">373</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00371">371</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -500,12 +500,12 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 <p>Attempt to establish a WiFi connected using the stored credentials. </p>
 <dl class="section return"><dt>Returns</dt><dd>Zero on success or a negative number on failure </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00401">401</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00399">399</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
-<a id="abc3f55c9c5bd472c4a3dbd8178d73475"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abc3f55c9c5bd472c4a3dbd8178d73475">&#9670;&nbsp;</a></span>uploadData()</h2>
+<a id="a29f94be472c52e98a58c19bb5acc6ba2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a29f94be472c52e98a58c19bb5acc6ba2">&#9670;&nbsp;</a></span>uploadData()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -513,19 +513,9 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
         <tr>
           <td class="memname">int uploadData </td>
           <td>(</td>
-          <td class="paramtype">WiFiClientSecure *&#160;</td>
-          <td class="paramname"><em>client</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">String&#160;</td>
-          <td class="paramname"><em>json</em>&#160;</td>
-        </tr>
-        <tr>
+          <td class="paramname"><em>json</em></td><td>)</td>
           <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -533,14 +523,13 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 <p>Upload a serialized JSON payload to our server. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">client</td><td>Pointer to newly allocated WiFiClientSecure object </td></tr>
     <tr><td class="paramname">json</td><td>JSON payload to be sent </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Zero on success or a negative number on failure </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00459">459</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00457">457</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
