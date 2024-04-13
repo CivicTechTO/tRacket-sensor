@@ -186,11 +186,10 @@ String createJSONPayload(const DataPacket& dp);
 
 /**
  * Upload a serialized JSON payload to our server.
- * @param client Pointer to newly allocated WiFiClientSecure object
  * @param json JSON payload to be sent
  * @return Zero on success or a negative number on failure
  */
-int uploadData(WiFiClientSecure* client, String json);
+int uploadData(String json);
 
 /**
  * Prepares the I2S peripheral for reading microphone data.
@@ -297,8 +296,7 @@ void loop() {
         packets.remove_if([](const auto& pkt) {
           if (pkt.count > 0) {
             const auto payload = createJSONPayload(pkt);
-            WiFiClientSecure client;
-            return uploadData(&client, payload) == 0;
+            return uploadData(payload) == 0;
           } else {
             return true; // Discard empty packets
           }
@@ -456,61 +454,46 @@ String createJSONPayload(const DataPacket& dp)
 }
 
 // Given a serialized JSON payload, upload the data to webcomand
-int uploadData(WiFiClientSecure* client, String json)
+int uploadData(String json)
 {
-  if (client) {
-    client->setCACert(cert_ISRG_Root_X1);
-    {
-      // Add a scoping block for HTTPClient https to make sure it is destroyed before WiFiClientSecure *client is
-      HTTPClient https;
-      // void addHeader(const String& name, const String& value, bool first = false, bool replace = true);
+  WiFiClientSecure client;
+  HTTPClient https;
 
-      SERIAL.print("[HTTPS] begin...\n");
-      if (https.begin(*client, "https://noisemeter.webcomand.com/ws/put")) {  // HTTPS
-        SERIAL.print("[HTTPS] POST...\n");
-        // start connection and send HTTP header
+  client.setCACert(cert_ISRG_Root_X1);
 
+  SERIAL.print("[HTTPS] begin...\n");
+  if (https.begin(client, "https://noisemeter.webcomand.com/ws/put")) {
+    SERIAL.print("[HTTPS] POST...\n");
 
-        // void addHeader(const String& name, const String& value, bool first = false, bool replace = true);
-        https.addHeader("Authorization", String("Token ") + API_TOKEN);
-        https.addHeader("Content-Type", "application/json");
-        https.addHeader("Content-Length", String(json.length()));
-        https.addHeader("User-Agent", "ESP32");
+    // start connection and send HTTP header
+    https.addHeader("Authorization", String("Token ") + API_TOKEN);
+    https.addHeader("Content-Type", "application/json");
+    https.addHeader("Content-Length", String(json.length()));
+    https.addHeader("User-Agent", "ESP32");
 
-        int httpCode = https.POST(json);
-        // int POST(uint8_t * payload, size_t size);
-        // int POST(String payload);
+    int httpCode = https.POST(json);
 
-        // httpCode will be negative on error
-        if (httpCode > 0) {
-          // HTTP header has been send and Server response header has been handled
-          SERIAL.printf("[HTTPS] POST... code: %d\n", httpCode);
+    // httpCode will be negative on error
+    if (httpCode > 0) {
+      // HTTP header has been send and Server response header has been handled
+      SERIAL.printf("[HTTPS] POST... code: %d\n", httpCode);
 
-          // file found at server
-          if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
-            String payload = https.getString();
-            SERIAL.println(payload);
-          } else {
-            SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
-            return -1;
-          }
-        } else {
-          SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
-          return -1;
-        }
-
-        https.end();
+      // file found at server
+      if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
+        String payload = https.getString();
+        SERIAL.println(payload);
       } else {
-        SERIAL.printf("[HTTPS] Unable to connect\n");
+        SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
         return -1;
       }
-
-      // End extra scoping block
+    } else {
+      SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
+      return -1;
     }
 
-    // delete client;
+    https.end();
   } else {
-    SERIAL.println("Unable to create client");
+    SERIAL.printf("[HTTPS] Unable to connect\n");
     return -1;
   }
 
