@@ -1,66 +1,56 @@
+#include "board.h"
+#include "sos-iir-filter.h"
 #include "spl-meter.h"
 
 #include <cmath>
-#include <cstdint>
-#include <ctime>
-#include <driver/i2s.h> // ESP32 core
 
-#include "board.h"
-#include "sos-iir-filter.h"
+static constexpr auto LEQ_PERIOD = 1.f; // second(s)
+static constexpr auto SAMPLES_LEQ = SPLMeter::SAMPLE_RATE * LEQ_PERIOD;
 
-//
-// Constants & Config
-//
-#define LEQ_PERIOD 1           // second(s)
-#define WEIGHTING A_weighting  // Also avaliable: 'C_weighting' or 'None' (Z_weighting)
+static constexpr auto& WEIGHTING = A_weighting; // Also avaliable: 'C_weighting' or 'None' (Z_weighting)
+static constexpr auto& MIC_EQUALIZER = SPH0645LM4H_B_RB; // See below for defined IIR filters or set to 'None' to disable
 
-// NOTE: Some microphones require at least DC-Blocker filter
-#define MIC_EQUALIZER SPH0645LM4H_B_RB  // See below for defined IIR filters or set to 'None' to disable
-#define MIC_OFFSET_DB 0                 // Default offset (sine-wave RMS vs. dBFS). Modify this value for linear calibration
-
-// Customize these values from microphone datasheet
-#define MIC_SENSITIVITY -26.f // dBFS value expected at MIC_REF_DB (Sensitivity value from datasheet)
-#define MIC_REF_DB       94.f // Value at which point sensitivity is specified in datasheet (dB)
-#define MIC_BITS         24   // valid number of bits in I2S data
-#define MIC_CONVERT(s) (s >> (SAMPLE_BITS - MIC_BITS))
-
-//
-// Sampling
-//
-#define SAMPLES_LEQ (SAMPLE_RATE * LEQ_PERIOD)
-#define DMA_BANK_SIZE (SAMPLES_SHORT / 16)
-#define DMA_BANKS 32
+static constexpr auto MIC_BITS        =  24u;  // valid number of bits in I2S data
+static constexpr auto MIC_SENSITIVITY = -26.f; // dBFS value expected at MIC_REF_DB (Sensitivity value from datasheet)
+static constexpr auto MIC_REF_DB      =  94.f; // Value at which point sensitivity is specified in datasheet (dB)
+static constexpr auto MIC_OVERLOAD_DB = 120.f; // dB - Acoustic overload point
+static constexpr auto MIC_NOISE_DB    =  29.f; // dB - Noise floor
+static constexpr auto MIC_OFFSET_DB   =   0.f; // Default offset (sine-wave RMS vs. dBFS). Modify this value for linear calibration
 
 // Calculate reference amplitude value at compile time
-constexpr auto MIC_REF_AMPL = std::pow(10.f, MIC_SENSITIVITY / 20.f) * ((1 << (MIC_BITS - 1)) - 1);
+static constexpr auto MIC_REF_AMPL = std::pow(10.f, MIC_SENSITIVITY / 20.f) * ((1 << (MIC_BITS - 1)) - 1);
 
-void SPLMeter::initMicrophone() noexcept
-{
-  const i2s_config_t i2s_config = {
+const i2s_config_t SPLMeter::i2s_config = {
     mode: i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_RX),
     sample_rate: SAMPLE_RATE,
-    bits_per_sample: i2s_bits_per_sample_t(SAMPLE_BITS),
+    bits_per_sample: i2s_bits_per_sample_t(SPLMeter::SAMPLE_BITS),
     channel_format: I2S_FORMAT,
     communication_format: i2s_comm_format_t(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
     intr_alloc_flags: ESP_INTR_FLAG_LEVEL1,
-    dma_buf_count: DMA_BANKS,
-    dma_buf_len: DMA_BANK_SIZE,
+    dma_buf_count: 32,
+    dma_buf_len: SPLMeter::SAMPLES_SHORT / 16u,
     use_apll: true,
     tx_desc_auto_clear: false,
     fixed_mclk: 0,
     mclk_multiple: I2S_MCLK_MULTIPLE_DEFAULT,
     bits_per_chan: I2S_BITS_PER_CHAN_DEFAULT,
-  };
+};
 
-  // I2S pin mapping
-  const i2s_pin_config_t pin_config = {
+const i2s_pin_config_t SPLMeter::pin_config = {
     mck_io_num: -1, // not used
     bck_io_num: I2S_SCK,
     ws_io_num: I2S_WS,
     data_out_num: -1,  // not used
     data_in_num: I2S_SD
-  };
+};
 
+constexpr std::int32_t SPLMeter::micConvert(std::int32_t s)
+{
+    return s >> (SAMPLE_BITS - MIC_BITS);
+}
+
+void SPLMeter::initMicrophone() noexcept
+{
   i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
   i2s_set_pin(I2S_PORT, &pin_config);
 
@@ -76,7 +66,7 @@ std::optional<float> SPLMeter::readMicrophoneData() noexcept
   // using the same buffer (assumed sample size is same as size of float),
   // to save a bit of memory
   for (auto& s : samples)
-      s.f = MIC_CONVERT(s.i);
+      s.f = micConvert(s.i);
 
   // Apply equalization and calculate Z-weighted sum of squares,
   // writes filtered samples back to the same buffer.
@@ -113,7 +103,7 @@ std::optional<float> SPLMeter::readMicrophoneData() noexcept
   }
 }
 
-void SPLMeter::i2sRead()
+void SPLMeter::i2sRead() noexcept
 {
   // Block and wait for microphone values from I2S
   //
