@@ -1,8 +1,5 @@
 var searchData=
 [
-  ['w_131',['w',['../structSOS__IIR__Filter.html#a55415928e18faffd3a9963d1ee591ac4',1,'SOS_IIR_Filter']]],
-  ['w0_132',['w0',['../structSOS__Delay__State.html#a758862168743ac7d08f20832e5b0dda6',1,'SOS_Delay_State']]],
-  ['w1_133',['w1',['../structSOS__Delay__State.html#a9e7b7dc97a011573880b64a0ed79ad0c',1,'SOS_Delay_State']]],
-  ['weighting_134',['WEIGHTING',['../noisemeter-device_8ino.html#abe4fa93d3722001aa9774ed473c1d985',1,'noisemeter-device.ino']]],
-  ['wifi_5fconnect_5ftimeout_5fms_135',['WIFI_CONNECT_TIMEOUT_MS',['../noisemeter-device_8ino.html#a6df603e1520def84cd8642c3e1f1fde4',1,'noisemeter-device.ino']]]
+  ['_7eblinker_125',['~Blinker',['../classBlinker.html#a2fe7feaac0ac3ca4cf40239849058c5b',1,'Blinker']]],
+  ['_7esos_5fiir_5ffilter_126',['~SOS_IIR_Filter',['../structSOS__IIR__Filter.html#a599d4665c0b8d7d8df5dc38639d17bc2',1,'SOS_IIR_Filter']]]
 ];

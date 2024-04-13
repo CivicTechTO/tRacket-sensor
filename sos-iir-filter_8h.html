@@ -77,7 +77,8 @@ $(function() {
 
 <p>ESP32 Second-Order Sections (SOS) IIR Filter implementation.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;stdint.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;cstdint&gt;</code><br />
+<code>#include &lt;cstring&gt;</code><br />
 </div>
 <p><a href="sos-iir-filter_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -190,7 +191,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Zero </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00057">57</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00058">58</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
 
 </div>
 </div>
@@ -258,7 +259,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Sum of squares for the output data </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00091">91</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00092">92</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
 
 </div>
 </div>
@@ -282,7 +283,7 @@ Variables</h2></td></tr>
 <div class="line">         { -0.70930303489759, -0.29071868393580, +1.982242159753048, -0.982298594928989 } }</div>
 <div class="line">}</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00312">312</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00313">313</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
 
 </div>
 </div>
@@ -305,7 +306,7 @@ Variables</h2></td></tr>
 <div class="line">    { -2.0000000000000000, +1.0000000000000000, +0.3775800047420818, -0.0356365756680430 } }</div>
 <div class="line">}</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00325">325</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00326">326</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
 
 </div>
 </div>
@@ -325,7 +326,7 @@ Variables</h2></td></tr>
 <div class="line">  sos: { { -1.0, 0.0, +0.9992, 0 } }</div>
 <div class="line">}</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00229">229</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00230">230</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
 
 </div>
 </div>
@@ -348,7 +349,7 @@ Variables</h2></td></tr>
 <div class="line">         { +0.000000000000000, +0.000000000000000, +1.148493493802252, -0.150599527756651 } }</div>
 <div class="line">}</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00261">261</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00262">262</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
 
 </div>
 </div>
@@ -370,7 +371,7 @@ Variables</h2></td></tr>
 <div class="line">         { -1.98905931743624453, 0.98908924206960169, +1.99755331853906037, -0.99755481510122113 } }</div>
 <div class="line">}</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00250">250</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00251">251</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
 
 </div>
 </div>
@@ -392,7 +393,7 @@ Variables</h2></td></tr>
 <div class="line">    { -1.994461610298131, 0.994469278738208, +1.997675693595542, -0.997677044195563 } }</div>
 <div class="line">}</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00284">284</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00285">285</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
 
 </div>
 </div>
@@ -413,7 +414,7 @@ Variables</h2></td></tr>
 <div class="line">         { -1.986920458344451, +0.986963226946616, +1.995178510504166, -0.995184322194091 } }</div>
 <div class="line">}</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00273">273</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00274">274</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
 
 </div>
 </div>
@@ -435,7 +436,7 @@ Variables</h2></td></tr>
 <div class="line">         { -1.988897663539382, +0.988928479008099, +1.993853376183491, -0.993862821429572 } }</div>
 <div class="line">}</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00296">296</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="sos-iir-filter_8h_source.html#l00297">297</a> of file <a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>.</p>
 
 </div>
 </div>

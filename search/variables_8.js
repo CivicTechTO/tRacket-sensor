@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['max_5fsaved_5fpackets_230',['MAX_SAVED_PACKETS',['../noisemeter-device_8ino.html#ad9d154e7e2c2b745419b4e9520fbca2d',1,'noisemeter-device.ino']]],
-  ['maximum_231',['maximum',['../structDataPacket.html#a932840e12a30bfc175a87573bc7da29a',1,'DataPacket']]],
-  ['mic_5fref_5fampl_232',['MIC_REF_AMPL',['../noisemeter-device_8ino.html#a0939904dbf29923d1ade9be4feedbb50',1,'noisemeter-device.ino']]],
-  ['minimum_233',['minimum',['../structDataPacket.html#a8cd7df92da2eea9abb845f87f98271cc',1,'DataPacket']]]
+  ['lastotacheck_221',['lastOTACheck',['../noisemeter-device_8ino.html#a26ae57f27914c5211684c5c0e010b109',1,'noisemeter-device.ino']]],
+  ['lastupload_222',['lastUpload',['../noisemeter-device_8ino.html#a728d596a7c560bd11be12091c3ad6c10',1,'noisemeter-device.ino']]],
+  ['leq_5fsamples_223',['Leq_samples',['../classSPLMeter.html#aa2e3b5b980830da60d2ab10e55ff4ba6',1,'SPLMeter']]],
+  ['leq_5fsum_5fsqr_224',['Leq_sum_sqr',['../classSPLMeter.html#aa8c155bc251f8ce89f703c49fcb6ba0b',1,'SPLMeter']]]
 ];

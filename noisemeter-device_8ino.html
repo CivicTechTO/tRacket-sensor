@@ -67,9 +67,6 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a> &#124;
-<a href="#define-members">Macros</a> &#124;
-<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
@@ -84,18 +81,15 @@ $(function() {
 <code>#include &lt;HTTPClient.h&gt;</code><br />
 <code>#include &lt;WiFi.h&gt;</code><br />
 <code>#include &lt;WiFiClientSecure.h&gt;</code><br />
-<code>#include &lt;dummy.h&gt;</code><br />
-<code>#include &lt;driver/i2s.h&gt;</code><br />
-<code>#include &lt;mbedtls/aes.h&gt;</code><br />
 <code>#include &lt;esp_efuse.h&gt;</code><br />
 <code>#include &lt;esp_efuse_table.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="access-point_8h_source.html">access-point.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="blinker_8h_source.html">blinker.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="board_8h_source.html">board.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="data-packet_8h_source.html">data-packet.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="sos-iir-filter_8h_source.html">sos-iir-filter.h</a>&quot;</code><br />
 <code>#include &quot;certs.h&quot;</code><br />
 <code>#include &quot;secret.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="spl-meter_8h_source.html">spl-meter.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="secret-store_8h_source.html">secret-store.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="storage_8h_source.html">storage.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="ota-update_8h_source.html">ota-update.h</a>&quot;</code><br />
@@ -108,89 +102,6 @@ $(function() {
 </div>
 <p><a href="noisemeter-device_8ino_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsum__queue__t.html">sum_queue_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stores accumulators for decibel calculations.  <a href="structsum__queue__t.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:afc021ab385ec95059cc502793721c89a"><td class="memItemLeft" align="right" valign="top"><a id="afc021ab385ec95059cc502793721c89a"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#afc021ab385ec95059cc502793721c89a">LEQ_PERIOD</a>&#160;&#160;&#160;1</td></tr>
-<tr class="memdesc:afc021ab385ec95059cc502793721c89a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sample size duration to use for Leq calculation. <br /></td></tr>
-<tr class="separator:afc021ab385ec95059cc502793721c89a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abe4fa93d3722001aa9774ed473c1d985"><td class="memItemLeft" align="right" valign="top"><a id="abe4fa93d3722001aa9774ed473c1d985"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#abe4fa93d3722001aa9774ed473c1d985">WEIGHTING</a>&#160;&#160;&#160;A_weighting</td></tr>
-<tr class="memdesc:abe4fa93d3722001aa9774ed473c1d985"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies the type of weighting to use for decibel calculation. <br /></td></tr>
-<tr class="separator:abe4fa93d3722001aa9774ed473c1d985"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acd482d06ae51330d4655cdd138e3a3cd"><td class="memItemLeft" align="right" valign="top"><a id="acd482d06ae51330d4655cdd138e3a3cd"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#acd482d06ae51330d4655cdd138e3a3cd">MIC_EQUALIZER</a>&#160;&#160;&#160;SPH0645LM4H_B_RB</td></tr>
-<tr class="memdesc:acd482d06ae51330d4655cdd138e3a3cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies the microphone's equalization filter. <br /></td></tr>
-<tr class="separator:acd482d06ae51330d4655cdd138e3a3cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9779150e4ef0939c858b6075001084b8"><td class="memItemLeft" align="right" valign="top"><a id="a9779150e4ef0939c858b6075001084b8"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a9779150e4ef0939c858b6075001084b8">MIC_OFFSET_DB</a>&#160;&#160;&#160;0</td></tr>
-<tr class="memdesc:a9779150e4ef0939c858b6075001084b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Linear calibration offset to apply to calculated decibel values. <br /></td></tr>
-<tr class="separator:a9779150e4ef0939c858b6075001084b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0881ab63b4122dbe4682aba953b3041c"><td class="memItemLeft" align="right" valign="top"><a id="a0881ab63b4122dbe4682aba953b3041c"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a0881ab63b4122dbe4682aba953b3041c">MIC_SENSITIVITY</a>&#160;&#160;&#160;-26</td></tr>
-<tr class="memdesc:a0881ab63b4122dbe4682aba953b3041c"><td class="mdescLeft">&#160;</td><td class="mdescRight">dBFS value expected at MIC_REF_DB (Sensitivity value from datasheet). <br /></td></tr>
-<tr class="separator:a0881ab63b4122dbe4682aba953b3041c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac2bdb9f958973d6635a25e8d6d1e04c"><td class="memItemLeft" align="right" valign="top"><a id="aac2bdb9f958973d6635a25e8d6d1e04c"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#aac2bdb9f958973d6635a25e8d6d1e04c">MIC_REF_DB</a>&#160;&#160;&#160;94.0</td></tr>
-<tr class="memdesc:aac2bdb9f958973d6635a25e8d6d1e04c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Value at which point sensitivity is specified in datasheet (dB). <br /></td></tr>
-<tr class="separator:aac2bdb9f958973d6635a25e8d6d1e04c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5599068f816bd46e64b617a3b34c4700"><td class="memItemLeft" align="right" valign="top"><a id="a5599068f816bd46e64b617a3b34c4700"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a5599068f816bd46e64b617a3b34c4700">MIC_OVERLOAD_DB</a>&#160;&#160;&#160;120.0</td></tr>
-<tr class="memdesc:a5599068f816bd46e64b617a3b34c4700"><td class="mdescLeft">&#160;</td><td class="mdescRight">Acoustic overload point (dB). <br /></td></tr>
-<tr class="separator:a5599068f816bd46e64b617a3b34c4700"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5fca4eb6843cea1c3189328530be47ba"><td class="memItemLeft" align="right" valign="top"><a id="a5fca4eb6843cea1c3189328530be47ba"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a5fca4eb6843cea1c3189328530be47ba">MIC_NOISE_DB</a>&#160;&#160;&#160;29</td></tr>
-<tr class="memdesc:a5fca4eb6843cea1c3189328530be47ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Noise floor (dB). <br /></td></tr>
-<tr class="separator:a5fca4eb6843cea1c3189328530be47ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac5f985144b1f6d47740dfcbb5f7131fa"><td class="memItemLeft" align="right" valign="top"><a id="ac5f985144b1f6d47740dfcbb5f7131fa"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#ac5f985144b1f6d47740dfcbb5f7131fa">MIC_BITS</a>&#160;&#160;&#160;24</td></tr>
-<tr class="memdesc:ac5f985144b1f6d47740dfcbb5f7131fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Valid number of bits in a received I2S data sample. <br /></td></tr>
-<tr class="separator:ac5f985144b1f6d47740dfcbb5f7131fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6f9fbe0120535141ee02f2c9eb981f6b"><td class="memItemLeft" align="right" valign="top"><a id="a6f9fbe0120535141ee02f2c9eb981f6b"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a6f9fbe0120535141ee02f2c9eb981f6b">MIC_CONVERT</a>(s)&#160;&#160;&#160;(s &gt;&gt; (<a class="el" href="noisemeter-device_8ino.html#a4e511a803a9745e1d35608e8713f84bb">SAMPLE_BITS</a> - <a class="el" href="noisemeter-device_8ino.html#ac5f985144b1f6d47740dfcbb5f7131fa">MIC_BITS</a>))</td></tr>
-<tr class="memdesc:a6f9fbe0120535141ee02f2c9eb981f6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Drops unused bits from a raw microphone reading. <br /></td></tr>
-<tr class="separator:a6f9fbe0120535141ee02f2c9eb981f6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b76a0c2859cfd819a343a780070ee2b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a4b76a0c2859cfd819a343a780070ee2b">SAMPLE_RATE</a>&#160;&#160;&#160;48000</td></tr>
-<tr class="memdesc:a4b76a0c2859cfd819a343a780070ee2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sample rate for driving the microphone.  <a href="noisemeter-device_8ino.html#a4b76a0c2859cfd819a343a780070ee2b">More...</a><br /></td></tr>
-<tr class="separator:a4b76a0c2859cfd819a343a780070ee2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4e511a803a9745e1d35608e8713f84bb"><td class="memItemLeft" align="right" valign="top"><a id="a4e511a803a9745e1d35608e8713f84bb"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a4e511a803a9745e1d35608e8713f84bb">SAMPLE_BITS</a>&#160;&#160;&#160;32</td></tr>
-<tr class="memdesc:a4e511a803a9745e1d35608e8713f84bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of bits in a microphone sample. <br /></td></tr>
-<tr class="separator:a4e511a803a9745e1d35608e8713f84bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a42b7fde7fe8cc1d1b7c8567b375db0"><td class="memItemLeft" align="right" valign="top"><a id="a3a42b7fde7fe8cc1d1b7c8567b375db0"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a3a42b7fde7fe8cc1d1b7c8567b375db0">SAMPLE_T</a>&#160;&#160;&#160;int32_t</td></tr>
-<tr class="memdesc:a3a42b7fde7fe8cc1d1b7c8567b375db0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data type to use to store a microphone sample. <br /></td></tr>
-<tr class="separator:a3a42b7fde7fe8cc1d1b7c8567b375db0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7ba089fdf73ca4898b9d5319888825e6"><td class="memItemLeft" align="right" valign="top"><a id="a7ba089fdf73ca4898b9d5319888825e6"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a7ba089fdf73ca4898b9d5319888825e6">SAMPLES_SHORT</a>&#160;&#160;&#160;(<a class="el" href="noisemeter-device_8ino.html#a4b76a0c2859cfd819a343a780070ee2b">SAMPLE_RATE</a> / 8)</td></tr>
-<tr class="memdesc:a7ba089fdf73ca4898b9d5319888825e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of samples to process in a batch microphone read. <br /></td></tr>
-<tr class="separator:a7ba089fdf73ca4898b9d5319888825e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad081f7ca67d7a66d553bc68dcdbab155"><td class="memItemLeft" align="right" valign="top"><a id="ad081f7ca67d7a66d553bc68dcdbab155"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#ad081f7ca67d7a66d553bc68dcdbab155">SAMPLES_LEQ</a>&#160;&#160;&#160;(<a class="el" href="noisemeter-device_8ino.html#a4b76a0c2859cfd819a343a780070ee2b">SAMPLE_RATE</a> * <a class="el" href="noisemeter-device_8ino.html#afc021ab385ec95059cc502793721c89a">LEQ_PERIOD</a>)</td></tr>
-<tr class="memdesc:ad081f7ca67d7a66d553bc68dcdbab155"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of samples to be collected in an LEQ_PERIOD. <br /></td></tr>
-<tr class="separator:ad081f7ca67d7a66d553bc68dcdbab155"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a46b7db0a711480f83b8cc14849a731f9"><td class="memItemLeft" align="right" valign="top"><a id="a46b7db0a711480f83b8cc14849a731f9"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a46b7db0a711480f83b8cc14849a731f9">DMA_BANK_SIZE</a>&#160;&#160;&#160;(<a class="el" href="noisemeter-device_8ino.html#a7ba089fdf73ca4898b9d5319888825e6">SAMPLES_SHORT</a> / 16)</td></tr>
-<tr class="memdesc:a46b7db0a711480f83b8cc14849a731f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of DMA bank for I2S reading. <br /></td></tr>
-<tr class="separator:a46b7db0a711480f83b8cc14849a731f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a63b44c219fdbac8a1e5da2729ea41644"><td class="memItemLeft" align="right" valign="top"><a id="a63b44c219fdbac8a1e5da2729ea41644"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a63b44c219fdbac8a1e5da2729ea41644">DMA_BANKS</a>&#160;&#160;&#160;32</td></tr>
-<tr class="memdesc:a63b44c219fdbac8a1e5da2729ea41644"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of DMA bank to allocate to I2S. <br /></td></tr>
-<tr class="separator:a63b44c219fdbac8a1e5da2729ea41644"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:a8a89e5b84e736d9fe53326971b498456"><td class="memItemLeft" align="right" valign="top"><a id="a8a89e5b84e736d9fe53326971b498456"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a8a89e5b84e736d9fe53326971b498456">alignas</a> = float[<a class="el" href="noisemeter-device_8ino.html#a7ba089fdf73ca4898b9d5319888825e6">SAMPLES_SHORT</a>]</td></tr>
-<tr class="memdesc:a8a89e5b84e736d9fe53326971b498456"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is actually a typedef for SampleBuffer, an aligned array of floats. <br /></td></tr>
-<tr class="separator:a8a89e5b84e736d9fe53326971b498456"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a82318e0efffb674d482520e0c37df4fc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a82318e0efffb674d482520e0c37df4fc">printArray</a> (float arr[], unsigned long length)</td></tr>
@@ -248,34 +159,14 @@ const unsigned long&#160;</td><td class="memItemRight" valign="bottom"><a class=
 constexpr unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#ad9d154e7e2c2b745419b4e9520fbca2d">MAX_SAVED_PACKETS</a> = 14 * 24 * 60 * 60 / <a class="el" href="noisemeter-device_8ino.html#a28fd97a4ad77244f9afe89c869f5aa05">UPLOAD_INTERVAL_SEC</a></td></tr>
 <tr class="memdesc:ad9d154e7e2c2b745419b4e9520fbca2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of data packets to retain when WiFi is unavailable. <br /></td></tr>
 <tr class="separator:ad9d154e7e2c2b745419b4e9520fbca2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0939904dbf29923d1ade9be4feedbb50"><td class="memItemLeft" align="right" valign="top"><a id="a0939904dbf29923d1ade9be4feedbb50"></a>
-constexpr double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a0939904dbf29923d1ade9be4feedbb50">MIC_REF_AMPL</a> = pow(10, double(<a class="el" href="noisemeter-device_8ino.html#a0881ab63b4122dbe4682aba953b3041c">MIC_SENSITIVITY</a>) / 20) * ((1 &lt;&lt; (<a class="el" href="noisemeter-device_8ino.html#ac5f985144b1f6d47740dfcbb5f7131fa">MIC_BITS</a> - 1)) - 1)</td></tr>
-<tr class="memdesc:a0939904dbf29923d1ade9be4feedbb50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reference amplitude level for the microphone. <br /></td></tr>
-<tr class="separator:a0939904dbf29923d1ade9be4feedbb50"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a049ba4d498c393b1ec5e1d5ac3b3962d"><td class="memItemLeft" align="right" valign="top"><a id="a049ba4d498c393b1ec5e1d5ac3b3962d"></a>
-static SampleBuffer&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a049ba4d498c393b1ec5e1d5ac3b3962d">samples</a></td></tr>
-<tr class="memdesc:a049ba4d498c393b1ec5e1d5ac3b3962d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Single instance of a SampleBuffer. <br /></td></tr>
-<tr class="separator:a049ba4d498c393b1ec5e1d5ac3b3962d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25208458d80e7ee8971a1b1bc319fcdd"><td class="memItemLeft" align="right" valign="top"><a id="a25208458d80e7ee8971a1b1bc319fcdd"></a>
+static <a class="el" href="classSPLMeter.html">SPLMeter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a25208458d80e7ee8971a1b1bc319fcdd">SPL</a></td></tr>
+<tr class="memdesc:a25208458d80e7ee8971a1b1bc319fcdd"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classSPLMeter.html" title="Provides a minimal interface for reading decibel levels from the microphone.">SPLMeter</a> instance to manage decibel level measurement. <br /></td></tr>
+<tr class="separator:a25208458d80e7ee8971a1b1bc319fcdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add1ec86b8b8345a26e59735edddfb2c2"><td class="memItemLeft" align="right" valign="top"><a id="add1ec86b8b8345a26e59735edddfb2c2"></a>
 static <a class="el" href="classStorage.html">Storage</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a></td></tr>
 <tr class="memdesc:add1ec86b8b8345a26e59735edddfb2c2"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classStorage.html" title="Manages the storage of persistent settings.">Storage</a> instance to manage stored credentials. <br /></td></tr>
 <tr class="separator:add1ec86b8b8345a26e59735edddfb2c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae0d4ad06030fd832cc4b2afa792d8018"><td class="memItemLeft" align="right" valign="top"><a id="ae0d4ad06030fd832cc4b2afa792d8018"></a>
-<a class="el" href="structsum__queue__t.html">sum_queue_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#ae0d4ad06030fd832cc4b2afa792d8018">q</a></td></tr>
-<tr class="memdesc:ae0d4ad06030fd832cc4b2afa792d8018"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stores accumulators for decibel calculations. <br /></td></tr>
-<tr class="separator:ae0d4ad06030fd832cc4b2afa792d8018"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8819f87f64cb22994035ba9db9896b53"><td class="memItemLeft" align="right" valign="top"><a id="a8819f87f64cb22994035ba9db9896b53"></a>
-uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a8819f87f64cb22994035ba9db9896b53">Leq_samples</a> = 0</td></tr>
-<tr class="memdesc:a8819f87f64cb22994035ba9db9896b53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of samples included within current calculation. <br /></td></tr>
-<tr class="separator:a8819f87f64cb22994035ba9db9896b53"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaa63cbe2ded549751186bf0c1ab15217"><td class="memItemLeft" align="right" valign="top"><a id="aaa63cbe2ded549751186bf0c1ab15217"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#aaa63cbe2ded549751186bf0c1ab15217">Leq_sum_sqr</a> = 0</td></tr>
-<tr class="memdesc:aaa63cbe2ded549751186bf0c1ab15217"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sum of squares for current Leq calculation. <br /></td></tr>
-<tr class="separator:aaa63cbe2ded549751186bf0c1ab15217"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a38b7486abd7883732195face2e5f52"><td class="memItemLeft" align="right" valign="top"><a id="a6a38b7486abd7883732195face2e5f52"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a6a38b7486abd7883732195face2e5f52">Leq_dB</a> = 0</td></tr>
-<tr class="memdesc:a6a38b7486abd7883732195face2e5f52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decibel value for current Leq calculation. <br /></td></tr>
-<tr class="separator:a6a38b7486abd7883732195face2e5f52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ed6493bf4782cfdf85b9c3d632a1692"><td class="memItemLeft" align="right" valign="top">static std::list&lt; <a class="el" href="structDataPacket.html">DataPacket</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a></td></tr>
 <tr class="memdesc:a8ed6493bf4782cfdf85b9c3d632a1692"><td class="mdescLeft">&#160;</td><td class="mdescRight">Linked list of completed data packets.  <a href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">More...</a><br /></td></tr>
 <tr class="separator:a8ed6493bf4782cfdf85b9c3d632a1692"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -292,27 +183,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 <div class="textblock"><p>Main firmware code. </p>
 
 <p class="definition">Definition in file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
-</div><h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="a4b76a0c2859cfd819a343a780070ee2b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4b76a0c2859cfd819a343a780070ee2b">&#9670;&nbsp;</a></span>SAMPLE_RATE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define SAMPLE_RATE&#160;&#160;&#160;48000</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Sample rate for driving the microphone. </p>
-<p>IIR Filters depend on this value. </p>
-
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00096">96</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
-
-</div>
-</div>
-<h2 class="groupheader">Function Documentation</h2>
+</div><h2 class="groupheader">Function Documentation</h2>
 <a id="af520ea0ad43879e3ce51437c4df03bd2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af520ea0ad43879e3ce51437c4df03bd2">&#9670;&nbsp;</a></span>buildDeviceId()</h2>
 
@@ -331,7 +202,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 <p>Generates a <a class="el" href="classUUID.html">UUID</a> that is unique to the hardware running this firmware. </p>
 <dl class="section return"><dt>Returns</dt><dd>A device-unique <a class="el" href="classUUID.html">UUID</a> object </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00392">392</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00320">320</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -360,7 +231,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>String containing the resulting JSON payload </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00432">432</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00360">360</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -382,7 +253,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 <p>Main loop for the firmware. </p>
 <p>This function is run continuously, getting called within an infinite loop. </p>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00273">273</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00198">198</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -422,7 +293,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00349">349</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00277">277</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -450,7 +321,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00359">359</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00287">287</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -478,7 +349,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00371">371</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00299">299</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -500,7 +371,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 <p>Attempt to establish a WiFi connected using the stored credentials. </p>
 <dl class="section return"><dt>Returns</dt><dd>Zero on success or a negative number on failure </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00399">399</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00327">327</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -529,7 +400,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Zero on success or a negative number on failure </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00457">457</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00385">385</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -557,7 +428,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 <p>Linked list of completed data packets. </p>
 <p>This list should only grow if WiFi is unavailable. </p>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00142">142</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00067">67</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>

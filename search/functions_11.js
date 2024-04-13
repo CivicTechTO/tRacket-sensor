@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['_7eblinker_211',['~Blinker',['../classBlinker.html#a2fe7feaac0ac3ca4cf40239849058c5b',1,'Blinker']]],
-  ['_7esos_5fiir_5ffilter_212',['~SOS_IIR_Filter',['../structSOS__IIR__Filter.html#a599d4665c0b8d7d8df5dc38639d17bc2',1,'SOS_IIR_Filter']]]
+  ['valid_203',['valid',['../classStorage.html#a23acb6693b153e7f0651bf6433027eea',1,'Storage::valid()'],['../classTimestamp.html#a796b02fa865e0a3183209f2d51723a51',1,'Timestamp::valid()']]]
 ];
