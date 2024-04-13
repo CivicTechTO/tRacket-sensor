@@ -1,23 +1,48 @@
+/* noisemeter-device - Firmware for CivicTechTO's Noisemeter Device
+ * Copyright (C) 2024  Clyne Sullivan, Nick Barnard
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 #include "board.h"
 #include "sos-iir-filter.h"
 #include "spl-meter.h"
 
 #include <cmath>
 
-static constexpr auto LEQ_PERIOD = 1.f; // second(s)
+/** Sample size time duration to use for Leq calculation (seconds). */
+static constexpr auto LEQ_PERIOD = 1.f;
+/** Number of samples to use for a Leq decibel calculation. */
 static constexpr auto SAMPLES_LEQ = SPLMeter::SAMPLE_RATE * LEQ_PERIOD;
+/** Specifies the type of weighting to use for decibel calculation: dBA, dBC, or None/Z. */
+static constexpr auto& WEIGHTING = A_weighting;
+/** Specifies the microphone's equalization filter. See pre-defined filters or set to 'None'. */
+static constexpr auto& MIC_EQUALIZER = SPH0645LM4H_B_RB;
 
-static constexpr auto& WEIGHTING = A_weighting; // Also avaliable: 'C_weighting' or 'None' (Z_weighting)
-static constexpr auto& MIC_EQUALIZER = SPH0645LM4H_B_RB; // See below for defined IIR filters or set to 'None' to disable
+/** Valid number of bits in a received I2S data sample. */
+static constexpr auto MIC_BITS = 24u;
+/** dBFS value expected at MIC_REF_DB (Sensitivity value from datasheet). */
+static constexpr auto MIC_SENSITIVITY = -26.f;
+/** Value at which point sensitivity is specified in datasheet (dB). */
+static constexpr auto MIC_REF_DB = 94.f;
+/** Acoustic overload point (dB). */
+static constexpr auto MIC_OVERLOAD_DB = 120.f;
+/** Noise floor (dB). */
+static constexpr auto MIC_NOISE_DB = 29.f;
+/** Linear calibration offset to apply to calculated decibel values. */
+static constexpr auto MIC_OFFSET_DB = 0.f;
 
-static constexpr auto MIC_BITS        =  24u;  // valid number of bits in I2S data
-static constexpr auto MIC_SENSITIVITY = -26.f; // dBFS value expected at MIC_REF_DB (Sensitivity value from datasheet)
-static constexpr auto MIC_REF_DB      =  94.f; // Value at which point sensitivity is specified in datasheet (dB)
-static constexpr auto MIC_OVERLOAD_DB = 120.f; // dB - Acoustic overload point
-static constexpr auto MIC_NOISE_DB    =  29.f; // dB - Noise floor
-static constexpr auto MIC_OFFSET_DB   =   0.f; // Default offset (sine-wave RMS vs. dBFS). Modify this value for linear calibration
-
-// Calculate reference amplitude value at compile time
+/** Reference amplitude level for the microphone. */
 static constexpr auto MIC_REF_AMPL = std::pow(10.f, MIC_SENSITIVITY / 20.f) * ((1 << (MIC_BITS - 1)) - 1);
 
 const i2s_config_t SPLMeter::i2s_config = {
