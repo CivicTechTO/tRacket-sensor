@@ -50,21 +50,16 @@ void Storage::clear() noexcept
 
 String Storage::get(Entry entry) const noexcept
 {
-    if (entry != Entry::Checksum) {
-        char buffer[StringSize];
-        const auto start = _data + addrOf(entry);
-        auto end = std::copy(start, start + sizeof(buffer) - 1, buffer);
-        *end = '\0';
-        return buffer;
-    } else {
+    if (entry != Entry::Checksum)
+        return String(_data + addrOf(entry), StringSize - 1);
+    else
         return {};
-    }
 }
 
 void Storage::set(Entry entry, String str) noexcept
 {
     if (entry != Entry::Checksum && canStore(str))
-        writeString(addrOf(entry), str);
+        writeBytes(addrOf(entry), str.begin(), StringSize);
 }
 
 void Storage::commit() noexcept
