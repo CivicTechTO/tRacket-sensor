@@ -101,347 +101,336 @@ $(function() {
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &quot;certs.h&quot;</span></div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#include &quot;secret.h&quot;</span></div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="spl-meter_8h.html">spl-meter.h</a>&quot;</span></div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="secret-store_8h.html">secret-store.h</a>&quot;</span></div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="storage_8h.html">storage.h</a>&quot;</span></div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ota-update_8h.html">ota-update.h</a>&quot;</span></div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="UUID_8h.html">UUID/UUID.h</a>&quot;</span></div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor">#include &lt;cmath&gt;</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#include &lt;cstdint&gt;</span></div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">#include &lt;list&gt;</span></div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#include &lt;iterator&gt;</span></div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="preprocessor">#include &lt;optional&gt;</span></div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor">#if defined(BUILD_PLATFORMIO) &amp;&amp; defined(BOARD_ESP32_PCB)</span></div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;HWCDC USBSerial;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">// Uncomment these to disable WiFi and/or data upload</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">//#define UPLOAD_DISABLED</span></div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
-<div class="line"><a name="l00053"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a6df603e1520def84cd8642c3e1f1fde4">   53</a></span>&#160;constexpr <span class="keyword">auto</span> <a class="code" href="noisemeter-device_8ino.html#a6df603e1520def84cd8642c3e1f1fde4">WIFI_CONNECT_TIMEOUT_MS</a> = 20 * 1000;</div>
-<div class="line"><a name="l00055"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a28fd97a4ad77244f9afe89c869f5aa05">   55</a></span>&#160;<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <a class="code" href="noisemeter-device_8ino.html#a28fd97a4ad77244f9afe89c869f5aa05">UPLOAD_INTERVAL_SEC</a> = 60 * 5; <span class="comment">// Upload every 5 mins</span></div>
-<div class="line"><a name="l00057"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#af888ba6ab8315459fdd70a7b5110b034">   57</a></span>&#160;<span class="comment"></span><span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <a class="code" href="noisemeter-device_8ino.html#af888ba6ab8315459fdd70a7b5110b034">OTA_INTERVAL_SEC</a> = 60 * 60 * 24; <span class="comment">// Check for updates daily</span></div>
-<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#ad9d154e7e2c2b745419b4e9520fbca2d">   59</a></span>&#160;<span class="comment"></span>constexpr <span class="keywordtype">unsigned</span> <a class="code" href="noisemeter-device_8ino.html#ad9d154e7e2c2b745419b4e9520fbca2d">MAX_SAVED_PACKETS</a> = 14 * 24 * 60 * 60 / <a class="code" href="noisemeter-device_8ino.html#a28fd97a4ad77244f9afe89c869f5aa05">UPLOAD_INTERVAL_SEC</a>;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
-<div class="line"><a name="l00062"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a25208458d80e7ee8971a1b1bc319fcdd">   62</a></span>&#160;<span class="keyword">static</span> <a class="code" href="classSPLMeter.html">SPLMeter</a> <a class="code" href="noisemeter-device_8ino.html#a25208458d80e7ee8971a1b1bc319fcdd">SPL</a>;</div>
-<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">   64</a></span>&#160;<span class="keyword">static</span> <a class="code" href="classStorage.html">Storage</a> <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>;</div>
-<div class="line"><a name="l00067"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">   67</a></span>&#160;<span class="keyword">static</span> std::list&lt;DataPacket&gt; <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>;</div>
-<div class="line"><a name="l00069"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a728d596a7c560bd11be12091c3ad6c10">   69</a></span>&#160;<span class="keyword">static</span> <a class="code" href="classTimestamp.html">Timestamp</a> <a class="code" href="noisemeter-device_8ino.html#a728d596a7c560bd11be12091c3ad6c10">lastUpload</a> = <a class="code" href="classTimestamp.html#a66f54270c50d2435a310c6a459e3b747">Timestamp::invalidTimestamp</a>();</div>
-<div class="line"><a name="l00071"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a26ae57f27914c5211684c5c0e010b109">   71</a></span>&#160;<span class="keyword">static</span> <a class="code" href="classTimestamp.html">Timestamp</a> <a class="code" href="noisemeter-device_8ino.html#a26ae57f27914c5211684c5c0e010b109">lastOTACheck</a> = <a class="code" href="classTimestamp.html#a66f54270c50d2435a310c6a459e3b747">Timestamp::invalidTimestamp</a>();</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#a82318e0efffb674d482520e0c37df4fc">printArray</a>(<span class="keywordtype">float</span> arr[], <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> length);</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">printReadingToConsole</a>(<span class="keywordtype">double</span> reading);</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160; </div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#af0b9a871047865957dda66731ee223c9">saveNetworkCreds</a>(WebServer&amp; httpServer);</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<a class="code" href="classUUID.html">UUID</a> <a class="code" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a>();</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="keywordtype">int</span> <a class="code" href="noisemeter-device_8ino.html#acce324da2e7f0b8a20b9c54c4fd15bbf">tryWifiConnection</a>();</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;String <a class="code" href="noisemeter-device_8ino.html#ae246ec49a4fb8f4f01921d5daa492255">createJSONPayload</a>(<span class="keyword">const</span> <a class="code" href="structDataPacket.html">DataPacket</a>&amp; dp);</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160; </div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="keywordtype">int</span> <a class="code" href="noisemeter-device_8ino.html#a29f94be472c52e98a58c19bb5acc6ba2">uploadData</a>(String json);</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; </div>
-<div class="line"><a name="l00122"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a1cc0c82f2d9cb9e41c1d2750204a7819">  122</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#a1cc0c82f2d9cb9e41c1d2750204a7819">initMicrophone</a>();</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160; </div>
-<div class="line"><a name="l00128"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a129479a2e9f3f7c48504e4d370600883">  128</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#a129479a2e9f3f7c48504e4d370600883">readMicrophoneData</a>();</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160; </div>
-<div class="line"><a name="l00133"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a4fc01d736fe50cf5b977f755b675f11d">  133</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#a4fc01d736fe50cf5b977f755b675f11d">setup</a>() {</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;  pinMode(PIN_LED1, OUTPUT);</div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;  digitalWrite(PIN_LED1, LOW);</div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160; </div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;  <span class="comment">// Grounding this pin (e.g. with a button) will force access open to start.</span></div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;  <span class="comment">// Useful as a &quot;reset&quot; button to overwrite currently saved credentials.</span></div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;  pinMode(PIN_BUTTON, INPUT_PULLUP);</div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160; </div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;  <span class="comment">// If needed, now you can actually lower the CPU frquency,</span></div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;  <span class="comment">// i.e. if you want to (slightly) reduce ESP32 power consumption</span></div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;  <span class="comment">// setCpuFrequencyMhz(80);  // It should run as low as 80MHz</span></div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160; </div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;  SERIAL.begin(115200);</div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;  delay(2000);</div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;  SERIAL.println();</div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;  SERIAL.print(<span class="stringliteral">&quot;Noisemeter &quot;</span>);</div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;  SERIAL.print(NOISEMETER_VERSION);</div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;  SERIAL.print(<span class="charliteral">&#39; &#39;</span>);</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;  SERIAL.println(<a class="code" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a>());</div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;  SERIAL.println(<span class="stringliteral">&quot;Initializing...&quot;</span>);</div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160; </div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;  <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#ae0f4576205a738065f7734fa2cc0693f">begin</a>();</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160; </div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;  <a class="code" href="noisemeter-device_8ino.html#a25208458d80e7ee8971a1b1bc319fcdd">SPL</a>.<a class="code" href="classSPLMeter.html#aa8094a48a43c460a8d9df34a849ed566">initMicrophone</a>();</div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;  <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.emplace_front();</div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160; </div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="preprocessor">#ifndef UPLOAD_DISABLED</span></div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;  <span class="keywordtype">bool</span> isAPNeeded = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160; </div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;  <span class="keywordflow">if</span> (!digitalRead(PIN_BUTTON) || !<a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a23acb6693b153e7f0651bf6433027eea">valid</a>()) {</div>
-<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    SERIAL.print(<span class="stringliteral">&quot;Erasing stored credentials...&quot;</span>);</div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a2b42a101bad0d80e63041e9cef14afad">clear</a>();</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    SERIAL.println(<span class="stringliteral">&quot; done.&quot;</span>);</div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160; </div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    isAPNeeded = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (<a class="code" href="noisemeter-device_8ino.html#acce324da2e7f0b8a20b9c54c4fd15bbf">tryWifiConnection</a>() &lt; 0 || <a class="code" href="classTimestamp.html#a539006e78773ce5b070266b7d60663c0">Timestamp::synchronize</a>() &lt; 0) {</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="storage_8h.html">storage.h</a>&quot;</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="ota-update_8h.html">ota-update.h</a>&quot;</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="UUID_8h.html">UUID/UUID.h</a>&quot;</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">#include &lt;cmath&gt;</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor">#include &lt;cstdint&gt;</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="preprocessor">#include &lt;list&gt;</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">#include &lt;iterator&gt;</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#include &lt;optional&gt;</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="preprocessor">#if defined(BUILD_PLATFORMIO) &amp;&amp; defined(BOARD_ESP32_PCB)</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;HWCDC USBSerial;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment">// Uncomment these to disable WiFi and/or data upload</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">//#define UPLOAD_DISABLED</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00052"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a6df603e1520def84cd8642c3e1f1fde4">   52</a></span>&#160;constexpr <span class="keyword">auto</span> <a class="code" href="noisemeter-device_8ino.html#a6df603e1520def84cd8642c3e1f1fde4">WIFI_CONNECT_TIMEOUT_MS</a> = 20 * 1000;</div>
+<div class="line"><a name="l00054"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a28fd97a4ad77244f9afe89c869f5aa05">   54</a></span>&#160;<span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <a class="code" href="noisemeter-device_8ino.html#a28fd97a4ad77244f9afe89c869f5aa05">UPLOAD_INTERVAL_SEC</a> = 60 * 5; <span class="comment">// Upload every 5 mins</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#af888ba6ab8315459fdd70a7b5110b034">   56</a></span>&#160;<span class="comment"></span><span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> <a class="code" href="noisemeter-device_8ino.html#af888ba6ab8315459fdd70a7b5110b034">OTA_INTERVAL_SEC</a> = 60 * 60 * 24; <span class="comment">// Check for updates daily</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#ad9d154e7e2c2b745419b4e9520fbca2d">   58</a></span>&#160;<span class="comment"></span>constexpr <span class="keywordtype">unsigned</span> <a class="code" href="noisemeter-device_8ino.html#ad9d154e7e2c2b745419b4e9520fbca2d">MAX_SAVED_PACKETS</a> = 14 * 24 * 60 * 60 / <a class="code" href="noisemeter-device_8ino.html#a28fd97a4ad77244f9afe89c869f5aa05">UPLOAD_INTERVAL_SEC</a>;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
+<div class="line"><a name="l00061"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a25208458d80e7ee8971a1b1bc319fcdd">   61</a></span>&#160;<span class="keyword">static</span> <a class="code" href="classSPLMeter.html">SPLMeter</a> <a class="code" href="noisemeter-device_8ino.html#a25208458d80e7ee8971a1b1bc319fcdd">SPL</a>;</div>
+<div class="line"><a name="l00063"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">   63</a></span>&#160;<span class="keyword">static</span> <a class="code" href="classStorage.html">Storage</a> <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>;</div>
+<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">   66</a></span>&#160;<span class="keyword">static</span> std::list&lt;DataPacket&gt; <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>;</div>
+<div class="line"><a name="l00068"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a728d596a7c560bd11be12091c3ad6c10">   68</a></span>&#160;<span class="keyword">static</span> <a class="code" href="classTimestamp.html">Timestamp</a> <a class="code" href="noisemeter-device_8ino.html#a728d596a7c560bd11be12091c3ad6c10">lastUpload</a> = <a class="code" href="classTimestamp.html#a66f54270c50d2435a310c6a459e3b747">Timestamp::invalidTimestamp</a>();</div>
+<div class="line"><a name="l00070"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a26ae57f27914c5211684c5c0e010b109">   70</a></span>&#160;<span class="keyword">static</span> <a class="code" href="classTimestamp.html">Timestamp</a> <a class="code" href="noisemeter-device_8ino.html#a26ae57f27914c5211684c5c0e010b109">lastOTACheck</a> = <a class="code" href="classTimestamp.html#a66f54270c50d2435a310c6a459e3b747">Timestamp::invalidTimestamp</a>();</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#a82318e0efffb674d482520e0c37df4fc">printArray</a>(<span class="keywordtype">float</span> arr[], <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> length);</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">printReadingToConsole</a>(<span class="keywordtype">double</span> reading);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#af0b9a871047865957dda66731ee223c9">saveNetworkCreds</a>(WebServer&amp; httpServer);</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<a class="code" href="classUUID.html">UUID</a> <a class="code" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a>();</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160; </div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="keywordtype">int</span> <a class="code" href="noisemeter-device_8ino.html#acce324da2e7f0b8a20b9c54c4fd15bbf">tryWifiConnection</a>();</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;String <a class="code" href="noisemeter-device_8ino.html#ae246ec49a4fb8f4f01921d5daa492255">createJSONPayload</a>(<span class="keyword">const</span> <a class="code" href="structDataPacket.html">DataPacket</a>&amp; dp);</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160; </div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="keywordtype">int</span> <a class="code" href="noisemeter-device_8ino.html#a29f94be472c52e98a58c19bb5acc6ba2">uploadData</a>(String json);</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
+<div class="line"><a name="l00121"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a1cc0c82f2d9cb9e41c1d2750204a7819">  121</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#a1cc0c82f2d9cb9e41c1d2750204a7819">initMicrophone</a>();</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160; </div>
+<div class="line"><a name="l00127"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a129479a2e9f3f7c48504e4d370600883">  127</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#a129479a2e9f3f7c48504e4d370600883">readMicrophoneData</a>();</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160; </div>
+<div class="line"><a name="l00132"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a4fc01d736fe50cf5b977f755b675f11d">  132</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#a4fc01d736fe50cf5b977f755b675f11d">setup</a>() {</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;  pinMode(PIN_LED1, OUTPUT);</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;  digitalWrite(PIN_LED1, LOW);</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160; </div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;  <span class="comment">// Grounding this pin (e.g. with a button) will force access open to start.</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;  <span class="comment">// Useful as a &quot;reset&quot; button to overwrite currently saved credentials.</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;  pinMode(PIN_BUTTON, INPUT_PULLUP);</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160; </div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;  <span class="comment">// If needed, now you can actually lower the CPU frquency,</span></div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;  <span class="comment">// i.e. if you want to (slightly) reduce ESP32 power consumption</span></div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;  <span class="comment">// setCpuFrequencyMhz(80);  // It should run as low as 80MHz</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160; </div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;  SERIAL.begin(115200);</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;  delay(2000);</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;  SERIAL.println();</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;  SERIAL.print(<span class="stringliteral">&quot;Noisemeter &quot;</span>);</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;  SERIAL.print(NOISEMETER_VERSION);</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;  SERIAL.print(<span class="charliteral">&#39; &#39;</span>);</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;  SERIAL.println(<a class="code" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a>());</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;  SERIAL.println(<span class="stringliteral">&quot;Initializing...&quot;</span>);</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160; </div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;  <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a1613d528077e2fa1a0113a3783f4c2a4">begin</a>(<a class="code" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a>());</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;<span class="preprocessor">#ifdef STORAGE_SHOW_CREDENTIALS</span></div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;  SERIAL.println(<a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>);</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160; </div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;  <a class="code" href="noisemeter-device_8ino.html#a25208458d80e7ee8971a1b1bc319fcdd">SPL</a>.<a class="code" href="classSPLMeter.html#aa8094a48a43c460a8d9df34a849ed566">initMicrophone</a>();</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;  <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.emplace_front();</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160; </div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;<span class="preprocessor">#ifndef UPLOAD_DISABLED</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;  <span class="keywordtype">bool</span> isAPNeeded = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160; </div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;  <span class="keywordflow">if</span> (!digitalRead(PIN_BUTTON) || !<a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a23acb6693b153e7f0651bf6433027eea">valid</a>()) {</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    SERIAL.print(<span class="stringliteral">&quot;Erasing stored credentials...&quot;</span>);</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a2b42a101bad0d80e63041e9cef14afad">clear</a>();</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    SERIAL.println(<span class="stringliteral">&quot; done.&quot;</span>);</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160; </div>
 <div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    isAPNeeded = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;  }</div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160; </div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;  <span class="comment">// Run the access point if it is requested or if there are no valid credentials.</span></div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;  <span class="keywordflow">if</span> (isAPNeeded) {</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    <a class="code" href="classAccessPoint.html">AccessPoint</a> ap (<a class="code" href="noisemeter-device_8ino.html#af0b9a871047865957dda66731ee223c9">saveNetworkCreds</a>);</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <a class="code" href="classBlinker.html">Blinker</a> bl (500);</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160; </div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;    ap.<a class="code" href="classAccessPoint.html#a0a15a3a0117ab2644a47c9b7569d193c">run</a>(); <span class="comment">// does not return</span></div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;  }</div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160; </div>
-<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;  <a class="code" href="classTimestamp.html">Timestamp</a> now;</div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;  <a class="code" href="noisemeter-device_8ino.html#a728d596a7c560bd11be12091c3ad6c10">lastUpload</a> = now;</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;  <a class="code" href="noisemeter-device_8ino.html#a26ae57f27914c5211684c5c0e010b109">lastOTACheck</a> = now;</div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160; </div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;  SERIAL.println(<span class="stringliteral">&quot;Connected to the WiFi network.&quot;</span>);</div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;  SERIAL.print(<span class="stringliteral">&quot;Local ESP32 IP: &quot;</span>);</div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;  SERIAL.println(WiFi.localIP());</div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;  SERIAL.print(<span class="stringliteral">&quot;Current time: &quot;</span>);</div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;  SERIAL.println(now);</div>
-<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// !UPLOAD_DISABLED</span></div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160; </div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;  digitalWrite(PIN_LED1, HIGH);</div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;}</div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160; </div>
-<div class="line"><a name="l00198"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#afe461d27b9c48d5921c00d521181f12f">  198</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#afe461d27b9c48d5921c00d521181f12f">loop</a>() {</div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;  <span class="keywordflow">if</span> (<span class="keyword">auto</span> db = <a class="code" href="noisemeter-device_8ino.html#a25208458d80e7ee8971a1b1bc319fcdd">SPL</a>.<a class="code" href="classSPLMeter.html#a4825cff8de1e14e1ffeb6702baf0b715">readMicrophoneData</a>(); db) {</div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;    <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.front().add(*db);</div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;    <a class="code" href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">printReadingToConsole</a>(*db);</div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;  }</div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160; </div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;<span class="preprocessor">#ifndef UPLOAD_DISABLED</span></div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> now = <a class="code" href="classTimestamp.html">Timestamp</a>();</div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160; </div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;  <span class="keywordflow">if</span> (<a class="code" href="noisemeter-device_8ino.html#a728d596a7c560bd11be12091c3ad6c10">lastUpload</a>.<a class="code" href="classTimestamp.html#ace7251bf1a360e4588464c98e6d152e1">secondsBetween</a>(now) &gt;= <a class="code" href="noisemeter-device_8ino.html#a28fd97a4ad77244f9afe89c869f5aa05">UPLOAD_INTERVAL_SEC</a>) {</div>
-<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;    <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.front().timestamp = now;</div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160; </div>
-<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;    <span class="keywordflow">if</span> (WiFi.status() != WL_CONNECTED) {</div>
-<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;      SERIAL.println(<span class="stringliteral">&quot;Attempting WiFi reconnect...&quot;</span>);</div>
-<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;      WiFi.reconnect();</div>
-<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;      delay(5000);</div>
-<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    }</div>
-<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160; </div>
-<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;    <span class="keywordflow">if</span> (WiFi.status() == WL_CONNECTED) {</div>
-<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;      {</div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;        std::optional&lt;Blinker&gt; bl;</div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160; </div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;        <span class="comment">// Only blink if there&#39;s multiple packets to send</span></div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;        <span class="keywordflow">if</span> (++<a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.cbegin() != <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.cend())</div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;          bl.emplace(300);</div>
-<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160; </div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;        <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.remove_if([](<span class="keyword">const</span> <span class="keyword">auto</span>&amp; pkt) {</div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;          <span class="keywordflow">if</span> (pkt.count &gt; 0) {</div>
-<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;            const auto payload = createJSONPayload(pkt);</div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;            return uploadData(payload) == 0;</div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;          } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;            return true; <span class="comment">// Discard empty packets</span></div>
-<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;          }</div>
-<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;        });</div>
-<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;      }</div>
-<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160; </div>
-<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;<span class="preprocessor">#if defined(BOARD_ESP32_PCB)</span></div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;      <span class="comment">// We have WiFi: also check for software updates</span></div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;      <span class="keywordflow">if</span> (<a class="code" href="noisemeter-device_8ino.html#a26ae57f27914c5211684c5c0e010b109">lastOTACheck</a>.<a class="code" href="classTimestamp.html#ace7251bf1a360e4588464c98e6d152e1">secondsBetween</a>(now) &gt;= <a class="code" href="noisemeter-device_8ino.html#af888ba6ab8315459fdd70a7b5110b034">OTA_INTERVAL_SEC</a>) {</div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;        <a class="code" href="noisemeter-device_8ino.html#a26ae57f27914c5211684c5c0e010b109">lastOTACheck</a> = now;</div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;        SERIAL.println(<span class="stringliteral">&quot;Checking for updates...&quot;</span>);</div>
-<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160; </div>
-<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;        <a class="code" href="structOTAUpdate.html">OTAUpdate</a> ota (cert_ISRG_Root_X1);</div>
-<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;        <span class="keywordflow">if</span> (ota.<a class="code" href="structOTAUpdate.html#aa4c9a0efcd33e90a8ef6d4a1a9b79e0c">available</a>()) {</div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;          SERIAL.print(ota.<a class="code" href="structOTAUpdate.html#af6e964b44050214de82721cafe80eb1f">version</a>);</div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;          SERIAL.println(<span class="stringliteral">&quot; available!&quot;</span>);</div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160; </div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;          <span class="keywordflow">if</span> (ota.<a class="code" href="structOTAUpdate.html#af54267d9f4efc700c5ec135a41c53dfe">download</a>()) {</div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;            SERIAL.println(<span class="stringliteral">&quot;Download success! Restarting...&quot;</span>);</div>
-<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;            delay(1000);</div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;            ESP.restart();</div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;          } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;            SERIAL.println(<span class="stringliteral">&quot;Update download failed.&quot;</span>);</div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;          }</div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;        } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;          SERIAL.println(<span class="stringliteral">&quot;No update available.&quot;</span>);</div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;        }</div>
-<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;      }</div>
-<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// BOARD_ESP32_PCB</span></div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;    }</div>
-<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160; </div>
-<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;    <span class="keywordflow">if</span> (!<a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.empty()) {</div>
-<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;      <span class="keyword">const</span> <span class="keyword">auto</span> count = std::distance(<a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.cbegin(), <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.cend());</div>
-<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;      SERIAL.print(count);</div>
-<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;      SERIAL.println(<span class="stringliteral">&quot; packets still need to be sent!&quot;</span>);</div>
-<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160; </div>
-<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;      <span class="keywordflow">if</span> (count &gt;= <a class="code" href="noisemeter-device_8ino.html#ad9d154e7e2c2b745419b4e9520fbca2d">MAX_SAVED_PACKETS</a>) {</div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;        SERIAL.println(<span class="stringliteral">&quot;Discarded a packet!&quot;</span>);</div>
-<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;        <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.pop_back();</div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;      }</div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;    }</div>
-<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160; </div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;    <span class="comment">// Create new packet for next measurements</span></div>
-<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;    <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.emplace_front();</div>
-<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;    <a class="code" href="noisemeter-device_8ino.html#a728d596a7c560bd11be12091c3ad6c10">lastUpload</a> = now;</div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;  }</div>
-<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// !UPLOAD_DISABLED</span></div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;}</div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160; </div>
-<div class="line"><a name="l00277"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a82318e0efffb674d482520e0c37df4fc">  277</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#a82318e0efffb674d482520e0c37df4fc">printArray</a>(<span class="keywordtype">float</span> arr[], <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> length) {</div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;  SERIAL.print(length);</div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;  SERIAL.print(<span class="stringliteral">&quot; {&quot;</span>);</div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; length; i++) {</div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;    SERIAL.print(arr[i]);</div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;    <span class="keywordflow">if</span> (i &lt; length - 1) SERIAL.print(<span class="stringliteral">&quot;, &quot;</span>);</div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;  }</div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;  SERIAL.println(<span class="stringliteral">&quot;}&quot;</span>);</div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;}</div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160; </div>
-<div class="line"><a name="l00287"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">  287</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">printReadingToConsole</a>(<span class="keywordtype">double</span> reading) {</div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;  String output = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;  output += std::lround(reading);</div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;  output += <span class="stringliteral">&quot;dB&quot;</span>;</div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160; </div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> currentCount = <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.front().count;</div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;  <span class="keywordflow">if</span> (currentCount &gt; 1) {</div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;    output += <span class="stringliteral">&quot; [+&quot;</span> + String(currentCount - 1) + <span class="stringliteral">&quot; more]&quot;</span>;</div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;  }</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;  SERIAL.println(output);</div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;}</div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160; </div>
-<div class="line"><a name="l00299"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#af0b9a871047865957dda66731ee223c9">  299</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#af0b9a871047865957dda66731ee223c9">saveNetworkCreds</a>(WebServer&amp; httpServer) {</div>
-<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;  <span class="comment">// Confirm that the form was actually submitted.</span></div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;  <span class="keywordflow">if</span> (httpServer.hasArg(<span class="stringliteral">&quot;ssid&quot;</span>) &amp;&amp; httpServer.hasArg(<span class="stringliteral">&quot;psk&quot;</span>)) {</div>
-<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> <span class="keywordtype">id</span> = String(<a class="code" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a>());</div>
-<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> ssid = Secret::encrypt(<span class="keywordtype">id</span>, httpServer.arg(<span class="stringliteral">&quot;ssid&quot;</span>));</div>
-<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> psk = Secret::encrypt(<span class="keywordtype">id</span>, httpServer.arg(<span class="stringliteral">&quot;psk&quot;</span>));</div>
-<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160; </div>
-<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;    <span class="comment">// Confirm that the given credentials will fit in the allocated EEPROM space.</span></div>
-<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;    <span class="keywordflow">if</span> (!ssid.isEmpty() &amp;&amp; <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a92598fba0896671741dd2cfc84e0de9a">canStore</a>(ssid) &amp;&amp; <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a92598fba0896671741dd2cfc84e0de9a">canStore</a>(psk)) {</div>
-<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;      <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a774cc4081547c3abdb3eb207b849eb9d">set</a>(<a class="code" href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5a0d09d7b23e604623465e83b0dc113f4d">Storage::Entry::SSID</a>, ssid);</div>
-<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;      <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a774cc4081547c3abdb3eb207b849eb9d">set</a>(<a class="code" href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5a816da2672a1205347a4ae8e9eb25f0bd">Storage::Entry::Passkey</a>, psk);</div>
-<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;      <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a5424cf1c5a001208f294f422b3acb1ef">commit</a>();</div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160; </div>
-<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;      ESP.restart(); <span class="comment">// Software reset.</span></div>
-<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;    }</div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;  }</div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160; </div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;  <span class="comment">// TODO inform user that something went wrong...</span></div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;  SERIAL.println(<span class="stringliteral">&quot;Error: Invalid network credentials!&quot;</span>);</div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;}</div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160; </div>
-<div class="line"><a name="l00320"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">  320</a></span>&#160;<a class="code" href="classUUID.html">UUID</a> <a class="code" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a>()</div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;{</div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;  std::array&lt;uint8_t, 6&gt; mac;</div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;  esp_efuse_read_field_blob(ESP_EFUSE_MAC_FACTORY, mac.data(), <span class="comment">/* bits */</span> mac.size() * 8);</div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;  <span class="keywordflow">return</span> <a class="code" href="classUUID.html">UUID</a>(mac[0] | (mac[1] &lt;&lt; 8) | (mac[2] &lt;&lt; 16), mac[3] | (mac[4] &lt;&lt; 8) | (mac[5] &lt;&lt; 16));</div>
-<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;}</div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160; </div>
-<div class="line"><a name="l00327"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#acce324da2e7f0b8a20b9c54c4fd15bbf">  327</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="noisemeter-device_8ino.html#acce324da2e7f0b8a20b9c54c4fd15bbf">tryWifiConnection</a>()</div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;{</div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;  <span class="comment">//const auto ssid = Creds.get(Storage::Entry::SSID);</span></div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160; </div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;  <span class="comment">//if (ssid.isEmpty())</span></div>
-<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;  <span class="comment">//  return -1;</span></div>
-<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160; </div>
-<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;  <span class="comment">//SERIAL.print(&quot;Ready to connect to &quot;);</span></div>
-<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;  <span class="comment">//SERIAL.println(ssid);</span></div>
-<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160; </div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> ssid = <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a35b9610f482751d825659d425d2b998d">get</a>(<a class="code" href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5a0d09d7b23e604623465e83b0dc113f4d">Storage::Entry::SSID</a>);</div>
-<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> psk = <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a35b9610f482751d825659d425d2b998d">get</a>(<a class="code" href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5a816da2672a1205347a4ae8e9eb25f0bd">Storage::Entry::Passkey</a>);</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;  } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (<a class="code" href="noisemeter-device_8ino.html#acce324da2e7f0b8a20b9c54c4fd15bbf">tryWifiConnection</a>() &lt; 0 || <a class="code" href="classTimestamp.html#a539006e78773ce5b070266b7d60663c0">Timestamp::synchronize</a>() &lt; 0) {</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;    isAPNeeded = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;  }</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160; </div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;  <span class="comment">// Run the access point if it is requested or if there are no valid credentials.</span></div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;  <span class="keywordflow">if</span> (isAPNeeded) {</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    <a class="code" href="classAccessPoint.html">AccessPoint</a> ap (<a class="code" href="noisemeter-device_8ino.html#af0b9a871047865957dda66731ee223c9">saveNetworkCreds</a>);</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;    <a class="code" href="classBlinker.html">Blinker</a> bl (500);</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160; </div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;    ap.<a class="code" href="classAccessPoint.html#a0a15a3a0117ab2644a47c9b7569d193c">run</a>(); <span class="comment">// does not return</span></div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;  }</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160; </div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;  <a class="code" href="classTimestamp.html">Timestamp</a> now;</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;  <a class="code" href="noisemeter-device_8ino.html#a728d596a7c560bd11be12091c3ad6c10">lastUpload</a> = now;</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;  <a class="code" href="noisemeter-device_8ino.html#a26ae57f27914c5211684c5c0e010b109">lastOTACheck</a> = now;</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160; </div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;  SERIAL.println(<span class="stringliteral">&quot;Connected to the WiFi network.&quot;</span>);</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;  SERIAL.print(<span class="stringliteral">&quot;Local ESP32 IP: &quot;</span>);</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;  SERIAL.println(WiFi.localIP());</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;  SERIAL.print(<span class="stringliteral">&quot;Current time: &quot;</span>);</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;  SERIAL.println(now);</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// !UPLOAD_DISABLED</span></div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160; </div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;  digitalWrite(PIN_LED1, HIGH);</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;}</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160; </div>
+<div class="line"><a name="l00200"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#afe461d27b9c48d5921c00d521181f12f">  200</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#afe461d27b9c48d5921c00d521181f12f">loop</a>() {</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;  <span class="keywordflow">if</span> (<span class="keyword">auto</span> db = <a class="code" href="noisemeter-device_8ino.html#a25208458d80e7ee8971a1b1bc319fcdd">SPL</a>.<a class="code" href="classSPLMeter.html#a4825cff8de1e14e1ffeb6702baf0b715">readMicrophoneData</a>(); db) {</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.front().add(*db);</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;    <a class="code" href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">printReadingToConsole</a>(*db);</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;  }</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160; </div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;<span class="preprocessor">#ifndef UPLOAD_DISABLED</span></div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> now = <a class="code" href="classTimestamp.html">Timestamp</a>();</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160; </div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;  <span class="keywordflow">if</span> (<a class="code" href="noisemeter-device_8ino.html#a728d596a7c560bd11be12091c3ad6c10">lastUpload</a>.<a class="code" href="classTimestamp.html#ace7251bf1a360e4588464c98e6d152e1">secondsBetween</a>(now) &gt;= <a class="code" href="noisemeter-device_8ino.html#a28fd97a4ad77244f9afe89c869f5aa05">UPLOAD_INTERVAL_SEC</a>) {</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;    <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.front().timestamp = now;</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160; </div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;    <span class="keywordflow">if</span> (WiFi.status() != WL_CONNECTED) {</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;      SERIAL.println(<span class="stringliteral">&quot;Attempting WiFi reconnect...&quot;</span>);</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;      WiFi.reconnect();</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;      delay(5000);</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;    }</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160; </div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;    <span class="keywordflow">if</span> (WiFi.status() == WL_CONNECTED) {</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;      {</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;        std::optional&lt;Blinker&gt; bl;</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160; </div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;        <span class="comment">// Only blink if there&#39;s multiple packets to send</span></div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;        <span class="keywordflow">if</span> (++<a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.cbegin() != <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.cend())</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;          bl.emplace(300);</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160; </div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;        <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.remove_if([](<span class="keyword">const</span> <span class="keyword">auto</span>&amp; pkt) {</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;          <span class="keywordflow">if</span> (pkt.count &gt; 0) {</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;            const auto payload = createJSONPayload(pkt);</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;            return uploadData(payload) == 0;</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;          } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;            return true; <span class="comment">// Discard empty packets</span></div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;          }</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;        });</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;      }</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160; </div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;<span class="preprocessor">#if defined(BOARD_ESP32_PCB)</span></div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;      <span class="comment">// We have WiFi: also check for software updates</span></div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;      <span class="keywordflow">if</span> (<a class="code" href="noisemeter-device_8ino.html#a26ae57f27914c5211684c5c0e010b109">lastOTACheck</a>.<a class="code" href="classTimestamp.html#ace7251bf1a360e4588464c98e6d152e1">secondsBetween</a>(now) &gt;= <a class="code" href="noisemeter-device_8ino.html#af888ba6ab8315459fdd70a7b5110b034">OTA_INTERVAL_SEC</a>) {</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;        <a class="code" href="noisemeter-device_8ino.html#a26ae57f27914c5211684c5c0e010b109">lastOTACheck</a> = now;</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;        SERIAL.println(<span class="stringliteral">&quot;Checking for updates...&quot;</span>);</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160; </div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;        <a class="code" href="structOTAUpdate.html">OTAUpdate</a> ota (cert_ISRG_Root_X1);</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;        <span class="keywordflow">if</span> (ota.<a class="code" href="structOTAUpdate.html#aa4c9a0efcd33e90a8ef6d4a1a9b79e0c">available</a>()) {</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;          SERIAL.print(ota.<a class="code" href="structOTAUpdate.html#af6e964b44050214de82721cafe80eb1f">version</a>);</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;          SERIAL.println(<span class="stringliteral">&quot; available!&quot;</span>);</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160; </div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;          <span class="keywordflow">if</span> (ota.<a class="code" href="structOTAUpdate.html#af54267d9f4efc700c5ec135a41c53dfe">download</a>()) {</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;            SERIAL.println(<span class="stringliteral">&quot;Download success! Restarting...&quot;</span>);</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;            delay(1000);</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;            ESP.restart();</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;          } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;            SERIAL.println(<span class="stringliteral">&quot;Update download failed.&quot;</span>);</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;          }</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;        } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;          SERIAL.println(<span class="stringliteral">&quot;No update available.&quot;</span>);</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;        }</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;      }</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// BOARD_ESP32_PCB</span></div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;    }</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160; </div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;    <span class="keywordflow">if</span> (!<a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.empty()) {</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;      <span class="keyword">const</span> <span class="keyword">auto</span> count = std::distance(<a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.cbegin(), <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.cend());</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;      SERIAL.print(count);</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;      SERIAL.println(<span class="stringliteral">&quot; packets still need to be sent!&quot;</span>);</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160; </div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;      <span class="keywordflow">if</span> (count &gt;= <a class="code" href="noisemeter-device_8ino.html#ad9d154e7e2c2b745419b4e9520fbca2d">MAX_SAVED_PACKETS</a>) {</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;        SERIAL.println(<span class="stringliteral">&quot;Discarded a packet!&quot;</span>);</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;        <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.pop_back();</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;      }</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;    }</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160; </div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;    <span class="comment">// Create new packet for next measurements</span></div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;    <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.emplace_front();</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;    <a class="code" href="noisemeter-device_8ino.html#a728d596a7c560bd11be12091c3ad6c10">lastUpload</a> = now;</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;  }</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// !UPLOAD_DISABLED</span></div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;}</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160; </div>
+<div class="line"><a name="l00279"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a82318e0efffb674d482520e0c37df4fc">  279</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#a82318e0efffb674d482520e0c37df4fc">printArray</a>(<span class="keywordtype">float</span> arr[], <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> length) {</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;  SERIAL.print(length);</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;  SERIAL.print(<span class="stringliteral">&quot; {&quot;</span>);</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; length; i++) {</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;    SERIAL.print(arr[i]);</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;    <span class="keywordflow">if</span> (i &lt; length - 1) SERIAL.print(<span class="stringliteral">&quot;, &quot;</span>);</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;  }</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;  SERIAL.println(<span class="stringliteral">&quot;}&quot;</span>);</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;}</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160; </div>
+<div class="line"><a name="l00289"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">  289</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">printReadingToConsole</a>(<span class="keywordtype">double</span> reading) {</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;  String output = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;  output += std::lround(reading);</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;  output += <span class="stringliteral">&quot;dB&quot;</span>;</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160; </div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> currentCount = <a class="code" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>.front().count;</div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;  <span class="keywordflow">if</span> (currentCount &gt; 1) {</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;    output += <span class="stringliteral">&quot; [+&quot;</span> + String(currentCount - 1) + <span class="stringliteral">&quot; more]&quot;</span>;</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;  }</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;  SERIAL.println(output);</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;}</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160; </div>
+<div class="line"><a name="l00301"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#af0b9a871047865957dda66731ee223c9">  301</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="noisemeter-device_8ino.html#af0b9a871047865957dda66731ee223c9">saveNetworkCreds</a>(WebServer&amp; httpServer) {</div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;  <span class="comment">// Confirm that the form was actually submitted.</span></div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;  <span class="keywordflow">if</span> (httpServer.hasArg(<span class="stringliteral">&quot;ssid&quot;</span>) &amp;&amp; httpServer.hasArg(<span class="stringliteral">&quot;psk&quot;</span>)) {</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> ssid = httpServer.arg(<span class="stringliteral">&quot;ssid&quot;</span>);</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;    <span class="keyword">const</span> <span class="keyword">auto</span> psk = httpServer.arg(<span class="stringliteral">&quot;psk&quot;</span>);</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160; </div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;    <span class="comment">// Confirm that the given credentials will fit in the allocated EEPROM space.</span></div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;    <span class="keywordflow">if</span> (!ssid.isEmpty() &amp;&amp; <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a92598fba0896671741dd2cfc84e0de9a">canStore</a>(ssid) &amp;&amp; <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a92598fba0896671741dd2cfc84e0de9a">canStore</a>(psk)) {</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;      <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a774cc4081547c3abdb3eb207b849eb9d">set</a>(<a class="code" href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5a0d09d7b23e604623465e83b0dc113f4d">Storage::Entry::SSID</a>, ssid);</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;      <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a774cc4081547c3abdb3eb207b849eb9d">set</a>(<a class="code" href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5a816da2672a1205347a4ae8e9eb25f0bd">Storage::Entry::Passkey</a>, psk);</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;      <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a5424cf1c5a001208f294f422b3acb1ef">commit</a>();</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160; </div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;      ESP.restart(); <span class="comment">// Software reset.</span></div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;    }</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;  }</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160; </div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;  <span class="comment">// TODO inform user that something went wrong...</span></div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;  SERIAL.println(<span class="stringliteral">&quot;Error: Invalid network credentials!&quot;</span>);</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;}</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160; </div>
+<div class="line"><a name="l00321"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">  321</a></span>&#160;<a class="code" href="classUUID.html">UUID</a> <a class="code" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a>()</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;{</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;  std::array&lt;uint8_t, 6&gt; mac;</div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;  esp_efuse_read_field_blob(ESP_EFUSE_MAC_FACTORY, mac.data(), <span class="comment">/* bits */</span> mac.size() * 8);</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;  <span class="keywordflow">return</span> <a class="code" href="classUUID.html">UUID</a>(mac[0] | (mac[1] &lt;&lt; 8) | (mac[2] &lt;&lt; 16), mac[3] | (mac[4] &lt;&lt; 8) | (mac[5] &lt;&lt; 16));</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;}</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160; </div>
+<div class="line"><a name="l00328"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#acce324da2e7f0b8a20b9c54c4fd15bbf">  328</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="noisemeter-device_8ino.html#acce324da2e7f0b8a20b9c54c4fd15bbf">tryWifiConnection</a>()</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;{</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;  WiFi.mode(WIFI_STA);</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> stat = WiFi.begin(<a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a35b9610f482751d825659d425d2b998d">get</a>(<a class="code" href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5a0d09d7b23e604623465e83b0dc113f4d">Storage::Entry::SSID</a>).c_str(), <a class="code" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a>.<a class="code" href="classStorage.html#a35b9610f482751d825659d425d2b998d">get</a>(<a class="code" href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5a816da2672a1205347a4ae8e9eb25f0bd">Storage::Entry::Passkey</a>).c_str());</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;  <span class="keywordflow">if</span> (stat == WL_CONNECT_FAILED)</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;    <span class="keywordflow">return</span> -1;</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160; </div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;  <span class="comment">// wait for WiFi connection</span></div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;  SERIAL.print(<span class="stringliteral">&quot;Waiting for WiFi to connect...&quot;</span>);</div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> start = millis();</div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;  <span class="keywordtype">bool</span> connected;</div>
 <div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160; </div>
-<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;  WiFi.mode(WIFI_STA);</div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> <span class="keywordtype">id</span> = String(<a class="code" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a>());</div>
-<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> stat = WiFi.begin(Secret::decrypt(<span class="keywordtype">id</span>, ssid).c_str(), Secret::decrypt(<span class="keywordtype">id</span>, psk).c_str());</div>
-<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;  <span class="keywordflow">if</span> (stat == WL_CONNECT_FAILED)</div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;    <span class="keywordflow">return</span> -1;</div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;  <span class="keywordflow">do</span> {</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;    connected = WiFi.status() == WL_CONNECTED;</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;    SERIAL.print(<span class="stringliteral">&quot;.&quot;</span>);</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;    delay(500);</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;  } <span class="keywordflow">while</span> (!connected &amp;&amp; millis() - start &lt; <a class="code" href="noisemeter-device_8ino.html#a6df603e1520def84cd8642c3e1f1fde4">WIFI_CONNECT_TIMEOUT_MS</a>);</div>
 <div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160; </div>
-<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;  <span class="comment">// wait for WiFi connection</span></div>
-<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;  SERIAL.print(<span class="stringliteral">&quot;Waiting for WiFi to connect...&quot;</span>);</div>
-<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;  <span class="keyword">const</span> <span class="keyword">auto</span> start = millis();</div>
-<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;  <span class="keywordtype">bool</span> connected;</div>
-<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160; </div>
-<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;  <span class="keywordflow">do</span> {</div>
-<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;    connected = WiFi.status() == WL_CONNECTED;</div>
-<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;    SERIAL.print(<span class="stringliteral">&quot;.&quot;</span>);</div>
-<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;    delay(500);</div>
-<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;  } <span class="keywordflow">while</span> (!connected &amp;&amp; millis() - start &lt; <a class="code" href="noisemeter-device_8ino.html#a6df603e1520def84cd8642c3e1f1fde4">WIFI_CONNECT_TIMEOUT_MS</a>);</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;  <span class="keywordflow">return</span> connected ? 0 : -1;</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;}</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160; </div>
+<div class="line"><a name="l00349"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#ae246ec49a4fb8f4f01921d5daa492255">  349</a></span>&#160;String <a class="code" href="noisemeter-device_8ino.html#ae246ec49a4fb8f4f01921d5daa492255">createJSONPayload</a>(<span class="keyword">const</span> <a class="code" href="structDataPacket.html">DataPacket</a>&amp; dp)</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;{</div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;<span class="preprocessor">#ifdef BUILD_PLATFORMIO</span></div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;  JsonDocument doc;</div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;  DynamicJsonDocument doc (2048);</div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160; </div>
-<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;  <span class="keywordflow">return</span> connected ? 0 : -1;</div>
-<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;}</div>
-<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160; </div>
-<div class="line"><a name="l00360"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#ae246ec49a4fb8f4f01921d5daa492255">  360</a></span>&#160;String <a class="code" href="noisemeter-device_8ino.html#ae246ec49a4fb8f4f01921d5daa492255">createJSONPayload</a>(<span class="keyword">const</span> <a class="code" href="structDataPacket.html">DataPacket</a>&amp; dp)</div>
-<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;{</div>
-<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;<span class="preprocessor">#ifdef BUILD_PLATFORMIO</span></div>
-<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;  JsonDocument doc;</div>
-<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;  DynamicJsonDocument doc (2048);</div>
-<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160; </div>
-<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;  doc[<span class="stringliteral">&quot;parent&quot;</span>] = <span class="stringliteral">&quot;/Bases/nm1&quot;</span>;</div>
-<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;type&quot;</span>] = <span class="stringliteral">&quot;comand&quot;</span>;</div>
-<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;version&quot;</span>] = <span class="stringliteral">&quot;1.0&quot;</span>;</div>
-<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;contents&quot;</span>][0][<span class="stringliteral">&quot;Type&quot;</span>] = <span class="stringliteral">&quot;Noise&quot;</span>;</div>
-<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;contents&quot;</span>][0][<span class="stringliteral">&quot;Min&quot;</span>] = std::lround(dp.<a class="code" href="structDataPacket.html#a8cd7df92da2eea9abb845f87f98271cc">minimum</a>);</div>
-<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;contents&quot;</span>][0][<span class="stringliteral">&quot;Max&quot;</span>] = std::lround(dp.<a class="code" href="structDataPacket.html#a932840e12a30bfc175a87573bc7da29a">maximum</a>);</div>
-<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;contents&quot;</span>][0][<span class="stringliteral">&quot;Mean&quot;</span>] = std::lround(dp.<a class="code" href="structDataPacket.html#a468b65a654fc379b4099ef948467c117">average</a>);</div>
-<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;contents&quot;</span>][0][<span class="stringliteral">&quot;DeviceID&quot;</span>] = String(<a class="code" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a>());</div>
-<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;contents&quot;</span>][0][<span class="stringliteral">&quot;Timestamp&quot;</span>] = String(dp.<a class="code" href="structDataPacket.html#aa4baf5b92cbefdd6e16365b7b525e890">timestamp</a>);</div>
-<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160; </div>
-<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;  <span class="comment">// Serialize JSON document</span></div>
-<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;  String json;</div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;  serializeJson(doc, json);</div>
-<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;  <span class="keywordflow">return</span> json;</div>
-<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;}</div>
-<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160; </div>
-<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;<span class="comment">// Given a serialized JSON payload, upload the data to webcomand</span></div>
-<div class="line"><a name="l00385"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a29f94be472c52e98a58c19bb5acc6ba2">  385</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="noisemeter-device_8ino.html#a29f94be472c52e98a58c19bb5acc6ba2">uploadData</a>(String json)</div>
-<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;{</div>
-<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;  WiFiClientSecure client;</div>
-<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;  HTTPClient https;</div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160; </div>
-<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;  client.setCACert(cert_ISRG_Root_X1);</div>
-<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160; </div>
-<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;  SERIAL.print(<span class="stringliteral">&quot;[HTTPS] begin...\n&quot;</span>);</div>
-<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;  <span class="keywordflow">if</span> (https.begin(client, <span class="stringliteral">&quot;https://noisemeter.webcomand.com/ws/put&quot;</span>)) {</div>
-<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;    SERIAL.print(<span class="stringliteral">&quot;[HTTPS] POST...\n&quot;</span>);</div>
-<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160; </div>
-<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;    <span class="comment">// start connection and send HTTP header</span></div>
-<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;    https.addHeader(<span class="stringliteral">&quot;Authorization&quot;</span>, String(<span class="stringliteral">&quot;Token &quot;</span>) + API_TOKEN);</div>
-<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;    https.addHeader(<span class="stringliteral">&quot;Content-Type&quot;</span>, <span class="stringliteral">&quot;application/json&quot;</span>);</div>
-<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;    https.addHeader(<span class="stringliteral">&quot;Content-Length&quot;</span>, String(json.length()));</div>
-<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;    https.addHeader(<span class="stringliteral">&quot;User-Agent&quot;</span>, <span class="stringliteral">&quot;ESP32&quot;</span>);</div>
-<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160; </div>
-<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;    <span class="keywordtype">int</span> httpCode = https.POST(json);</div>
-<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160; </div>
-<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;    <span class="comment">// httpCode will be negative on error</span></div>
-<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;    <span class="keywordflow">if</span> (httpCode &gt; 0) {</div>
-<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;      <span class="comment">// HTTP header has been send and Server response header has been handled</span></div>
-<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;      SERIAL.printf(<span class="stringliteral">&quot;[HTTPS] POST... code: %d\n&quot;</span>, httpCode);</div>
-<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160; </div>
-<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;      <span class="comment">// file found at server</span></div>
-<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;      <span class="keywordflow">if</span> (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {</div>
-<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;        String payload = https.getString();</div>
-<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;        SERIAL.println(payload);</div>
-<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;      } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;        SERIAL.printf(<span class="stringliteral">&quot;[HTTPS] POST... failed, error: %s\n&quot;</span>, https.errorToString(httpCode).c_str());</div>
-<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;        <span class="keywordflow">return</span> -1;</div>
-<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;      }</div>
-<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;      SERIAL.printf(<span class="stringliteral">&quot;[HTTPS] POST... failed, error: %s\n&quot;</span>, https.errorToString(httpCode).c_str());</div>
-<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;      <span class="keywordflow">return</span> -1;</div>
-<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;    }</div>
-<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160; </div>
-<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;    https.end();</div>
-<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;  } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;    SERIAL.printf(<span class="stringliteral">&quot;[HTTPS] Unable to connect\n&quot;</span>);</div>
-<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;    <span class="keywordflow">return</span> -1;</div>
-<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;  }</div>
-<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160; </div>
-<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;  <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;}</div>
-<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160; </div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;  doc[<span class="stringliteral">&quot;parent&quot;</span>] = <span class="stringliteral">&quot;/Bases/nm1&quot;</span>;</div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;type&quot;</span>] = <span class="stringliteral">&quot;comand&quot;</span>;</div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;version&quot;</span>] = <span class="stringliteral">&quot;1.0&quot;</span>;</div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;contents&quot;</span>][0][<span class="stringliteral">&quot;Type&quot;</span>] = <span class="stringliteral">&quot;Noise&quot;</span>;</div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;contents&quot;</span>][0][<span class="stringliteral">&quot;Min&quot;</span>] = std::lround(dp.<a class="code" href="structDataPacket.html#a8cd7df92da2eea9abb845f87f98271cc">minimum</a>);</div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;contents&quot;</span>][0][<span class="stringliteral">&quot;Max&quot;</span>] = std::lround(dp.<a class="code" href="structDataPacket.html#a932840e12a30bfc175a87573bc7da29a">maximum</a>);</div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;contents&quot;</span>][0][<span class="stringliteral">&quot;Mean&quot;</span>] = std::lround(dp.<a class="code" href="structDataPacket.html#a468b65a654fc379b4099ef948467c117">average</a>);</div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;contents&quot;</span>][0][<span class="stringliteral">&quot;DeviceID&quot;</span>] = String(<a class="code" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a>());</div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;  doc[<span class="stringliteral">&quot;data&quot;</span>][<span class="stringliteral">&quot;contents&quot;</span>][0][<span class="stringliteral">&quot;Timestamp&quot;</span>] = String(dp.<a class="code" href="structDataPacket.html#aa4baf5b92cbefdd6e16365b7b525e890">timestamp</a>);</div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160; </div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;  <span class="comment">// Serialize JSON document</span></div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;  String json;</div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;  serializeJson(doc, json);</div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;  <span class="keywordflow">return</span> json;</div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;}</div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160; </div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;<span class="comment">// Given a serialized JSON payload, upload the data to webcomand</span></div>
+<div class="line"><a name="l00374"></a><span class="lineno"><a class="line" href="noisemeter-device_8ino.html#a29f94be472c52e98a58c19bb5acc6ba2">  374</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="noisemeter-device_8ino.html#a29f94be472c52e98a58c19bb5acc6ba2">uploadData</a>(String json)</div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;{</div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;  WiFiClientSecure client;</div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;  HTTPClient https;</div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160; </div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;  client.setCACert(cert_ISRG_Root_X1);</div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160; </div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;  SERIAL.print(<span class="stringliteral">&quot;[HTTPS] begin...\n&quot;</span>);</div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;  <span class="keywordflow">if</span> (https.begin(client, <span class="stringliteral">&quot;https://noisemeter.webcomand.com/ws/put&quot;</span>)) {</div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;    SERIAL.print(<span class="stringliteral">&quot;[HTTPS] POST...\n&quot;</span>);</div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160; </div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;    <span class="comment">// start connection and send HTTP header</span></div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;    https.addHeader(<span class="stringliteral">&quot;Authorization&quot;</span>, String(<span class="stringliteral">&quot;Token &quot;</span>) + API_TOKEN);</div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;    https.addHeader(<span class="stringliteral">&quot;Content-Type&quot;</span>, <span class="stringliteral">&quot;application/json&quot;</span>);</div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;    https.addHeader(<span class="stringliteral">&quot;Content-Length&quot;</span>, String(json.length()));</div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;    https.addHeader(<span class="stringliteral">&quot;User-Agent&quot;</span>, <span class="stringliteral">&quot;ESP32&quot;</span>);</div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160; </div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;    <span class="keywordtype">int</span> httpCode = https.POST(json);</div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160; </div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;    <span class="comment">// httpCode will be negative on error</span></div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;    <span class="keywordflow">if</span> (httpCode &gt; 0) {</div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;      <span class="comment">// HTTP header has been send and Server response header has been handled</span></div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;      SERIAL.printf(<span class="stringliteral">&quot;[HTTPS] POST... code: %d\n&quot;</span>, httpCode);</div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160; </div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;      <span class="comment">// file found at server</span></div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;      <span class="keywordflow">if</span> (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {</div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;        String payload = https.getString();</div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;        SERIAL.println(payload);</div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;      } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;        SERIAL.printf(<span class="stringliteral">&quot;[HTTPS] POST... failed, error: %s\n&quot;</span>, https.errorToString(httpCode).c_str());</div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;        <span class="keywordflow">return</span> -1;</div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;      }</div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;      SERIAL.printf(<span class="stringliteral">&quot;[HTTPS] POST... failed, error: %s\n&quot;</span>, https.errorToString(httpCode).c_str());</div>
+<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;      <span class="keywordflow">return</span> -1;</div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;    }</div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160; </div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;    https.end();</div>
+<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;  } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;    SERIAL.printf(<span class="stringliteral">&quot;[HTTPS] Unable to connect\n&quot;</span>);</div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;    <span class="keywordflow">return</span> -1;</div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;  }</div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160; </div>
+<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;}</div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160; </div>
 <div class="ttc" id="aUUID_8h_html"><div class="ttname"><a href="UUID_8h.html">UUID.h</a></div><div class="ttdoc">Arduino Library for generating UUID's.</div></div>
 <div class="ttc" id="aaccess-point_8h_html"><div class="ttname"><a href="access-point_8h.html">access-point.h</a></div><div class="ttdoc">Captive portal implementation for device setup.</div></div>
 <div class="ttc" id="ablinker_8h_html"><div class="ttname"><a href="blinker_8h.html">blinker.h</a></div><div class="ttdoc">Utility to indicate status with the board's LED.</div></div>
@@ -452,7 +441,8 @@ $(function() {
 <div class="ttc" id="aclassSPLMeter_html"><div class="ttname"><a href="classSPLMeter.html">SPLMeter</a></div><div class="ttdoc">Provides a minimal interface for reading decibel levels from the microphone.</div><div class="ttdef"><b>Definition:</b> <a href="spl-meter_8h_source.html#l00030">spl-meter.h:31</a></div></div>
 <div class="ttc" id="aclassSPLMeter_html_a4825cff8de1e14e1ffeb6702baf0b715"><div class="ttname"><a href="classSPLMeter.html#a4825cff8de1e14e1ffeb6702baf0b715">SPLMeter::readMicrophoneData</a></div><div class="ttdeci">std::optional&lt; float &gt; readMicrophoneData() noexcept</div><div class="ttdoc">Samples data from the microphone, potentially returning a new dB reading.</div></div>
 <div class="ttc" id="aclassSPLMeter_html_aa8094a48a43c460a8d9df34a849ed566"><div class="ttname"><a href="classSPLMeter.html#aa8094a48a43c460a8d9df34a849ed566">SPLMeter::initMicrophone</a></div><div class="ttdeci">void initMicrophone() noexcept</div><div class="ttdoc">Prepares I2S Driver and microphone hardware.</div></div>
-<div class="ttc" id="aclassStorage_html"><div class="ttname"><a href="classStorage.html">Storage</a></div><div class="ttdoc">Manages the storage of persistent settings.</div><div class="ttdef"><b>Definition:</b> <a href="storage_8h_source.html#l00030">storage.h:31</a></div></div>
+<div class="ttc" id="aclassStorage_html"><div class="ttname"><a href="classStorage.html">Storage</a></div><div class="ttdoc">Manages the storage of persistent settings.</div><div class="ttdef"><b>Definition:</b> <a href="storage_8h_source.html#l00032">storage.h:33</a></div></div>
+<div class="ttc" id="aclassStorage_html_a1613d528077e2fa1a0113a3783f4c2a4"><div class="ttname"><a href="classStorage.html#a1613d528077e2fa1a0113a3783f4c2a4">Storage::begin</a></div><div class="ttdeci">void begin(UUID key)</div><div class="ttdoc">Initializes the instance and prepares flash memory for access.</div></div>
 <div class="ttc" id="aclassStorage_html_a23acb6693b153e7f0651bf6433027eea"><div class="ttname"><a href="classStorage.html#a23acb6693b153e7f0651bf6433027eea">Storage::valid</a></div><div class="ttdeci">bool valid() const noexcept</div><div class="ttdoc">Validates the stored settings against the stored checksum.</div></div>
 <div class="ttc" id="aclassStorage_html_a2b42a101bad0d80e63041e9cef14afad"><div class="ttname"><a href="classStorage.html#a2b42a101bad0d80e63041e9cef14afad">Storage::clear</a></div><div class="ttdeci">void clear() noexcept</div><div class="ttdoc">Clears/wipes all stored settings.</div></div>
 <div class="ttc" id="aclassStorage_html_a35b9610f482751d825659d425d2b998d"><div class="ttname"><a href="classStorage.html#a35b9610f482751d825659d425d2b998d">Storage::get</a></div><div class="ttdeci">String get(Entry entry) const noexcept</div><div class="ttdoc">Gets the string value of the stored entry.</div></div>
@@ -461,7 +451,6 @@ $(function() {
 <div class="ttc" id="aclassStorage_html_a92598fba0896671741dd2cfc84e0de9a"><div class="ttname"><a href="classStorage.html#a92598fba0896671741dd2cfc84e0de9a">Storage::canStore</a></div><div class="ttdeci">bool canStore(String str) const noexcept</div><div class="ttdoc">Checks if the given string can be stored via Storage.</div></div>
 <div class="ttc" id="aclassStorage_html_ab298f0c46e684cb9ef430e15de050cc5a0d09d7b23e604623465e83b0dc113f4d"><div class="ttname"><a href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5a0d09d7b23e604623465e83b0dc113f4d">Storage::Entry::SSID</a></div><div class="ttdeci">@ SSID</div><div class="ttdoc">Storage CRC32 Checksum.</div></div>
 <div class="ttc" id="aclassStorage_html_ab298f0c46e684cb9ef430e15de050cc5a816da2672a1205347a4ae8e9eb25f0bd"><div class="ttname"><a href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5a816da2672a1205347a4ae8e9eb25f0bd">Storage::Entry::Passkey</a></div><div class="ttdeci">@ Passkey</div><div class="ttdoc">User's WiFi SSID.</div></div>
-<div class="ttc" id="aclassStorage_html_ae0f4576205a738065f7734fa2cc0693f"><div class="ttname"><a href="classStorage.html#ae0f4576205a738065f7734fa2cc0693f">Storage::begin</a></div><div class="ttdeci">void begin() noexcept</div><div class="ttdoc">Prepares flash memory for access.</div></div>
 <div class="ttc" id="aclassTimestamp_html"><div class="ttname"><a href="classTimestamp.html">Timestamp</a></div><div class="ttdoc">Timestamping facility that uses NTP to provide accurate date and time.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00031">timestamp.h:32</a></div></div>
 <div class="ttc" id="aclassTimestamp_html_a539006e78773ce5b070266b7d60663c0"><div class="ttname"><a href="classTimestamp.html#a539006e78773ce5b070266b7d60663c0">Timestamp::synchronize</a></div><div class="ttdeci">static int synchronize()</div><div class="ttdoc">Synchronizes system time with an NTP time server.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00077">timestamp.h:77</a></div></div>
 <div class="ttc" id="aclassTimestamp_html_a66f54270c50d2435a310c6a459e3b747"><div class="ttname"><a href="classTimestamp.html#a66f54270c50d2435a310c6a459e3b747">Timestamp::invalidTimestamp</a></div><div class="ttdeci">static Timestamp invalidTimestamp()</div><div class="ttdoc">Provides a timestamp that is guaranteed to be invalid.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00095">timestamp.h:95</a></div></div>
@@ -470,26 +459,25 @@ $(function() {
 <div class="ttc" id="adata-packet_8h_html"><div class="ttname"><a href="data-packet_8h.html">data-packet.h</a></div><div class="ttdoc">Management for storage of collected data points.</div></div>
 <div class="ttc" id="anoisemeter-device_8ino_html_a129479a2e9f3f7c48504e4d370600883"><div class="ttname"><a href="noisemeter-device_8ino.html#a129479a2e9f3f7c48504e4d370600883">readMicrophoneData</a></div><div class="ttdeci">void readMicrophoneData()</div><div class="ttdoc">Reads a set number of samples from the microphone and factors them into our decibel calculations and ...</div></div>
 <div class="ttc" id="anoisemeter-device_8ino_html_a1cc0c82f2d9cb9e41c1d2750204a7819"><div class="ttname"><a href="noisemeter-device_8ino.html#a1cc0c82f2d9cb9e41c1d2750204a7819">initMicrophone</a></div><div class="ttdeci">void initMicrophone()</div><div class="ttdoc">Prepares the I2S peripheral for reading microphone data.</div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_a25208458d80e7ee8971a1b1bc319fcdd"><div class="ttname"><a href="noisemeter-device_8ino.html#a25208458d80e7ee8971a1b1bc319fcdd">SPL</a></div><div class="ttdeci">static SPLMeter SPL</div><div class="ttdoc">SPLMeter instance to manage decibel level measurement.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00062">noisemeter-device.ino:62</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_a26ae57f27914c5211684c5c0e010b109"><div class="ttname"><a href="noisemeter-device_8ino.html#a26ae57f27914c5211684c5c0e010b109">lastOTACheck</a></div><div class="ttdeci">static Timestamp lastOTACheck</div><div class="ttdoc">Tracks when the last OTA update check occurred.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00071">noisemeter-device.ino:71</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_a28fd97a4ad77244f9afe89c869f5aa05"><div class="ttname"><a href="noisemeter-device_8ino.html#a28fd97a4ad77244f9afe89c869f5aa05">UPLOAD_INTERVAL_SEC</a></div><div class="ttdeci">const unsigned long UPLOAD_INTERVAL_SEC</div><div class="ttdoc">Specifies how frequently to upload data points to the server.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00055">noisemeter-device.ino:55</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_a29f94be472c52e98a58c19bb5acc6ba2"><div class="ttname"><a href="noisemeter-device_8ino.html#a29f94be472c52e98a58c19bb5acc6ba2">uploadData</a></div><div class="ttdeci">int uploadData(String json)</div><div class="ttdoc">Upload a serialized JSON payload to our server.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00385">noisemeter-device.ino:385</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_a4fc01d736fe50cf5b977f755b675f11d"><div class="ttname"><a href="noisemeter-device_8ino.html#a4fc01d736fe50cf5b977f755b675f11d">setup</a></div><div class="ttdeci">void setup()</div><div class="ttdoc">Firmware entry point and initialization routine.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00133">noisemeter-device.ino:133</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_a6df603e1520def84cd8642c3e1f1fde4"><div class="ttname"><a href="noisemeter-device_8ino.html#a6df603e1520def84cd8642c3e1f1fde4">WIFI_CONNECT_TIMEOUT_MS</a></div><div class="ttdeci">constexpr auto WIFI_CONNECT_TIMEOUT_MS</div><div class="ttdoc">Maximum number of milliseconds to wait for successful WiFi connection.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00053">noisemeter-device.ino:53</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_a728d596a7c560bd11be12091c3ad6c10"><div class="ttname"><a href="noisemeter-device_8ino.html#a728d596a7c560bd11be12091c3ad6c10">lastUpload</a></div><div class="ttdeci">static Timestamp lastUpload</div><div class="ttdoc">Tracks when the last measurement upload occurred.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00069">noisemeter-device.ino:69</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_a82318e0efffb674d482520e0c37df4fc"><div class="ttname"><a href="noisemeter-device_8ino.html#a82318e0efffb674d482520e0c37df4fc">printArray</a></div><div class="ttdeci">void printArray(float arr[], unsigned long length)</div><div class="ttdoc">Outputs an array of floating-point values over serial.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00277">noisemeter-device.ino:277</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_a8ed6493bf4782cfdf85b9c3d632a1692"><div class="ttname"><a href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a></div><div class="ttdeci">static std::list&lt; DataPacket &gt; packets</div><div class="ttdoc">Linked list of completed data packets.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00067">noisemeter-device.ino:67</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_acce324da2e7f0b8a20b9c54c4fd15bbf"><div class="ttname"><a href="noisemeter-device_8ino.html#acce324da2e7f0b8a20b9c54c4fd15bbf">tryWifiConnection</a></div><div class="ttdeci">int tryWifiConnection()</div><div class="ttdoc">Attempt to establish a WiFi connected using the stored credentials.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00327">noisemeter-device.ino:327</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_ad9d154e7e2c2b745419b4e9520fbca2d"><div class="ttname"><a href="noisemeter-device_8ino.html#ad9d154e7e2c2b745419b4e9520fbca2d">MAX_SAVED_PACKETS</a></div><div class="ttdeci">constexpr unsigned MAX_SAVED_PACKETS</div><div class="ttdoc">Maximum number of data packets to retain when WiFi is unavailable.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00059">noisemeter-device.ino:59</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_add1ec86b8b8345a26e59735edddfb2c2"><div class="ttname"><a href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a></div><div class="ttdeci">static Storage Creds</div><div class="ttdoc">Storage instance to manage stored credentials.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00064">noisemeter-device.ino:64</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_ae246ec49a4fb8f4f01921d5daa492255"><div class="ttname"><a href="noisemeter-device_8ino.html#ae246ec49a4fb8f4f01921d5daa492255">createJSONPayload</a></div><div class="ttdeci">String createJSONPayload(const DataPacket &amp;dp)</div><div class="ttdoc">Creates a serialized JSON payload containing the given data.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00360">noisemeter-device.ino:360</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_ae8bcebb1dc083b5de76dac51dbe4f3fc"><div class="ttname"><a href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">printReadingToConsole</a></div><div class="ttdeci">void printReadingToConsole(double reading)</div><div class="ttdoc">Outputs the given decibel reading over serial.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00287">noisemeter-device.ino:287</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_af0b9a871047865957dda66731ee223c9"><div class="ttname"><a href="noisemeter-device_8ino.html#af0b9a871047865957dda66731ee223c9">saveNetworkCreds</a></div><div class="ttdeci">void saveNetworkCreds(WebServer &amp;httpServer)</div><div class="ttdoc">Callback for AccessPoint that verifies and stores the submitted credentials.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00299">noisemeter-device.ino:299</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_af520ea0ad43879e3ce51437c4df03bd2"><div class="ttname"><a href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a></div><div class="ttdeci">UUID buildDeviceId()</div><div class="ttdoc">Generates a UUID that is unique to the hardware running this firmware.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00320">noisemeter-device.ino:320</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_af888ba6ab8315459fdd70a7b5110b034"><div class="ttname"><a href="noisemeter-device_8ino.html#af888ba6ab8315459fdd70a7b5110b034">OTA_INTERVAL_SEC</a></div><div class="ttdeci">const unsigned long OTA_INTERVAL_SEC</div><div class="ttdoc">Specifies how frequently to check for OTA updates from our server.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00057">noisemeter-device.ino:57</a></div></div>
-<div class="ttc" id="anoisemeter-device_8ino_html_afe461d27b9c48d5921c00d521181f12f"><div class="ttname"><a href="noisemeter-device_8ino.html#afe461d27b9c48d5921c00d521181f12f">loop</a></div><div class="ttdeci">void loop()</div><div class="ttdoc">Main loop for the firmware.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00198">noisemeter-device.ino:198</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_a25208458d80e7ee8971a1b1bc319fcdd"><div class="ttname"><a href="noisemeter-device_8ino.html#a25208458d80e7ee8971a1b1bc319fcdd">SPL</a></div><div class="ttdeci">static SPLMeter SPL</div><div class="ttdoc">SPLMeter instance to manage decibel level measurement.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00061">noisemeter-device.ino:61</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_a26ae57f27914c5211684c5c0e010b109"><div class="ttname"><a href="noisemeter-device_8ino.html#a26ae57f27914c5211684c5c0e010b109">lastOTACheck</a></div><div class="ttdeci">static Timestamp lastOTACheck</div><div class="ttdoc">Tracks when the last OTA update check occurred.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00070">noisemeter-device.ino:70</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_a28fd97a4ad77244f9afe89c869f5aa05"><div class="ttname"><a href="noisemeter-device_8ino.html#a28fd97a4ad77244f9afe89c869f5aa05">UPLOAD_INTERVAL_SEC</a></div><div class="ttdeci">const unsigned long UPLOAD_INTERVAL_SEC</div><div class="ttdoc">Specifies how frequently to upload data points to the server.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00054">noisemeter-device.ino:54</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_a29f94be472c52e98a58c19bb5acc6ba2"><div class="ttname"><a href="noisemeter-device_8ino.html#a29f94be472c52e98a58c19bb5acc6ba2">uploadData</a></div><div class="ttdeci">int uploadData(String json)</div><div class="ttdoc">Upload a serialized JSON payload to our server.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00374">noisemeter-device.ino:374</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_a4fc01d736fe50cf5b977f755b675f11d"><div class="ttname"><a href="noisemeter-device_8ino.html#a4fc01d736fe50cf5b977f755b675f11d">setup</a></div><div class="ttdeci">void setup()</div><div class="ttdoc">Firmware entry point and initialization routine.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00132">noisemeter-device.ino:132</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_a6df603e1520def84cd8642c3e1f1fde4"><div class="ttname"><a href="noisemeter-device_8ino.html#a6df603e1520def84cd8642c3e1f1fde4">WIFI_CONNECT_TIMEOUT_MS</a></div><div class="ttdeci">constexpr auto WIFI_CONNECT_TIMEOUT_MS</div><div class="ttdoc">Maximum number of milliseconds to wait for successful WiFi connection.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00052">noisemeter-device.ino:52</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_a728d596a7c560bd11be12091c3ad6c10"><div class="ttname"><a href="noisemeter-device_8ino.html#a728d596a7c560bd11be12091c3ad6c10">lastUpload</a></div><div class="ttdeci">static Timestamp lastUpload</div><div class="ttdoc">Tracks when the last measurement upload occurred.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00068">noisemeter-device.ino:68</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_a82318e0efffb674d482520e0c37df4fc"><div class="ttname"><a href="noisemeter-device_8ino.html#a82318e0efffb674d482520e0c37df4fc">printArray</a></div><div class="ttdeci">void printArray(float arr[], unsigned long length)</div><div class="ttdoc">Outputs an array of floating-point values over serial.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00279">noisemeter-device.ino:279</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_a8ed6493bf4782cfdf85b9c3d632a1692"><div class="ttname"><a href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a></div><div class="ttdeci">static std::list&lt; DataPacket &gt; packets</div><div class="ttdoc">Linked list of completed data packets.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00066">noisemeter-device.ino:66</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_acce324da2e7f0b8a20b9c54c4fd15bbf"><div class="ttname"><a href="noisemeter-device_8ino.html#acce324da2e7f0b8a20b9c54c4fd15bbf">tryWifiConnection</a></div><div class="ttdeci">int tryWifiConnection()</div><div class="ttdoc">Attempt to establish a WiFi connected using the stored credentials.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00328">noisemeter-device.ino:328</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_ad9d154e7e2c2b745419b4e9520fbca2d"><div class="ttname"><a href="noisemeter-device_8ino.html#ad9d154e7e2c2b745419b4e9520fbca2d">MAX_SAVED_PACKETS</a></div><div class="ttdeci">constexpr unsigned MAX_SAVED_PACKETS</div><div class="ttdoc">Maximum number of data packets to retain when WiFi is unavailable.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00058">noisemeter-device.ino:58</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_add1ec86b8b8345a26e59735edddfb2c2"><div class="ttname"><a href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a></div><div class="ttdeci">static Storage Creds</div><div class="ttdoc">Storage instance to manage stored credentials.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00063">noisemeter-device.ino:63</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_ae246ec49a4fb8f4f01921d5daa492255"><div class="ttname"><a href="noisemeter-device_8ino.html#ae246ec49a4fb8f4f01921d5daa492255">createJSONPayload</a></div><div class="ttdeci">String createJSONPayload(const DataPacket &amp;dp)</div><div class="ttdoc">Creates a serialized JSON payload containing the given data.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00349">noisemeter-device.ino:349</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_ae8bcebb1dc083b5de76dac51dbe4f3fc"><div class="ttname"><a href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">printReadingToConsole</a></div><div class="ttdeci">void printReadingToConsole(double reading)</div><div class="ttdoc">Outputs the given decibel reading over serial.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00289">noisemeter-device.ino:289</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_af0b9a871047865957dda66731ee223c9"><div class="ttname"><a href="noisemeter-device_8ino.html#af0b9a871047865957dda66731ee223c9">saveNetworkCreds</a></div><div class="ttdeci">void saveNetworkCreds(WebServer &amp;httpServer)</div><div class="ttdoc">Callback for AccessPoint that verifies and stores the submitted credentials.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00301">noisemeter-device.ino:301</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_af520ea0ad43879e3ce51437c4df03bd2"><div class="ttname"><a href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a></div><div class="ttdeci">UUID buildDeviceId()</div><div class="ttdoc">Generates a UUID that is unique to the hardware running this firmware.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00321">noisemeter-device.ino:321</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_af888ba6ab8315459fdd70a7b5110b034"><div class="ttname"><a href="noisemeter-device_8ino.html#af888ba6ab8315459fdd70a7b5110b034">OTA_INTERVAL_SEC</a></div><div class="ttdeci">const unsigned long OTA_INTERVAL_SEC</div><div class="ttdoc">Specifies how frequently to check for OTA updates from our server.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00056">noisemeter-device.ino:56</a></div></div>
+<div class="ttc" id="anoisemeter-device_8ino_html_afe461d27b9c48d5921c00d521181f12f"><div class="ttname"><a href="noisemeter-device_8ino.html#afe461d27b9c48d5921c00d521181f12f">loop</a></div><div class="ttdeci">void loop()</div><div class="ttdoc">Main loop for the firmware.</div><div class="ttdef"><b>Definition:</b> <a href="noisemeter-device_8ino_source.html#l00200">noisemeter-device.ino:200</a></div></div>
 <div class="ttc" id="aota-update_8h_html"><div class="ttname"><a href="ota-update_8h.html">ota-update.h</a></div><div class="ttdoc">Facilities for installing over-the-air (OTA) software updates.</div></div>
-<div class="ttc" id="asecret-store_8h_html"><div class="ttname"><a href="secret-store_8h.html">secret-store.h</a></div><div class="ttdoc">Facilities for encrypting sensitive stored data.</div></div>
 <div class="ttc" id="aspl-meter_8h_html"><div class="ttname"><a href="spl-meter_8h.html">spl-meter.h</a></div><div class="ttdoc">Microphone sampling and filtering for decibel metering.</div></div>
 <div class="ttc" id="astorage_8h_html"><div class="ttname"><a href="storage_8h.html">storage.h</a></div><div class="ttdoc">Manages pesistent storage of WiFi credentials and other data.</div></div>
 <div class="ttc" id="astructDataPacket_html"><div class="ttname"><a href="structDataPacket.html">DataPacket</a></div><div class="ttdoc">Stores data points included in an uploaded &quot;measurement&quot;.</div><div class="ttdef"><b>Definition:</b> <a href="data-packet_8h_source.html#l00029">data-packet.h:30</a></div></div>

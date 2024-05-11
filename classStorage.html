@@ -66,6 +66,7 @@ $(function() {
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pri-methods">Private Member Functions</a> &#124;
+<a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="#pri-static-attribs">Static Private Attributes</a> &#124;
 <a href="classStorage-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -96,10 +97,9 @@ Public Types</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ae0f4576205a738065f7734fa2cc0693f"><td class="memItemLeft" align="right" valign="top"><a id="ae0f4576205a738065f7734fa2cc0693f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classStorage.html#ae0f4576205a738065f7734fa2cc0693f">begin</a> () noexcept</td></tr>
-<tr class="memdesc:ae0f4576205a738065f7734fa2cc0693f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares flash memory for access. <br /></td></tr>
-<tr class="separator:ae0f4576205a738065f7734fa2cc0693f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1613d528077e2fa1a0113a3783f4c2a4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classStorage.html#a1613d528077e2fa1a0113a3783f4c2a4">begin</a> (<a class="el" href="classUUID.html">UUID</a> key)</td></tr>
+<tr class="memdesc:a1613d528077e2fa1a0113a3783f4c2a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the instance and prepares flash memory for access.  <a href="classStorage.html#a1613d528077e2fa1a0113a3783f4c2a4">More...</a><br /></td></tr>
+<tr class="separator:a1613d528077e2fa1a0113a3783f4c2a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a23acb6693b153e7f0651bf6433027eea"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classStorage.html#a23acb6693b153e7f0651bf6433027eea">valid</a> () const noexcept</td></tr>
 <tr class="memdesc:a23acb6693b153e7f0651bf6433027eea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validates the stored settings against the stored checksum.  <a href="classStorage.html#a23acb6693b153e7f0651bf6433027eea">More...</a><br /></td></tr>
 <tr class="separator:a23acb6693b153e7f0651bf6433027eea"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -120,10 +120,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classStorage.html#a5424cf1c5a001208f294f422b3acb1ef">commit</a> () noexcept</td></tr>
 <tr class="memdesc:a5424cf1c5a001208f294f422b3acb1ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Commits all settings to flash and recalculates the checksum. <br /></td></tr>
 <tr class="separator:a5424cf1c5a001208f294f422b3acb1ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5eb6094e3182c7df59edea7e7b650166"><td class="memItemLeft" align="right" valign="top"><a id="a5eb6094e3182c7df59edea7e7b650166"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classStorage.html#a5eb6094e3182c7df59edea7e7b650166">operator String</a> () const noexcept</td></tr>
-<tr class="memdesc:a5eb6094e3182c7df59edea7e7b650166"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a string describing the stored settings. <br /></td></tr>
-<tr class="separator:a5eb6094e3182c7df59edea7e7b650166"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
@@ -133,6 +129,13 @@ Private Member Functions</h2></td></tr>
 <tr class="memitem:a81ece27227086e0a7b88ea1a27fceacd"><td class="memItemLeft" align="right" valign="top">constexpr unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classStorage.html#a81ece27227086e0a7b88ea1a27fceacd">addrOf</a> (<a class="el" href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5">Entry</a> entry) const noexcept</td></tr>
 <tr class="memdesc:a81ece27227086e0a7b88ea1a27fceacd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the memory address/offset of the given entry.  <a href="classStorage.html#a81ece27227086e0a7b88ea1a27fceacd">More...</a><br /></td></tr>
 <tr class="separator:a81ece27227086e0a7b88ea1a27fceacd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
+Private Attributes</h2></td></tr>
+<tr class="memitem:ae2e7ffce92412bfe84950e835cc5e9e3"><td class="memItemLeft" align="right" valign="top"><a id="ae2e7ffce92412bfe84950e835cc5e9e3"></a>
+<a class="el" href="structSecretStore.html">SecretStore</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classStorage.html#ae2e7ffce92412bfe84950e835cc5e9e3">secret</a></td></tr>
+<tr class="memdesc:ae2e7ffce92412bfe84950e835cc5e9e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encryption instance. <br /></td></tr>
+<tr class="separator:ae2e7ffce92412bfe84950e835cc5e9e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-static-attribs"></a>
 Static Private Attributes</h2></td></tr>
@@ -145,7 +148,7 @@ static constexpr unsigned&#160;</td><td class="memItemRight" valign="bottom"><a 
 <div class="textblock"><p>Manages the storage of persistent settings. </p>
 <p>At the moment, this is only used to store WiFi credentials. </p>
 
-<p class="definition">Definition at line <a class="el" href="storage_8h_source.html#l00030">30</a> of file <a class="el" href="storage_8h_source.html">storage.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="storage_8h_source.html#l00032">32</a> of file <a class="el" href="storage_8h_source.html">storage.h</a>.</p>
 </div><h2 class="groupheader">Member Enumeration Documentation</h2>
 <a id="ab298f0c46e684cb9ef430e15de050cc5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab298f0c46e684cb9ef430e15de050cc5">&#9670;&nbsp;</a></span>Entry</h2>
@@ -177,7 +180,7 @@ static constexpr unsigned&#160;</td><td class="memItemRight" valign="bottom"><a 
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="storage_8h_source.html#l00037">37</a> of file <a class="el" href="storage_8h_source.html">storage.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="storage_8h_source.html#l00039">39</a> of file <a class="el" href="storage_8h_source.html">storage.h</a>.</p>
 
 </div>
 </div>
@@ -215,7 +218,33 @@ static constexpr unsigned&#160;</td><td class="memItemRight" valign="bottom"><a 
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The address of the entry within the storage address space </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="storage_8h_source.html#l00103">103</a> of file <a class="el" href="storage_8h_source.html">storage.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="storage_8h_source.html#l00111">111</a> of file <a class="el" href="storage_8h_source.html">storage.h</a>.</p>
+
+</div>
+</div>
+<a id="a1613d528077e2fa1a0113a3783f4c2a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1613d528077e2fa1a0113a3783f4c2a4">&#9670;&nbsp;</a></span>begin()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Storage::begin </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classUUID.html">UUID</a>&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Initializes the instance and prepares flash memory for access. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">key</td><td>Key (i.e. seed) to use for encryption </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
