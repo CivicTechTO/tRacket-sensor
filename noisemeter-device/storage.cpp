@@ -14,15 +14,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include "config.h"
 #include "storage.h"
 
 #include <Arduino.h>
 #include <CRC32.h>
 
-#include <algorithm>
+#include <array>
 
-void Storage::begin() noexcept
+void Storage::begin(UUID key)
 {
+    secret.key = key;
+
     EEPROMClass::begin(addrOf(Entry::TotalSize));
     delay(2000);  // Ensure the eeprom peripheral has enough time to initialize.
 }
@@ -50,16 +53,20 @@ void Storage::clear() noexcept
 
 String Storage::get(Entry entry) const noexcept
 {
-    if (entry != Entry::Checksum)
-        return String(_data + addrOf(entry), StringSize - 1);
-    else
+    if (entry != Entry::Checksum) {
+        std::array<char, StringSize> buf;
+        secret.decrypt(_data + addrOf(entry), buf.data(), StringSize);
+        return buf.data();
+    } else {
         return {};
+    }
 }
 
 void Storage::set(Entry entry, String str) noexcept
 {
-    if (entry != Entry::Checksum && canStore(str))
-        writeBytes(addrOf(entry), str.begin(), StringSize);
+    if (entry != Entry::Checksum && canStore(str)) {
+        secret.encrypt(str.c_str(), _data + addrOf(entry), StringSize);
+    }
 }
 
 void Storage::commit() noexcept
@@ -69,15 +76,15 @@ void Storage::commit() noexcept
     EEPROMClass::commit();
 }
 
+#ifdef STORAGE_SHOW_CREDENTIALS
 Storage::operator String() const noexcept
 {
     return String() +
            "SSID \"" + get(Entry::SSID) +
-#ifdef STORAGE_SHOW_PASSKEY
            "\" Passkey \"" + get(Entry::Passkey) +
-#endif
            '\"';
 }
+#endif
 
 uint32_t Storage::calculateChecksum() const noexcept
 {

@@ -14,75 +14,61 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "board.h"
 #include "secret-store.h"
+#include "board.h"
 
 #if defined(BOARD_ESP32_PCB)
 
 #include <esp_hmac.h>
 #include <mbedtls/aes.h>
 
-constexpr static unsigned BITS = 256; // do not change
-
-namespace Secret {
-
-String encrypt(String key, String in)
+void SecretStore::encrypt(const char *in, uint8_t *out, unsigned N) const noexcept
 {
     mbedtls_aes_context aes;
     mbedtls_aes_init(&aes);
 
-    const auto kb = key.c_str();
-    const auto kl = key.length();
+    String k (key);
     {
         uint8_t hmac[BITS / 8];
-        esp_hmac_calculate(HMAC_KEY0, kb, kl, hmac);
+        esp_hmac_calculate(HMAC_KEY0, k.c_str(), k.length(), hmac);
         mbedtls_aes_setkey_enc(&aes, hmac, BITS);
     }
 
-    char out[in.length()];
-    mbedtls_aes_crypt_ecb(&aes, MBEDTLS_AES_ENCRYPT,
-        reinterpret_cast<const uint8_t *>(in.c_str()),
-        reinterpret_cast<uint8_t *>(out));
-    return out;
+    uint8_t iv[16];
+    mbedtls_aes_crypt_cbc(&aes, MBEDTLS_AES_ENCRYPT, N, iv,
+        reinterpret_cast<const uint8_t *>(in), out);
 }
 
-String decrypt(String key, String in)
+void SecretStore::decrypt(const uint8_t *in, char *out, unsigned N) const noexcept
 {
     mbedtls_aes_context aes;
     mbedtls_aes_init(&aes);
 
-    const auto kb = key.c_str();
-    const auto kl = key.length();
+    String k (key);
     {
         uint8_t hmac[BITS / 8];
-        esp_hmac_calculate(HMAC_KEY0, kb, kl, hmac);
+        esp_hmac_calculate(HMAC_KEY0, k.c_str(), k.length(), hmac);
         mbedtls_aes_setkey_dec(&aes, hmac, BITS);
     }
 
-    char out[in.length()];
-    mbedtls_aes_crypt_ecb(&aes, MBEDTLS_AES_DECRYPT,
-        reinterpret_cast<const uint8_t *>(in.c_str()),
-        reinterpret_cast<uint8_t *>(out));
-    return out;
+    uint8_t iv[16];
+    mbedtls_aes_crypt_cbc(&aes, MBEDTLS_AES_DECRYPT, N, iv,
+        in, reinterpret_cast<uint8_t *>(out));
 }
-
-} // namespace Secret
 
 #else // !defined(BOARD_ESP32_PCB)
 
-namespace Secret {
+#include <algorithm>
 
-String encrypt([[maybe_unused]] String key, String in)
+void SecretStore::encrypt(const char *in, uint8_t *out, unsigned N) const noexcept
 {
-    return in;
+    std::copy(in, in + N, out);
 }
 
-String decrypt([[maybe_unused]] String key, String in)
+void SecretStore::decrypt(const uint8_t *in, char *out, unsigned N) const noexcept
 {
-    return in;
+    std::copy(in, in + N, out);
 }
-
-} // namespace Secret
 
 #endif // defined(BOARD_ESP32_PCB)
 

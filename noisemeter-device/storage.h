@@ -19,6 +19,8 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
+#include "secret-store.h"
+
 #include <EEPROM.h>
 
 #include <cstdint>
@@ -42,9 +44,10 @@ public:
     };
 
     /**
-     * Prepares flash memory for access.
+     * Initializes the instance and prepares flash memory for access.
+     * @param key Key (i.e. seed) to use for encryption
      */
-    void begin() noexcept;
+    void begin(UUID key);
 
     /**
      * Validates the stored settings against the stored checksum.
@@ -83,12 +86,17 @@ public:
      */
     void commit() noexcept;
 
+#ifdef STORAGE_SHOW_CREDENTIALS
     /**
      * Returns a string describing the stored settings.
      */
     operator String() const noexcept;
+#endif
 
 private:
+    /** Encryption instance. */
+    SecretStore secret;
+
     /**
      * Calculates a CRC32 checksum of all stored settings.
      * @return The checksum for the stored settings

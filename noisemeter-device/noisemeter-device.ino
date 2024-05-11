@@ -31,7 +31,6 @@
 #include "certs.h"
 #include "secret.h"
 #include "spl-meter.h"
-#include "secret-store.h"
 #include "storage.h"
 #include "ota-update.h"
 #include "UUID/UUID.h"
@@ -151,7 +150,10 @@ void setup() {
   SERIAL.println(buildDeviceId());
   SERIAL.println("Initializing...");
 
-  Creds.begin();
+  Creds.begin(buildDeviceId());
+#ifdef STORAGE_SHOW_CREDENTIALS
+  SERIAL.println(Creds);
+#endif
 
   SPL.initMicrophone();
   packets.emplace_front();
@@ -299,9 +301,8 @@ void printReadingToConsole(double reading) {
 void saveNetworkCreds(WebServer& httpServer) {
   // Confirm that the form was actually submitted.
   if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
-    const auto id = String(buildDeviceId());
-    const auto ssid = Secret::encrypt(id, httpServer.arg("ssid"));
-    const auto psk = Secret::encrypt(id, httpServer.arg("psk"));
+    const auto ssid = httpServer.arg("ssid");
+    const auto psk = httpServer.arg("psk");
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
     if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk)) {
@@ -326,20 +327,8 @@ UUID buildDeviceId()
 
 int tryWifiConnection()
 {
-  //const auto ssid = Creds.get(Storage::Entry::SSID);
-
-  //if (ssid.isEmpty())
-  //  return -1;
-
-  //SERIAL.print("Ready to connect to ");
-  //SERIAL.println(ssid);
-
-  const auto ssid = Creds.get(Storage::Entry::SSID);
-  const auto psk = Creds.get(Storage::Entry::Passkey);
-
   WiFi.mode(WIFI_STA);
-  const auto id = String(buildDeviceId());
-  const auto stat = WiFi.begin(Secret::decrypt(id, ssid).c_str(), Secret::decrypt(id, psk).c_str());
+  const auto stat = WiFi.begin(Creds.get(Storage::Entry::SSID).c_str(), Creds.get(Storage::Entry::Passkey).c_str());
   if (stat == WL_CONNECT_FAILED)
     return -1;
 

@@ -75,7 +75,7 @@ void UUID::generate()
 }
 
 
-char * UUID::toCharArray()
+const char * UUID::toCharArray() const
 {
   //  if (_upperCase)
   //  {

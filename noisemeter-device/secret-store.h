@@ -19,28 +19,31 @@
 #ifndef SECRET_STORE_H
 #define SECRET_STORE_H
 
-#include <WString.h>
+#include "UUID/UUID.h"
 
-namespace Secret
+struct SecretStore
 {
-    /**
-     * Encrypts the given string with the given key.
-     * Uses the HMAC peripheral to modify the key in a secure way.
-     * @param key Key to use for encryption.
-     * @param in String of data to be encrypted.
-     * @return The encrypted string.
-     */
-    String encrypt(String key, String in);
+    UUID key;
 
     /**
-     * Decrypts the given string with the given key.
-     * Uses the HMAC peripheral to modify the key in a secure way.
-     * @param key Key to use for decryption.
-     * @param in String of data to be decrypted.
-     * @return The decrypted string.
+     * Securely encrypts the given string.
+     * @param in Pointer to `len` bytes of input data.
+     * @param out Pre-allocated buffer to store encrypted output.
+     * @param len Number of bytes to process.
      */
-    String decrypt(String key, String in);
-}
+    void encrypt(const char *in, uint8_t *out, unsigned int len) const noexcept;
+
+    /**
+     * Securely decrypts the given string.
+     * @param in Pointer to `len` bytes of input data.
+     * @param out Pre-allocated buffer to store decrypted output.
+     * @param len Number of bytes to process.
+     */
+    void decrypt(const uint8_t *in, char *out, unsigned int len) const noexcept;
+
+private:
+    constexpr static unsigned BITS = 256; // do not change
+};
 
 #endif // SECRET_STORE_H
 

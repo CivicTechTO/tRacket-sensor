@@ -17,8 +17,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// Uncomment to print passkey over serial (for debugging).
-//#define STORAGE_SHOW_PASSKEY
+// Uncomment to print credentials over serial (for debugging).
+//#define STORAGE_SHOW_CREDENTIALS
 
 // Define only *one* of the follwoing board options.
 // If using PlatformIO, the selected 'env' will override this selection.

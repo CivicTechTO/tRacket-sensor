@@ -47,11 +47,11 @@ public:
    * Make a UUID string
    * @return String representation of UUID
    */
-  char *   toCharArray();
+  const char * toCharArray() const;
   /**
    * Implicit conversion to a String object.
    */
-  operator String() {
+  operator String() const {
     return toCharArray();
   }
 
