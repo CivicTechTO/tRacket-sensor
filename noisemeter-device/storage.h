@@ -40,7 +40,8 @@ public:
         Checksum  = 0,                           /** Storage CRC32 Checksum */
         SSID      = Checksum + sizeof(uint32_t), /** User's WiFi SSID */
         Passkey   = SSID     + StringSize,       /** User's WiFi passkey */
-        TotalSize = Passkey  + StringSize        /** Marks storage end address */
+        Token     = Passkey  + StringSize,       /** Device API token */
+        TotalSize = Token    + StringSize        /** Marks storage end address */
     };
 
     /**

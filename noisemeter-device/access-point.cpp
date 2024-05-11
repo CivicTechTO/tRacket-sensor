@@ -43,9 +43,11 @@ const char *AccessPoint::htmlSetup =
     "<h1>Noise Meter Setup</h1>"
     "<form method='POST' action='' enctype='multipart/form-data'>"
     "<p>SSID:</p>"
-    "<input type='text' name='ssid'>"
+    "<input type='text' name='ssid' required>"
     "<p>Password:</p>"
-    "<input type='password' name='psk'>"
+    "<input type='password' name='psk' required>"
+    "<p>Email:</p>"
+    "<input type='email' name='email' required>"
     "<input type='submit' value='Connect'>"
     "</form>"
     HTML_FOOTER;
@@ -55,6 +57,13 @@ const char *AccessPoint::htmlSubmit =
     HTML_HEADER
     "<h1>Noise Meter Setup</h1>"
     "<p>Connecting...</p>"
+    HTML_FOOTER;
+
+// HTML to show when a submission is rejected.
+const char *AccessPoint::htmlSubmitFailed =
+    HTML_HEADER
+    "<h1>Noise Meter Setup</h1>"
+    "<p>Invalid setup form input! Please <a href='/'>go back and try again</a>.</p>"
     HTML_FOOTER;
 
 [[noreturn]]
@@ -88,9 +97,16 @@ bool AccessPoint::handle(WebServer& server, HTTPMethod method, String uri)
     if (method == HTTP_POST) {
         if (uri == "/") {
             server.client().setNoDelay(true);
-            server.send_P(200, PSTR("text/html"), htmlSubmit);
-            if (onCredentialsReceived)
-                onCredentialsReceived(server);
+
+            if (onCredentialsReceived) {
+                if (onCredentialsReceived(server)) {
+                    server.send_P(200, PSTR("text/html"), htmlSubmit);
+                    delay(2000);
+                    ESP.restart(); // Software reset.
+                } else {
+                    server.send_P(200, PSTR("text/html"), htmlSubmitFailed);
+                }
+            }
         } else {
             server.sendHeader("Location", "http://8.8.4.4/");
             server.send(301);

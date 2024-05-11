@@ -86,8 +86,9 @@ void printReadingToConsole(double reading);
 /**
  * Callback for AccessPoint that verifies and stores the submitted credentials.
  * @param httpServer HTTP server which served the setup form
+ * @return True if successful
  */
-void saveNetworkCreds(WebServer& httpServer);
+bool saveNetworkCreds(WebServer& httpServer);
 
 /**
  * Generates a UUID that is unique to the hardware running this firmware.
@@ -298,7 +299,7 @@ void printReadingToConsole(double reading) {
   SERIAL.println(output);
 }
 
-void saveNetworkCreds(WebServer& httpServer) {
+bool saveNetworkCreds(WebServer& httpServer) {
   // Confirm that the form was actually submitted.
   if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
     const auto ssid = httpServer.arg("ssid");
@@ -308,14 +309,14 @@ void saveNetworkCreds(WebServer& httpServer) {
     if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk)) {
       Creds.set(Storage::Entry::SSID, ssid);
       Creds.set(Storage::Entry::Passkey, psk);
+      Creds.set(Storage::Entry::Token, API_TOKEN);
       Creds.commit();
-
-      ESP.restart(); // Software reset.
+      return true;
     }
   }
 
-  // TODO inform user that something went wrong...
   SERIAL.println("Error: Invalid network credentials!");
+  return false;
 }
 
 UUID buildDeviceId()

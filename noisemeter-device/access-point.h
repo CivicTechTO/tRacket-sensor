@@ -45,10 +45,16 @@ class AccessPoint : public RequestHandler
 
 public:
     /**
+     * Submission handler receives WebServer for input data and returns true
+     * on success, false to reject bad submission.
+     */
+    using SubmissionHandler = bool (*)(WebServer&);
+
+    /**
      * Starts the WiFi access point using the fixed credentials.
      * @param func Callback to handle user setup form submission.
      */
-    AccessPoint(void (*func)(WebServer&)):
+    AccessPoint(SubmissionHandler func):
         server(80),
         onCredentialsReceived(func) {}
 
@@ -63,7 +69,7 @@ private:
     /** Web server object for running the setup form. */
     WebServer server;
     /** Callback for setup form completion. */
-    void (*onCredentialsReceived)(WebServer&);
+    SubmissionHandler onCredentialsReceived;
 
     /** Hard-coded IP address for the ESP32 when hosting the access point. */
     static const IPAddress IP;
@@ -73,6 +79,8 @@ private:
     static const char *htmlSetup;
     /** Hard-coded HTML for the page shown after completing the form. */
     static const char *htmlSubmit;
+    /** Hard-coded HTML for the page shown when rejecting a form submission. */
+    static const char *htmlSubmitFailed;
 
     /** Determines which HTTP requests should be handled. */
     bool canHandle(HTTPMethod, String) override;
