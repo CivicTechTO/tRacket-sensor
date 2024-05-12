@@ -20,49 +20,12 @@
 #define OTA_UPDATE_H
 
 #include <WString.h>
-#include <WiFiClientSecure.h>
 
 /**
- * Manages fetching and installing of OTA software updates.
+ * Downloads and applies the latest OTA update.
+ * @return True if update is successfully downloaded and installed.
  */
-struct OTAUpdate
-{
-    /** Stores the latest version string from the server (for logging). */
-    String version;
-
-    /**
-     * Creates an OTAUpdate object.
-     * @param rootCA_ Root certificate to use for HTTPS requests.
-     */
-    OTAUpdate(const char *rootCA_):
-        rootCA(rootCA_) {}
-
-    /**
-     * Checks if a new OTA update is available.
-     * @return True if available.
-     */
-    bool available();
-
-    /**
-     * Downloads and applies the latest OTA update.
-     * @return True if update is successfully downloaded and installed.
-     */
-    bool download();
-
-private:
-    /** Stores fetched URL for the latest update. */
-    String url;
-    /** Stores the given root certificate for HTTPS. */
-    const char *rootCA;
-
-    /**
-     * Writes the received OTA update to flash memory.
-     * @param client An active client for the update download.
-     * @param totalSize The total size of the update if known.
-     * @return True if update is successfully installed.
-     */
-    bool applyUpdate(WiFiClientSecure& client, int totalSize);
-};
+bool downloadOTAUpdate(String url, String rootCA);
 
 #endif // OTA_UPDATE_H
 

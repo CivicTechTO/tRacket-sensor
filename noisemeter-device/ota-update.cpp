@@ -21,56 +21,19 @@
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 #include <Update.h>
+#include <WiFiClientSecure.h>
 
 #include "board.h"
 
-constexpr auto OTA_JSON_URL = "https://live.noisemeter.webcomand.com/updates/latest.json";
+static bool applyUpdate(WiFiClientSecure& client, int totalSize);
 
-bool OTAUpdate::available()
-{
-    WiFiClientSecure client;
-    client.setCACert(rootCA);
-
-    HTTPClient https;
-    if (https.begin(client, OTA_JSON_URL)) {
-        const auto code = https.GET();
-
-        if (code == HTTP_CODE_OK || code == HTTP_CODE_MOVED_PERMANENTLY) {
-            const auto response = client.readString();
-
-            JsonDocument doc;
-            const auto error = deserializeJson(doc, response);
-            if (!error) {
-                version = doc["Version"].as<String>();
-                if (version.compareTo(NOISEMETER_VERSION) > 0) {
-                    url = doc["URL"].as<String>();
-                    return !url.isEmpty();
-                } else {
-                    SERIAL.print("Server version: ");
-                    SERIAL.println(version);
-                }
-            } else {
-                SERIAL.print("json failed: ");
-                SERIAL.println(error.f_str());
-            }
-        } else {
-            SERIAL.print("Bad HTTP response: ");
-            SERIAL.println(code);
-        }
-    } else {
-        SERIAL.println("Unable to connect.");
-    }
-
-    return false;
-}
-
-bool OTAUpdate::download()
+bool downloadOTAUpdate(String url, String rootCA)
 {
     if (url.isEmpty())
         return false;
 
     WiFiClientSecure client;
-    client.setCACert(rootCA);
+    client.setCACert(rootCA.c_str());
 
     HTTPClient https;
     if (https.begin(client, url)) {
@@ -89,7 +52,7 @@ bool OTAUpdate::download()
     return false;
 }
 
-bool OTAUpdate::applyUpdate(WiFiClientSecure& client, int totalSize)
+bool applyUpdate(WiFiClientSecure& client, int totalSize)
 {
     std::array<uint8_t, 128> buffer;
 

@@ -16,29 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include <ArduinoJson.h> // https://arduinojson.org/
-#include <ArduinoJson.hpp>
-#include <HTTPClient.h>
 #include <WiFi.h>
-#include <WiFiClientSecure.h>
 #include <esp_efuse.h>
 #include <esp_efuse_table.h>
 
 #include "access-point.h"
+#include "api.h"
 #include "blinker.h"
 #include "board.h"
 #include "data-packet.h"
-#include "certs.h"
-#include "secret.h"
 #include "spl-meter.h"
 #include "storage.h"
 #include "ota-update.h"
 #include "UUID/UUID.h"
 
-#include <cmath>
 #include <cstdint>
 #include <list>
-#include <iterator>
 #include <optional>
 
 #if defined(BUILD_PLATFORMIO) && defined(BOARD_ESP32_PCB)
@@ -70,14 +63,6 @@ static Timestamp lastUpload = Timestamp::invalidTimestamp();
 static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
 
 /**
- * Outputs an array of floating-point values over serial.
- * @deprecated Unused and unlikely to be used in the future
- * @param arr The array to output
- * @param length Number of values from arr to display
- */
-void printArray(float arr[], unsigned long length);
-
-/**
  * Outputs the given decibel reading over serial.
  * @param reading The decibel reading to display
  */
@@ -103,31 +88,6 @@ UUID buildDeviceId();
 int tryWifiConnection();
 
 /**
- * Creates a serialized JSON payload containing the given data.
- * @param dp DataPacket containing the data to serialize
- * @return String containing the resulting JSON payload
- */
-String createJSONPayload(const DataPacket& dp);
-
-/**
- * Upload a serialized JSON payload to our server.
- * @param json JSON payload to be sent
- * @return Zero on success or a negative number on failure
- */
-int uploadData(String json);
-
-/**
- * Prepares the I2S peripheral for reading microphone data.
- */
-void initMicrophone();
-
-/**
- * Reads a set number of samples from the microphone and factors them into
- * our decibel calculations and statistics.
- */
-void readMicrophoneData();
-
-/**
  * Firmware entry point and initialization routine.
  */
 void setup() {
@@ -137,10 +97,6 @@ void setup() {
   // Grounding this pin (e.g. with a button) will force access open to start.
   // Useful as a "reset" button to overwrite currently saved credentials.
   pinMode(PIN_BUTTON, INPUT_PULLUP);
-
-  // If needed, now you can actually lower the CPU frquency,
-  // i.e. if you want to (slightly) reduce ESP32 power consumption
-  // setCpuFrequencyMhz(80);  // It should run as low as 80MHz
 
   SERIAL.begin(115200);
   delay(2000);
@@ -180,6 +136,25 @@ void setup() {
     ap.run(); // does not return
   }
 
+  if (const auto email = Creds.get(Storage::Entry::Email); email.length() > 0) {
+    API api (buildDeviceId());
+    const auto registration = api.sendRegister(email);
+
+    if (registration) {
+      Creds.set(Storage::Entry::Email, {});
+      Creds.set(Storage::Entry::Token, *registration);
+      Creds.commit();
+
+      SERIAL.print("Registered! ");
+      SERIAL.println(*registration);
+    } else {
+      SERIAL.println("Failed to register!");
+      Creds.clear();
+      delay(2000);
+      ESP.restart();
+    }
+  }
+
   Timestamp now;
   lastUpload = now;
   lastOTACheck = now;
@@ -217,6 +192,8 @@ void loop() {
     }
 
     if (WiFi.status() == WL_CONNECTED) {
+      API api (buildDeviceId(), Creds.get(Storage::Entry::Token));
+
       {
         std::optional<Blinker> bl;
 
@@ -224,13 +201,8 @@ void loop() {
         if (++packets.cbegin() != packets.cend())
           bl.emplace(300);
 
-        packets.remove_if([](const auto& pkt) {
-          if (pkt.count > 0) {
-            const auto payload = createJSONPayload(pkt);
-            return uploadData(payload) == 0;
-          } else {
-            return true; // Discard empty packets
-          }
+        packets.remove_if([&api](const auto& pkt) {
+          return pkt.count <= 0 || api.sendMeasurement(pkt);
         });
       }
 
@@ -240,20 +212,24 @@ void loop() {
         lastOTACheck = now;
         SERIAL.println("Checking for updates...");
 
-        OTAUpdate ota (cert_ISRG_Root_X1);
-        if (ota.available()) {
-          SERIAL.print(ota.version);
-          SERIAL.println(" available!");
+        const auto ota = api.getLatestSoftware();
+        if (ota) {
+          if (ota->version.compareTo(NOISEMETER_VERSION) > 0) {
+            SERIAL.print(ota->version);
+            SERIAL.println(" available!");
 
-          if (ota.download()) {
-            SERIAL.println("Download success! Restarting...");
-            delay(1000);
-            ESP.restart();
+            if (downloadOTAUpdate(ota->url, api.rootCertificate())) {
+              SERIAL.println("Download success! Restarting...");
+              delay(1000);
+              ESP.restart();
+            } else {
+              SERIAL.println("Update download failed.");
+            }
           } else {
-            SERIAL.println("Update download failed.");
+            SERIAL.println("No new updates.");
           }
         } else {
-          SERIAL.println("No update available.");
+          SERIAL.println("Failed to reach update server!");
         }
       }
 #endif // BOARD_ESP32_PCB
@@ -277,16 +253,6 @@ void loop() {
 #endif // !UPLOAD_DISABLED
 }
 
-void printArray(float arr[], unsigned long length) {
-  SERIAL.print(length);
-  SERIAL.print(" {");
-  for (int i = 0; i < length; i++) {
-    SERIAL.print(arr[i]);
-    if (i < length - 1) SERIAL.print(", ");
-  }
-  SERIAL.println("}");
-}
-
 void printReadingToConsole(double reading) {
   String output = "";
   output += std::lround(reading);
@@ -304,13 +270,15 @@ bool saveNetworkCreds(WebServer& httpServer) {
   if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
     const auto ssid = httpServer.arg("ssid");
     const auto psk = httpServer.arg("psk");
+    const auto email = httpServer.arg("email");
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
-    if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk)) {
+    if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk) && Creds.canStore(email)) {
       Creds.set(Storage::Entry::SSID, ssid);
       Creds.set(Storage::Entry::Passkey, psk);
-      Creds.set(Storage::Entry::Token, API_TOKEN);
+      Creds.set(Storage::Entry::Email, email);
       Creds.commit();
+
       return true;
     }
   }
@@ -345,76 +313,5 @@ int tryWifiConnection()
   } while (!connected && millis() - start < WIFI_CONNECT_TIMEOUT_MS);
 
   return connected ? 0 : -1;
-}
-
-String createJSONPayload(const DataPacket& dp)
-{
-#ifdef BUILD_PLATFORMIO
-  JsonDocument doc;
-#else
-  DynamicJsonDocument doc (2048);
-#endif
-
-  doc["parent"] = "/Bases/nm1";
-  doc["data"]["type"] = "comand";
-  doc["data"]["version"] = "1.0";
-  doc["data"]["contents"][0]["Type"] = "Noise";
-  doc["data"]["contents"][0]["Min"] = std::lround(dp.minimum);
-  doc["data"]["contents"][0]["Max"] = std::lround(dp.maximum);
-  doc["data"]["contents"][0]["Mean"] = std::lround(dp.average);
-  doc["data"]["contents"][0]["DeviceID"] = String(buildDeviceId());
-  doc["data"]["contents"][0]["Timestamp"] = String(dp.timestamp);
-
-  // Serialize JSON document
-  String json;
-  serializeJson(doc, json);
-  return json;
-}
-
-// Given a serialized JSON payload, upload the data to webcomand
-int uploadData(String json)
-{
-  WiFiClientSecure client;
-  HTTPClient https;
-
-  client.setCACert(cert_ISRG_Root_X1);
-
-  SERIAL.print("[HTTPS] begin...\n");
-  if (https.begin(client, "https://noisemeter.webcomand.com/ws/put")) {
-    SERIAL.print("[HTTPS] POST...\n");
-
-    // start connection and send HTTP header
-    https.addHeader("Authorization", String("Token ") + API_TOKEN);
-    https.addHeader("Content-Type", "application/json");
-    https.addHeader("Content-Length", String(json.length()));
-    https.addHeader("User-Agent", "ESP32");
-
-    int httpCode = https.POST(json);
-
-    // httpCode will be negative on error
-    if (httpCode > 0) {
-      // HTTP header has been send and Server response header has been handled
-      SERIAL.printf("[HTTPS] POST... code: %d\n", httpCode);
-
-      // file found at server
-      if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
-        String payload = https.getString();
-        SERIAL.println(payload);
-      } else {
-        SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
-        return -1;
-      }
-    } else {
-      SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
-      return -1;
-    }
-
-    https.end();
-  } else {
-    SERIAL.printf("[HTTPS] Unable to connect\n");
-    return -1;
-  }
-
-  return 0;
 }
 

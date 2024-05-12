@@ -41,7 +41,8 @@ public:
         SSID      = Checksum + sizeof(uint32_t), /** User's WiFi SSID */
         Passkey   = SSID     + StringSize,       /** User's WiFi passkey */
         Token     = Passkey  + StringSize,       /** Device API token */
-        TotalSize = Token    + StringSize        /** Marks storage end address */
+        Email     = Token    + StringSize,       /** Temporary storage of user's email */
+        TotalSize = Email    + StringSize        /** Marks storage end address */
     };
 
     /**
