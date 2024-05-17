@@ -262,7 +262,8 @@ void printReadingToConsole(double reading) {
   if (currentCount > 1) {
     output += " [+" + String(currentCount - 1) + " more]";
   }
-  SERIAL.println(output);
+  SERIAL.print("\r                    \r");
+  SERIAL.print(output);
 }
 
 bool saveNetworkCreds(WebServer& httpServer) {
