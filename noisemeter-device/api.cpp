@@ -86,13 +86,13 @@ std::optional<JsonDocument> API::sendAuthorizedRequest(const API::Request& req)
     return {};
 }
 
-std::optional<JsonDocument> API::sendUnauthorizedRequest(const API::Request& req)
+std::optional<JsonDocument> API::sendNonauthorizedRequest(const API::Request& req)
 {
     WiFiClientSecure client;
     client.setCACert(rootCertificate());
 
 #ifdef API_VERBOSE
-    SERIAL.print("[api] Unauthorized request: ");
+    SERIAL.print("[api] Non-authorized request: ");
     SERIAL.println(req.url);
 #endif
 
@@ -175,7 +175,7 @@ std::optional<String> API::sendRegister(String email)
         .addParam("device", id)
         .addParam("email", email);
 
-    const auto resp = sendUnauthorizedRequest(request);
+    const auto resp = sendNonauthorizedRequest(request);
     if (resp && (*resp)["result"] == "ok")
         return (*resp)["token"];
     else
@@ -186,7 +186,7 @@ std::optional<API::LatestSoftware> API::getLatestSoftware()
 {
     const auto request = Request("software/latest");
 
-    const auto resp = sendUnauthorizedRequest(request);
+    const auto resp = sendNonauthorizedRequest(request);
     if (resp && (*resp)["result"] == "ok") {
         LatestSoftware ls = {
             (*resp)["version"],

@@ -118,7 +118,7 @@ private:
     /** Attempts the given request and returns the JSON response on success. */
     std::optional<JsonDocument> sendAuthorizedRequest(const Request& req);
     /** Attempts the given request and returns the JSON response on success. */
-    std::optional<JsonDocument> sendUnauthorizedRequest(const Request& req);
+    std::optional<JsonDocument> sendNonauthorizedRequest(const Request& req);
 };
 
 #endif // API_H
