@@ -33,7 +33,7 @@
 class API
 {
     /** API host / base URL. */
-    constexpr static const char Base[] = "https://noisemeter.webcomand.com/api/v1/";
+    constexpr static const char Base[] = "https://api.tracket.info/v1/";
 
     /** String builder to create URLs for API endpoints and requests. */
     struct Request {

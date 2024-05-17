@@ -2,19 +2,12 @@
 
 ## Source code preparation
 
-1. Update SSL certificate using the following command:
+1. Save the SSL root certificate to `certs.h` using the following command:
 ```bash
-python cert.py -s noisemeter.webcomand.com -n webcomand
+python certs.py -s api.tracket.info > certs.h
 ```
-Then copy the console output to certs.h.
 
-2. Create secret.h file with thre following contents:
-```c
-const char* API_TOKEN = "Your API token here";
-```
-(Replace "Your API token here" with your API token)
-
-3. Copy `config.h.example` to `config.h` and edit the file to select your board type and set your device ID.
+2. Copy `config.h.example` to `config.h`; if compiling with the Arduino IDE, edit the file to select your board type.
 
 ## Code compiling and upload
 
@@ -45,14 +38,14 @@ dd if=/dev/urandom of=hmac_key bs=1 count=32
 pio pkg exec -- espefuse.py --port /dev/ttyACM0 burn_key BLOCK4 hmac_key HMAC_UP
 ```
 
-# Operating Instructions:
+## Operation Overview:
 
-- Power on the device by connecting it to power. The device should start in Hotspot mode.
-- Connect to device's wifi hotspot, which will be called "Noise Meter". Password is "noisemeter".
-- Open a web browser and navigate to IP address 4.3.2.1 and fill out your Wifi network SSID and password. This will then bbe saved to the onboard flash, and should persist between restarts.
-- The device should reset and begin attempting to connect to wifi. Use Serial monitor to confirm this.
-- Once connected, the device will sync itself with a NTP time server and then begin taking readings.
-- The device fills a buffer with integer readings from the microphone until it has enough to 
-- Periodically (at a time interval determined by UPLOAD_INTERVAL_MS) the device will collate its data and upload it to the server, whereupon it will clear its cached data and begin taking readings again.
-- To clear your saved information, hold the Reset button (Pin 5 in this example) while you power on the device, or hold the Reset button and reset the device using the built-in reset button.
+* After initial programming or a factory reset, the device will enter Hotspot mode once it is powered on. This is indicated by a blinking LED.
+* In Hotspot mode, you can connect to the device's "Noise meter" WiFi network to set it up. Password is "noisemeter".
+* Once connected, a captive portal will bring you to a form to enter your WiFi credentials and email for registration. Your credentials will be encrypted and stored to the on-board flash memory.
+* After completing the form, the device will reboot and attempt to connect to your WiFi.
+* Once connected, the device will sync itself with a NTP time server and then begin taking readings.
+* The device takes 100-millisecond audio recordings and instantly converts them to decibel "loudness" values. Each recording is discarded as soon as it is processed.
+* Over time, the decibel values are aggregated into minimum, average, and maximum values. Periodically, these values will be uploaded to the server at which point the device will clear its cached data and begin taking a new set of readings.
+* To factory reset the device and clear your saved credentials, hold the Reset button while you power on the device until the LED begins blinking.
 
