@@ -53,7 +53,7 @@ public:
     operator String() const noexcept {
         char tsbuf[32];
         const auto timeinfo = std::gmtime(&tm);
-        const auto success = std::strftime(tsbuf, sizeof(tsbuf), "%c", timeinfo) > 0;
+        const auto success = std::strftime(tsbuf, sizeof(tsbuf), "%FT%T+00:00", timeinfo) > 0;
 
         return success ? tsbuf : "(error)";
     }
