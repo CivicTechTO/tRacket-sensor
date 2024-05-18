@@ -54,29 +54,7 @@ std::optional<JsonDocument> API::sendAuthorizedRequest(const API::Request& req)
     HTTPClient https;
     if (https.begin(client, req.url)) {
         https.addHeader("Authorization", String("Token ") + token);
-
-        if (const auto code = https.GET(); code > 0) {
-            if (code == HTTP_CODE_OK || code == HTTP_CODE_MOVED_PERMANENTLY) {
-                const auto response = https.getString();
-#ifdef API_VERBOSE
-                SERIAL.print("[api] Response: ");
-                SERIAL.println(response);
-#endif
-                https.end();
-
-                return responseToJson(response);
-#ifdef API_VERBOSE
-            } else {
-                SERIAL.print("[api] HTTP error: ");
-                SERIAL.println(code);
-#endif
-            }
-#ifdef API_VERBOSE
-        } else {
-            SERIAL.print("[api] HTTP error: ");
-            SERIAL.println(code);
-#endif
-        }
+        return sendHttpRequest(https);
 #ifdef API_VERBOSE
     } else {
         SERIAL.println("[api] Failed to https.begin()");
@@ -97,17 +75,31 @@ std::optional<JsonDocument> API::sendNonauthorizedRequest(const API::Request& re
 #endif
 
     HTTPClient https;
-    if (https.begin(client, req.url)) {
-        if (const auto code = https.GET(); code > 0) {
-            if (code == HTTP_CODE_OK || code == HTTP_CODE_MOVED_PERMANENTLY) {
-                const auto response = https.getString();
+    if (https.begin(client, req.url))
+        return sendHttpRequest(https);
 #ifdef API_VERBOSE
-                SERIAL.print("[api] Response: ");
-                SERIAL.println(response);
+    else
+        SERIAL.println("[api] Failed to https.begin()");
 #endif
-                https.end();
 
-                return responseToJson(response);
+    return {};
+}
+
+std::optional<JsonDocument> API::sendHttpRequest(HTTPClient& https)
+{
+    if (const auto code = https.GET(); code > 0) {
+        const auto response = https.getString();
+        const auto json = responseToJson(response);
+        https.end();
+
+        if (json) {
+            SERIAL.print("[api] ");
+            SERIAL.print((String)(*json)["result"]);
+            SERIAL.print(": ");
+            SERIAL.println((String)(*json)["message"]);
+
+            if (code == HTTP_CODE_OK || code == HTTP_CODE_MOVED_PERMANENTLY) {
+                return *json;
 #ifdef API_VERBOSE
             } else {
                 SERIAL.print("[api] HTTP error: ");
@@ -116,13 +108,14 @@ std::optional<JsonDocument> API::sendNonauthorizedRequest(const API::Request& re
             }
 #ifdef API_VERBOSE
         } else {
-            SERIAL.print("[api] HTTP error: ");
+            SERIAL.print("[api] Invalid JSON! HTTP error: ");
             SERIAL.println(code);
 #endif
         }
 #ifdef API_VERBOSE
     } else {
-        SERIAL.println("[api] Failed to https.begin()");
+        SERIAL.print("[api] HTTP error: ");
+        SERIAL.println(code);
 #endif
     }
 
@@ -158,12 +151,16 @@ bool API::sendMeasurement(const DataPacket& packet)
     return resp && (*resp)["result"] == "ok";
 }
 
-bool API::sendDiagnostics(String version, String boottime)
+bool API::sendMeasurementWithDiagnostics(const DataPacket& packet, String version, String boottime)
 {
     const auto request = Request("measurement")
-        .addParam("device",   id)
-        .addParam("version",  version)
-        .addParam("boottime", boottime);
+        .addParam("device",    id)
+        .addParam("timestamp", packet.timestamp)
+        .addParam("min",       String(std::lround(packet.minimum)))
+        .addParam("max",       String(std::lround(packet.maximum)))
+        .addParam("mean",      String(std::lround(packet.average)))
+        .addParam("version",   version)
+        .addParam("boottime",  boottime);
 
     const auto resp = sendAuthorizedRequest(request);
     return resp && (*resp)["result"] == "ok";

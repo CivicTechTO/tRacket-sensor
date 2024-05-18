@@ -62,6 +62,8 @@ static Timestamp lastUpload = Timestamp::invalidTimestamp();
 /** Tracks when the last OTA update check occurred. */
 static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
 
+static bool firstSend;
+
 /**
  * Outputs the given decibel reading over serial.
  * @param reading The decibel reading to display
@@ -158,6 +160,7 @@ void setup() {
   Timestamp now;
   lastUpload = now;
   lastOTACheck = now;
+  firstSend = true;
 
   SERIAL.println("Connected to the WiFi network.");
   SERIAL.print("Local ESP32 IP: ");
@@ -194,7 +197,12 @@ void loop() {
     if (WiFi.status() == WL_CONNECTED) {
       API api (buildDeviceId(), Creds.get(Storage::Entry::Token));
 
-      {
+      if (firstSend) {
+        if (api.sendMeasurementWithDiagnostics(packets.back(), NOISEMETER_VERSION, lastUpload)) {
+            packets.pop_back();
+            firstSend = false;
+        }
+      } else {
         std::optional<Blinker> bl;
 
         // Only blink if there's multiple packets to send
