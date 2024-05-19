@@ -22,6 +22,8 @@
 #include <DNSServer.h>
 #include <WebServer.h>
 
+#include <optional>
+
 /**
  * @brief Manages the WiFi access point, captive portal, and user setup form.
  *
@@ -45,10 +47,10 @@ class AccessPoint : public RequestHandler
 
 public:
     /**
-     * Submission handler receives WebServer for input data and returns true
-     * on success, false to reject bad submission.
+     * Submission handler receives WebServer for input data and returns an
+     * error message on failure.
      */
-    using SubmissionHandler = bool (*)(WebServer&);
+    using SubmissionHandler = std::optional<const char *> (*)(WebServer&);
 
     /**
      * Starts the WiFi access point using the fixed credentials.
@@ -79,8 +81,8 @@ private:
     static const char *htmlSetup;
     /** Hard-coded HTML for the page shown after completing the form. */
     static const char *htmlSubmit;
-    /** Hard-coded HTML for the page shown when rejecting a form submission. */
-    static const char *htmlSubmitFailed;
+    /** Provides HTML for an error page with the given message. */
+    static String htmlFromMsg(const char *msg);
 
     /** Determines which HTTP requests should be handled. */
     bool canHandle(HTTPMethod, String) override;
