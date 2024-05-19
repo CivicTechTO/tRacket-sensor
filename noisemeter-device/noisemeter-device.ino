@@ -42,13 +42,13 @@ HWCDC USBSerial;
 //#define UPLOAD_DISABLED
 
 /** Maximum number of milliseconds to wait for successful WiFi connection. */
-constexpr auto WIFI_CONNECT_TIMEOUT_MS = 20 * 1000;
+constexpr auto WIFI_CONNECT_TIMEOUT_MS = SEC_TO_MS(20);
 /** Specifies how frequently to upload data points to the server. */
-const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5; // Upload every 5 mins
+constexpr auto UPLOAD_INTERVAL_SEC = MIN_TO_SEC(5);
 /** Specifies how frequently to check for OTA updates from our server. */
-const unsigned long OTA_INTERVAL_SEC = 60 * 60 * 24; // Check for updates daily
+constexpr auto OTA_INTERVAL_SEC = HR_TO_SEC(24);
 /** Maximum number of data packets to retain when WiFi is unavailable. */
-constexpr unsigned MAX_SAVED_PACKETS = 14 * 24 * 60 * 60 / UPLOAD_INTERVAL_SEC;
+constexpr auto MAX_SAVED_PACKETS = DAY_TO_SEC(14) / UPLOAD_INTERVAL_SEC;
 
 /** SPLMeter instance to manage decibel level measurement. */
 static SPLMeter SPL;
@@ -128,7 +128,9 @@ void setup() {
     isAPNeeded = true;
   } else if (Creds.get(Storage::Entry::Token).length() == 0) {
     isAPNeeded = true;
-  } else if (tryWifiConnection() < 0 || Timestamp::synchronize() < 0) {
+  } else if (tryWifiConnection(WIFI_STA, SEC_TO_MS(DAY_TO_SEC(30))) < 0) {
+    isAPNeeded = true;
+  } else if (Timestamp::synchronize() < 0) {
     isAPNeeded = true;
   }
 
@@ -137,7 +139,13 @@ void setup() {
     AccessPoint ap (saveNetworkCreds);
     Blinker bl (500);
 
-    ap.run(); // does not return
+    ap.run();
+
+    // Access point timed out: power off.
+    SERIAL.println("No connections. Power off.");
+    delay(500);
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
+    esp_deep_sleep_start();
   }
 
   Timestamp now;

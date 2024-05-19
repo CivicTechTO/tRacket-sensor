@@ -16,6 +16,7 @@
  */
 #include "access-point.h"
 #include "board.h"
+#include "timestamp.h"
 
 #include <WiFiAP.h>
 
@@ -34,6 +35,7 @@
     "</html>"
 
 constexpr int DNSPort = 53;
+constexpr auto ACCESS_POINT_TIMEOUT_SEC = MIN_TO_SEC(30);
 
 const IPAddress AccessPoint::IP (8, 8, 4, 4);
 const IPAddress AccessPoint::Netmask (255, 255, 255, 0);
@@ -58,6 +60,11 @@ const char *AccessPoint::htmlSubmit =
     "<p>Connected and registered! Restarting...</p>"
     HTML_FOOTER;
 
+AccessPoint::AccessPoint(SubmissionHandler func):
+    timeout(ACCESS_POINT_TIMEOUT_SEC),
+    server(80),
+    onCredentialsReceived(func) {}
+
 // HTML to show when a submission is rejected.
 String AccessPoint::htmlFromMsg(const char *msg)
 {
@@ -70,7 +77,6 @@ String AccessPoint::htmlFromMsg(const char *msg)
     return html;
 }
 
-[[noreturn]]
 void AccessPoint::run()
 {
     WiFi.mode(WIFI_AP);
@@ -84,7 +90,7 @@ void AccessPoint::run()
 
     SERIAL.println("Running setup access point.");
 
-    while (1) {
+    for (auto start = 0UL; start / 100 < timeout; ++start) {
         dns.processNextRequest();
         server.handleClient();
         delay(10);
@@ -122,6 +128,7 @@ bool AccessPoint::handle(WebServer& server, HTTPMethod method, String uri)
         // Redirects taken from https://github.com/CDFER/Captive-Portal-ESP32
 
         if (uri == "/") {
+            timeout = DAY_TO_SEC(30);
             server.send_P(200, PSTR("text/html"), htmlSetup);
         } else if (uri == "/connecttest.txt") {
             // windows 11 captive portal workaround

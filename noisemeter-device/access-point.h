@@ -56,16 +56,16 @@ public:
      * Starts the WiFi access point using the fixed credentials.
      * @param func Callback to handle user setup form submission.
      */
-    AccessPoint(SubmissionHandler func):
-        server(80),
-        onCredentialsReceived(func) {}
+    AccessPoint(SubmissionHandler func);
 
     /**
      * Enters an infinite loop to handle the access point and web server.
      */
-    [[noreturn]] void run();
+    void run();
 
 private:
+
+    unsigned long timeout;
     /** DNS server object for captive portal redirection. */
     DNSServer dns;
     /** Web server object for running the setup form. */
