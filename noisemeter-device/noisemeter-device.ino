@@ -69,11 +69,11 @@ static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
 void printReadingToConsole(double reading);
 
 /**
- * Callback for AccessPoint that verifies and stores the submitted credentials.
+ * Callback for AccessPoint that verifies credentials and attempts registration.
  * @param httpServer HTTP server which served the setup form
- * @return True if successful
+ * @return An error message if not successful
  */
-bool saveNetworkCreds(WebServer& httpServer);
+std::optional<const char *> saveNetworkCreds(WebServer& httpServer);
 
 /**
  * Generates a UUID that is unique to the hardware running this firmware.
@@ -83,9 +83,11 @@ UUID buildDeviceId();
 
 /**
  * Attempt to establish a WiFi connected using the stored credentials.
+ * @param mode WiFi mode to run in (e.g. WIFI_STA or WIFI_AP_STA)
+ * @param timout Connection timeout in milliseconds
  * @return Zero on success or a negative number on failure
  */
-int tryWifiConnection();
+int tryWifiConnection(wifi_mode_t mode = WIFI_STA, int timeout = WIFI_CONNECT_TIMEOUT_MS);
 
 /**
  * Firmware entry point and initialization routine.
@@ -124,6 +126,8 @@ void setup() {
     SERIAL.println(" done.");
 
     isAPNeeded = true;
+  } else if (Creds.get(Storage::Entry::Token).length() == 0) {
+    isAPNeeded = true;
   } else if (tryWifiConnection() < 0 || Timestamp::synchronize() < 0) {
     isAPNeeded = true;
   }
@@ -134,25 +138,6 @@ void setup() {
     Blinker bl (500);
 
     ap.run(); // does not return
-  }
-
-  if (const auto email = Creds.get(Storage::Entry::Email); email.length() > 0) {
-    API api (buildDeviceId());
-    const auto registration = api.sendRegister(email);
-
-    if (registration) {
-      Creds.set(Storage::Entry::Email, {});
-      Creds.set(Storage::Entry::Token, *registration);
-      Creds.commit();
-
-      SERIAL.print("Registered! ");
-      SERIAL.println(*registration);
-    } else {
-      SERIAL.println("Failed to register!");
-      Creds.clear();
-      delay(2000);
-      ESP.restart();
-    }
   }
 
   Timestamp now;
@@ -266,7 +251,8 @@ void printReadingToConsole(double reading) {
   SERIAL.print(output);
 }
 
-bool saveNetworkCreds(WebServer& httpServer) {
+std::optional<const char *> saveNetworkCreds(WebServer& httpServer)
+{
   // Confirm that the form was actually submitted.
   if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
     const auto ssid = httpServer.arg("ssid");
@@ -277,15 +263,29 @@ bool saveNetworkCreds(WebServer& httpServer) {
     if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk) && Creds.canStore(email)) {
       Creds.set(Storage::Entry::SSID, ssid);
       Creds.set(Storage::Entry::Passkey, psk);
-      Creds.set(Storage::Entry::Email, email);
+      Creds.set(Storage::Entry::Token, {});
       Creds.commit();
 
-      return true;
+      if (tryWifiConnection(WIFI_AP_STA) == 0 && Timestamp::synchronize() == 0) {
+        API api (buildDeviceId());
+        const auto registration = api.sendRegister(email);
+
+        if (registration) {
+          SERIAL.println("Registered!");
+          Creds.set(Storage::Entry::Token, *registration);
+          Creds.commit();
+
+          return {};
+        } else {
+          return "Device registration failed!";
+        }
+      } else {
+        return "Failed to connect to the internet!";
+      }
     }
   }
 
-  SERIAL.println("Error: Invalid network credentials!");
-  return false;
+  return "Invalid network credentials!";
 }
 
 UUID buildDeviceId()
@@ -295,10 +295,12 @@ UUID buildDeviceId()
   return UUID(mac[0] | (mac[1] << 8) | (mac[2] << 16), mac[3] | (mac[4] << 8) | (mac[5] << 16));
 }
 
-int tryWifiConnection()
+int tryWifiConnection(wifi_mode_t mode, int timeout)
 {
-  WiFi.mode(WIFI_STA);
-  const auto stat = WiFi.begin(Creds.get(Storage::Entry::SSID).c_str(), Creds.get(Storage::Entry::Passkey).c_str());
+  WiFi.mode(mode);
+  const auto stat = WiFi.begin(
+    Creds.get(Storage::Entry::SSID).c_str(),
+    Creds.get(Storage::Entry::Passkey).c_str());
   if (stat == WL_CONNECT_FAILED)
     return -1;
 
@@ -311,7 +313,7 @@ int tryWifiConnection()
     connected = WiFi.status() == WL_CONNECTED;
     SERIAL.print(".");
     delay(500);
-  } while (!connected && millis() - start < WIFI_CONNECT_TIMEOUT_MS);
+  } while (!connected && millis() - start < timeout);
 
   return connected ? 0 : -1;
 }

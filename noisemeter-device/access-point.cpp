@@ -26,7 +26,8 @@
     "<meta charset='utf-8'>" \
     "<meta name='viewport' content='width=device-width,initial-scale=1'/>" \
     "</head>" \
-    "<body>"
+    "<body>" \
+    "<h1>Noise Meter Setup</h1>"
 
 #define HTML_FOOTER \
     "</body>" \
@@ -40,7 +41,6 @@ const IPAddress AccessPoint::Netmask (255, 255, 255, 0);
 // Main webpage HTML with form to collect WiFi credentials.
 const char *AccessPoint::htmlSetup =
     HTML_HEADER
-    "<h1>Noise Meter Setup</h1>"
     "<form method='POST' action='' enctype='multipart/form-data'>"
     "<p>SSID:</p>"
     "<input type='text' name='ssid' required>"
@@ -55,16 +55,20 @@ const char *AccessPoint::htmlSetup =
 // HTML to show after credentials are submitted.
 const char *AccessPoint::htmlSubmit =
     HTML_HEADER
-    "<h1>Noise Meter Setup</h1>"
-    "<p>Connecting...</p>"
+    "<p>Connected and registered! Restarting...</p>"
     HTML_FOOTER;
 
 // HTML to show when a submission is rejected.
-const char *AccessPoint::htmlSubmitFailed =
-    HTML_HEADER
-    "<h1>Noise Meter Setup</h1>"
-    "<p>Invalid setup form input! Please <a href='/'>go back and try again</a>.</p>"
-    HTML_FOOTER;
+String AccessPoint::htmlFromMsg(const char *msg)
+{
+    String html (HTML_HEADER);
+    html += "<p>";
+    html += msg;
+    html += "</p>";
+    html += "<p>Please <a href='/'>go back and try again</a>.</p>";
+    html += HTML_FOOTER;
+    return html;
+}
 
 [[noreturn]]
 void AccessPoint::run()
@@ -99,12 +103,15 @@ bool AccessPoint::handle(WebServer& server, HTTPMethod method, String uri)
             server.client().setNoDelay(true);
 
             if (onCredentialsReceived) {
-                if (onCredentialsReceived(server)) {
+                auto msg = onCredentialsReceived(server);
+                if (!msg) {
                     server.send_P(200, PSTR("text/html"), htmlSubmit);
-                    delay(2000);
+                    delay(3000);
                     ESP.restart(); // Software reset.
                 } else {
-                    server.send_P(200, PSTR("text/html"), htmlSubmitFailed);
+                    auto msgStr = htmlFromMsg(*msg);
+                    server.send_P(200, PSTR("text/html"), msgStr.c_str());
+                    WiFi.mode(WIFI_AP);
                 }
             }
         } else {
