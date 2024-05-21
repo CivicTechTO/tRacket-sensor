@@ -38,6 +38,31 @@ dd if=/dev/urandom of=hmac_key bs=1 count=32
 pio pkg exec -- espefuse.py --port /dev/ttyACM0 burn_key BLOCK4 hmac_key HMAC_UP
 ```
 
+## Enable secure download mode
+
+Enabling secure download mode prevents users from using USB/serial download mode to dump memory contents (WiFi credentials and API token):
+
+```bash
+pio pkg exec -- espefuse.py --port /dev/ttyACM0 burn_efuse ENABLE_SECURE_DOWNLOAD
+```
+
+## Signing OTA updates
+
+A 4096-bit RSA key is used to sign OTA updates. Whoever controls the private OTA signing key can create a public key with this command and include its contents in `noisemeter_device/ota_update.cpp`:
+
+```bash
+openssl rsa -in priv_key.pem -pubout > rsa_key.pub
+```
+
+They may also sign a firmware update with these commands (the signature is prepended to the firmware binary):
+
+```bash
+openssl dgst -sign priv_key.pem -keyform PEM -sha256 -out firmware.sign -binary .pio/build/esp32-pcb/firmware.bin
+cat firmware.sign .pio/build/esp32-pcb/firmware.bin > firmware_signed.bin
+```
+
+`firmware_signed.bin` is then uploaded to the OTA server.
+
 ## Operation Overview:
 
 * After initial programming or a factory reset, the device will enter Hotspot mode once it is powered on. This is indicated by a blinking LED.
