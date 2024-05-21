@@ -27,6 +27,8 @@
 
 #include <optional>
 
+class HTTPClient;
+
 /**
  * @brief Provides interface for API calls.
  */
@@ -81,13 +83,14 @@ public:
     bool sendMeasurement(const DataPacket& packet);
 
     /**
-     * Sends diagnostic/analytic data to the server.
+     * Sends diagnostic/analytic data to the server along with a DataPacket.
      * This request requires authentication.
+     * @param packet Packet to be sent.
      * @param version Device's software version number.
      * @param boottime Timestamp of last connection to the internet.
      * @return True on success
      */
-    bool sendDiagnostics(String version, String boottime);
+    bool sendMeasurementWithDiagnostics(const DataPacket& packet, String version, String boottime);
 
     /**
      * Attempts to register the device with the given email.
@@ -119,6 +122,8 @@ private:
     std::optional<JsonDocument> sendAuthorizedRequest(const Request& req);
     /** Attempts the given request and returns the JSON response on success. */
     std::optional<JsonDocument> sendNonauthorizedRequest(const Request& req);
+
+    std::optional<JsonDocument> sendHttpRequest(HTTPClient& https);
 };
 
 #endif // API_H
