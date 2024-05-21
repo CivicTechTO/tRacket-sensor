@@ -46,6 +46,12 @@ Enabling secure download mode prevents users from using USB/serial download mode
 pio pkg exec -- espefuse.py --port /dev/ttyACM0 burn_efuse ENABLE_SECURE_DOWNLOAD
 ```
 
+Then, if new firmware is to be uploaded over USB in the future, upload using this command:
+
+```bash
+pio pkg exec -- esptool.py write_flash 0x10000 .pio/build/esp32-pcb/firmware.bin
+```
+
 ## Signing OTA updates
 
 A 4096-bit RSA key is used to sign OTA updates. Whoever controls the private OTA signing key can create a public key with this command and include its contents in `noisemeter_device/ota_update.cpp`:
