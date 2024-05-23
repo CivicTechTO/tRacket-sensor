@@ -272,30 +272,32 @@ void printReadingToConsole(double reading) {
 std::optional<const char *> saveNetworkCreds(WebServer& httpServer)
 {
   // Confirm that the form was actually submitted.
-  if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
+  if (httpServer.hasArg("ssid") && httpServer.hasArg("psk") && httpServer.hasArg("email")) {
     const auto ssid = httpServer.arg("ssid");
     const auto psk = httpServer.arg("psk");
     const auto email = httpServer.arg("email");
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
-    if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk) && Creds.canStore(email)) {
+    if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk)) {
       Creds.set(Storage::Entry::SSID, ssid);
       Creds.set(Storage::Entry::Passkey, psk);
-      Creds.set(Storage::Entry::Token, {});
       Creds.commit();
 
       if (tryWifiConnection(WIFI_AP_STA, WIFI_NEW_CONNECT_TIMEOUT_SEC) == 0 && Timestamp::synchronize() == 0) {
-        API api (buildDeviceId());
-        const auto registration = api.sendRegister(email);
+        if (email.length() > 0) {
+          API api (buildDeviceId());
 
-        if (registration) {
-          SERIAL.println("Registered!");
-          Creds.set(Storage::Entry::Token, *registration);
-          Creds.commit();
+          if (const auto reg = api.sendRegister(email); reg) {
+            SERIAL.println("Registered!");
+            Creds.set(Storage::Entry::Token, *reg);
+            Creds.commit();
 
-          return {};
+            return {};
+          } else {
+            return "Device registration failed!";
+          }
         } else {
-          return "Device registration failed!";
+          return {};
         }
       } else {
         return "Failed to connect to the internet!";

@@ -48,8 +48,8 @@ const char *AccessPoint::htmlSetup =
     "<input type='text' name='ssid' required>"
     "<p>Password:</p>"
     "<input type='password' name='psk' required>"
-    "<p>Email:</p>"
-    "<input type='email' name='email' required>"
+    "<p>Email (if registering new device):</p>"
+    "<input type='email' name='email'>"
     "<input type='submit' value='Connect'>"
     "</form>"
     HTML_FOOTER;
