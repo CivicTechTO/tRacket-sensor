@@ -41,8 +41,10 @@ HWCDC USBSerial;
 // Uncomment these to disable WiFi and/or data upload
 //#define UPLOAD_DISABLED
 
-/** Maximum number of milliseconds to wait for successful WiFi connection. */
-constexpr auto WIFI_CONNECT_TIMEOUT_MS = SEC_TO_MS(20);
+/** Maximum number of seconds to wait for successful WiFi connection. */
+constexpr auto WIFI_CONNECT_TIMEOUT_SEC = MIN_TO_SEC(2);
+/** Maximum number of seconds to try making new WiFi connection. */
+constexpr auto WIFI_NEW_CONNECT_TIMEOUT_SEC = 20;
 /** Specifies how frequently to upload data points to the server. */
 constexpr auto UPLOAD_INTERVAL_SEC = MIN_TO_SEC(5);
 /** Specifies how frequently to check for OTA updates from our server. */
@@ -61,7 +63,7 @@ static std::list<DataPacket> packets;
 static Timestamp lastUpload = Timestamp::invalidTimestamp();
 /** Tracks when the last OTA update check occurred. */
 static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
-
+/** Track first measurement upload so diagnostics can be sent/included. */
 static bool firstSend;
 
 /**
@@ -86,10 +88,10 @@ UUID buildDeviceId();
 /**
  * Attempt to establish a WiFi connected using the stored credentials.
  * @param mode WiFi mode to run in (e.g. WIFI_STA or WIFI_AP_STA)
- * @param timout Connection timeout in milliseconds
+ * @param timout Connection timeout in seconds
  * @return Zero on success or a negative number on failure
  */
-int tryWifiConnection(wifi_mode_t mode = WIFI_STA, int timeout = WIFI_CONNECT_TIMEOUT_MS);
+int tryWifiConnection(wifi_mode_t mode = WIFI_STA, int timeout = WIFI_CONNECT_TIMEOUT_SEC);
 
 /**
  * Firmware entry point and initialization routine.
@@ -130,7 +132,7 @@ void setup() {
     isAPNeeded = true;
   } else if (Creds.get(Storage::Entry::Token).length() == 0) {
     isAPNeeded = true;
-  } else if (tryWifiConnection(WIFI_STA, SEC_TO_MS(DAY_TO_SEC(30))) < 0) {
+  } else if (tryWifiConnection(WIFI_STA) < 0) {
     isAPNeeded = true;
   } else if (Timestamp::synchronize() < 0) {
     isAPNeeded = true;
@@ -282,7 +284,7 @@ std::optional<const char *> saveNetworkCreds(WebServer& httpServer)
       Creds.set(Storage::Entry::Token, {});
       Creds.commit();
 
-      if (tryWifiConnection(WIFI_AP_STA) == 0 && Timestamp::synchronize() == 0) {
+      if (tryWifiConnection(WIFI_AP_STA, WIFI_NEW_CONNECT_TIMEOUT_SEC) == 0 && Timestamp::synchronize() == 0) {
         API api (buildDeviceId());
         const auto registration = api.sendRegister(email);
 
@@ -325,6 +327,7 @@ int tryWifiConnection(wifi_mode_t mode, int timeout)
   const auto start = millis();
   bool connected;
 
+  timeout = SEC_TO_MS(timeout);
   do {
     connected = WiFi.status() == WL_CONNECTED;
     SERIAL.print(".");

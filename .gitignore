@@ -16,3 +16,4 @@ hmac_key
 *.bin
 *.FCBak
 *.pem
+*.pub
