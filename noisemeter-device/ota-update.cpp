@@ -129,9 +129,10 @@ bool applyUpdate(WiFiClientSecure& client, int totalSize)
                     SERIAL.println("Failed to write Update.");
                     return false;
                 }
+
+                mbedtls_md_update(&rsa, buffer.data(), bytesRead);
             }
 
-            mbedtls_md_update(&rsa, buffer.data(), bytesRead);
             if (totalSize > 0)
                 totalSize -= bytesRead;
         } else {
