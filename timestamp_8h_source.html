@@ -92,62 +92,67 @@ $(function() {
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &lt;Arduino.h&gt;</span></div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &lt;ctime&gt;</span></div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160; </div>
-<div class="line"><a name="l00026"></a><span class="lineno"><a class="line" href="timestamp_8h.html#ac2c2221b23f80ab0e69e1cdc4bc1b4c5">   26</a></span>&#160;constexpr <span class="keyword">auto</span> <a class="code" href="timestamp_8h.html#ac2c2221b23f80ab0e69e1cdc4bc1b4c5">NTP_CONNECT_TIMEOUT_MS</a> = 20 * 1000;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
-<div class="line"><a name="l00031"></a><span class="lineno"><a class="line" href="classTimestamp.html">   31</a></span>&#160;<span class="keyword">class </span><a class="code" href="classTimestamp.html">Timestamp</a></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;{</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="classTimestamp.html#ace6d40adbf85f83bc2b9d1fd65412661">   38</a></span>&#160;    <a class="code" href="classTimestamp.html#ace6d40adbf85f83bc2b9d1fd65412661">Timestamp</a>(std::time_t tm_ = std::time(<span class="keyword">nullptr</span>)):</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        <a class="code" href="classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f">tm</a>(tm_) {}</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; </div>
-<div class="line"><a name="l00045"></a><span class="lineno"><a class="line" href="classTimestamp.html#a796b02fa865e0a3183209f2d51723a51">   45</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classTimestamp.html#a796b02fa865e0a3183209f2d51723a51">valid</a>() const noexcept {</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f">tm</a> &gt;= 8 * 3600 * 2;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    }</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
-<div class="line"><a name="l00053"></a><span class="lineno"><a class="line" href="classTimestamp.html#ac5e5a9a52c9ff1625e63d8127c5e57f9">   53</a></span>&#160;    <span class="keyword">operator</span> String() const noexcept {</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        <span class="keywordtype">char</span> tsbuf[32];</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="keyword">const</span> <span class="keyword">auto</span> timeinfo = std::gmtime(&amp;<a class="code" href="classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f">tm</a>);</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <span class="keyword">const</span> <span class="keyword">auto</span> success = std::strftime(tsbuf, <span class="keyword">sizeof</span>(tsbuf), <span class="stringliteral">&quot;%c&quot;</span>, timeinfo) &gt; 0;</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <span class="keywordflow">return</span> success ? tsbuf : <span class="stringliteral">&quot;(error)&quot;</span>;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    }</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
-<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="classTimestamp.html#ace7251bf1a360e4588464c98e6d152e1">   66</a></span>&#160;    <span class="keyword">auto</span> <a class="code" href="classTimestamp.html#ace7251bf1a360e4588464c98e6d152e1">secondsBetween</a>(<a class="code" href="classTimestamp.html">Timestamp</a> ts) <span class="keyword">const</span> noexcept {</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        <span class="keywordflow">return</span> std::difftime(ts.tm, <a class="code" href="classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f">tm</a>);</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    }</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
-<div class="line"><a name="l00077"></a><span class="lineno"><a class="line" href="classTimestamp.html#a539006e78773ce5b070266b7d60663c0">   77</a></span>&#160;    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code" href="classTimestamp.html#a539006e78773ce5b070266b7d60663c0">synchronize</a>() {</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        configTime(0, 0, <span class="stringliteral">&quot;pool.ntp.org&quot;</span>);</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <span class="keyword">const</span> <span class="keyword">auto</span> start = millis();</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        <span class="keywordtype">bool</span> connected;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        <span class="keywordflow">do</span> {</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;            delay(1000);</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;            connected = <a class="code" href="classTimestamp.html#ace6d40adbf85f83bc2b9d1fd65412661">Timestamp</a>().valid();</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        } <span class="keywordflow">while</span> (!connected &amp;&amp; millis() - start &lt; <a class="code" href="timestamp_8h.html#ac2c2221b23f80ab0e69e1cdc4bc1b4c5">NTP_CONNECT_TIMEOUT_MS</a>);</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#define SEC_TO_MS(s)  (s * 1000)</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#define MIN_TO_SEC(m) (m * 60)</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#define HR_TO_SEC(h)  MIN_TO_SEC(60)</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#define DAY_TO_SEC(h) HR_TO_SEC(24)</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
+<div class="line"><a name="l00031"></a><span class="lineno"><a class="line" href="timestamp_8h.html#ac2c2221b23f80ab0e69e1cdc4bc1b4c5">   31</a></span>&#160;constexpr <span class="keyword">auto</span> <a class="code" href="timestamp_8h.html#ac2c2221b23f80ab0e69e1cdc4bc1b4c5">NTP_CONNECT_TIMEOUT_MS</a> = SEC_TO_MS(20);</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
+<div class="line"><a name="l00036"></a><span class="lineno"><a class="line" href="classTimestamp.html">   36</a></span>&#160;<span class="keyword">class </span><a class="code" href="classTimestamp.html">Timestamp</a></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;{</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00043"></a><span class="lineno"><a class="line" href="classTimestamp.html#ace6d40adbf85f83bc2b9d1fd65412661">   43</a></span>&#160;    <a class="code" href="classTimestamp.html#ace6d40adbf85f83bc2b9d1fd65412661">Timestamp</a>(std::time_t tm_ = std::time(<span class="keyword">nullptr</span>)):</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <a class="code" href="classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f">tm</a>(tm_) {}</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
+<div class="line"><a name="l00050"></a><span class="lineno"><a class="line" href="classTimestamp.html#a796b02fa865e0a3183209f2d51723a51">   50</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classTimestamp.html#a796b02fa865e0a3183209f2d51723a51">valid</a>() const noexcept {</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f">tm</a> &gt;= HR_TO_SEC(16);</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    }</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
+<div class="line"><a name="l00058"></a><span class="lineno"><a class="line" href="classTimestamp.html#ac5e5a9a52c9ff1625e63d8127c5e57f9">   58</a></span>&#160;    <span class="keyword">operator</span> String() const noexcept {</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        <span class="keywordtype">char</span> tsbuf[32];</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="keyword">const</span> <span class="keyword">auto</span> timeinfo = std::gmtime(&amp;<a class="code" href="classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f">tm</a>);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keyword">const</span> <span class="keyword">auto</span> success = std::strftime(tsbuf, <span class="keyword">sizeof</span>(tsbuf), <span class="stringliteral">&quot;%FT%T+00:00&quot;</span>, timeinfo) &gt; 0;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        <span class="keywordflow">return</span> success ? tsbuf : <span class="stringliteral">&quot;(error)&quot;</span>;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    }</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; </div>
+<div class="line"><a name="l00071"></a><span class="lineno"><a class="line" href="classTimestamp.html#ace7251bf1a360e4588464c98e6d152e1">   71</a></span>&#160;    <span class="keyword">auto</span> <a class="code" href="classTimestamp.html#ace7251bf1a360e4588464c98e6d152e1">secondsBetween</a>(<a class="code" href="classTimestamp.html">Timestamp</a> ts) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        <span class="keywordflow">return</span> std::difftime(ts.tm, <a class="code" href="classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f">tm</a>);</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    }</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
+<div class="line"><a name="l00082"></a><span class="lineno"><a class="line" href="classTimestamp.html#a539006e78773ce5b070266b7d60663c0">   82</a></span>&#160;    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code" href="classTimestamp.html#a539006e78773ce5b070266b7d60663c0">synchronize</a>() {</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        configTime(0, 0, <span class="stringliteral">&quot;pool.ntp.org&quot;</span>);</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        <span class="keyword">const</span> <span class="keyword">auto</span> start = millis();</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <span class="keywordtype">bool</span> connected;</div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keywordflow">return</span> connected ? 0 : -1;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    }</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
-<div class="line"><a name="l00095"></a><span class="lineno"><a class="line" href="classTimestamp.html#a66f54270c50d2435a310c6a459e3b747">   95</a></span>&#160;    <span class="keyword">static</span> <a class="code" href="classTimestamp.html">Timestamp</a> <a class="code" href="classTimestamp.html#a66f54270c50d2435a310c6a459e3b747">invalidTimestamp</a>() {</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classTimestamp.html#ace6d40adbf85f83bc2b9d1fd65412661">Timestamp</a>(0);</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    }</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f">  101</a></span>&#160;    std::time_t <a class="code" href="classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f">tm</a>;</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;};</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keywordflow">do</span> {</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            delay(1000);</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;            connected = <a class="code" href="classTimestamp.html#ace6d40adbf85f83bc2b9d1fd65412661">Timestamp</a>().valid();</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        } <span class="keywordflow">while</span> (!connected &amp;&amp; millis() - start &lt; <a class="code" href="timestamp_8h.html#ac2c2221b23f80ab0e69e1cdc4bc1b4c5">NTP_CONNECT_TIMEOUT_MS</a>);</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        <span class="keywordflow">return</span> connected ? 0 : -1;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    }</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
+<div class="line"><a name="l00100"></a><span class="lineno"><a class="line" href="classTimestamp.html#a66f54270c50d2435a310c6a459e3b747">  100</a></span>&#160;    <span class="keyword">static</span> <a class="code" href="classTimestamp.html">Timestamp</a> <a class="code" href="classTimestamp.html#a66f54270c50d2435a310c6a459e3b747">invalidTimestamp</a>() {</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classTimestamp.html#ace6d40adbf85f83bc2b9d1fd65412661">Timestamp</a>(0);</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    }</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// TIMESTAMP_H</span></div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
-<div class="ttc" id="aclassTimestamp_html"><div class="ttname"><a href="classTimestamp.html">Timestamp</a></div><div class="ttdoc">Timestamping facility that uses NTP to provide accurate date and time.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00031">timestamp.h:32</a></div></div>
-<div class="ttc" id="aclassTimestamp_html_a539006e78773ce5b070266b7d60663c0"><div class="ttname"><a href="classTimestamp.html#a539006e78773ce5b070266b7d60663c0">Timestamp::synchronize</a></div><div class="ttdeci">static int synchronize()</div><div class="ttdoc">Synchronizes system time with an NTP time server.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00077">timestamp.h:77</a></div></div>
-<div class="ttc" id="aclassTimestamp_html_a66f54270c50d2435a310c6a459e3b747"><div class="ttname"><a href="classTimestamp.html#a66f54270c50d2435a310c6a459e3b747">Timestamp::invalidTimestamp</a></div><div class="ttdeci">static Timestamp invalidTimestamp()</div><div class="ttdoc">Provides a timestamp that is guaranteed to be invalid.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00095">timestamp.h:95</a></div></div>
-<div class="ttc" id="aclassTimestamp_html_a796b02fa865e0a3183209f2d51723a51"><div class="ttname"><a href="classTimestamp.html#a796b02fa865e0a3183209f2d51723a51">Timestamp::valid</a></div><div class="ttdeci">bool valid() const noexcept</div><div class="ttdoc">Determines if the timestamp is valid.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00045">timestamp.h:45</a></div></div>
-<div class="ttc" id="aclassTimestamp_html_ace6d40adbf85f83bc2b9d1fd65412661"><div class="ttname"><a href="classTimestamp.html#ace6d40adbf85f83bc2b9d1fd65412661">Timestamp::Timestamp</a></div><div class="ttdeci">Timestamp(std::time_t tm_=std::time(nullptr))</div><div class="ttdoc">Creates a new timestamp.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00038">timestamp.h:38</a></div></div>
-<div class="ttc" id="aclassTimestamp_html_ace7251bf1a360e4588464c98e6d152e1"><div class="ttname"><a href="classTimestamp.html#ace7251bf1a360e4588464c98e6d152e1">Timestamp::secondsBetween</a></div><div class="ttdeci">auto secondsBetween(Timestamp ts) const noexcept</div><div class="ttdoc">Determines the number of seconds between this and the given timestamp.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00066">timestamp.h:66</a></div></div>
-<div class="ttc" id="aclassTimestamp_html_ae0a49cea6353c29f69b780fd9a1a627f"><div class="ttname"><a href="classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f">Timestamp::tm</a></div><div class="ttdeci">std::time_t tm</div><div class="ttdoc">Stores system time.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00101">timestamp.h:101</a></div></div>
-<div class="ttc" id="atimestamp_8h_html_ac2c2221b23f80ab0e69e1cdc4bc1b4c5"><div class="ttname"><a href="timestamp_8h.html#ac2c2221b23f80ab0e69e1cdc4bc1b4c5">NTP_CONNECT_TIMEOUT_MS</a></div><div class="ttdeci">constexpr auto NTP_CONNECT_TIMEOUT_MS</div><div class="ttdoc">Maximum number of milliseconds to wait for NTP sync to succeed.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00026">timestamp.h:26</a></div></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00106"></a><span class="lineno"><a class="line" href="classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f">  106</a></span>&#160;    std::time_t <a class="code" href="classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f">tm</a>;</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;};</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// TIMESTAMP_H</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160; </div>
+<div class="ttc" id="aclassTimestamp_html"><div class="ttname"><a href="classTimestamp.html">Timestamp</a></div><div class="ttdoc">Timestamping facility that uses NTP to provide accurate date and time.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00036">timestamp.h:37</a></div></div>
+<div class="ttc" id="aclassTimestamp_html_a539006e78773ce5b070266b7d60663c0"><div class="ttname"><a href="classTimestamp.html#a539006e78773ce5b070266b7d60663c0">Timestamp::synchronize</a></div><div class="ttdeci">static int synchronize()</div><div class="ttdoc">Synchronizes system time with an NTP time server.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00082">timestamp.h:82</a></div></div>
+<div class="ttc" id="aclassTimestamp_html_a66f54270c50d2435a310c6a459e3b747"><div class="ttname"><a href="classTimestamp.html#a66f54270c50d2435a310c6a459e3b747">Timestamp::invalidTimestamp</a></div><div class="ttdeci">static Timestamp invalidTimestamp()</div><div class="ttdoc">Provides a timestamp that is guaranteed to be invalid.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00100">timestamp.h:100</a></div></div>
+<div class="ttc" id="aclassTimestamp_html_a796b02fa865e0a3183209f2d51723a51"><div class="ttname"><a href="classTimestamp.html#a796b02fa865e0a3183209f2d51723a51">Timestamp::valid</a></div><div class="ttdeci">bool valid() const noexcept</div><div class="ttdoc">Determines if the timestamp is valid.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00050">timestamp.h:50</a></div></div>
+<div class="ttc" id="aclassTimestamp_html_ace6d40adbf85f83bc2b9d1fd65412661"><div class="ttname"><a href="classTimestamp.html#ace6d40adbf85f83bc2b9d1fd65412661">Timestamp::Timestamp</a></div><div class="ttdeci">Timestamp(std::time_t tm_=std::time(nullptr))</div><div class="ttdoc">Creates a new timestamp.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00043">timestamp.h:43</a></div></div>
+<div class="ttc" id="aclassTimestamp_html_ace7251bf1a360e4588464c98e6d152e1"><div class="ttname"><a href="classTimestamp.html#ace7251bf1a360e4588464c98e6d152e1">Timestamp::secondsBetween</a></div><div class="ttdeci">auto secondsBetween(Timestamp ts) const noexcept</div><div class="ttdoc">Determines the number of seconds between this and the given timestamp.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00071">timestamp.h:71</a></div></div>
+<div class="ttc" id="aclassTimestamp_html_ae0a49cea6353c29f69b780fd9a1a627f"><div class="ttname"><a href="classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f">Timestamp::tm</a></div><div class="ttdeci">std::time_t tm</div><div class="ttdoc">Stores system time.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00106">timestamp.h:106</a></div></div>
+<div class="ttc" id="atimestamp_8h_html_ac2c2221b23f80ab0e69e1cdc4bc1b4c5"><div class="ttname"><a href="timestamp_8h.html#ac2c2221b23f80ab0e69e1cdc4bc1b4c5">NTP_CONNECT_TIMEOUT_MS</a></div><div class="ttdeci">constexpr auto NTP_CONNECT_TIMEOUT_MS</div><div class="ttdoc">Maximum number of milliseconds to wait for NTP sync to succeed.</div><div class="ttdef"><b>Definition:</b> <a href="timestamp_8h_source.html#l00031">timestamp.h:31</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -1,8 +1,7 @@
 var searchData=
 [
-  ['upload_5finterval_5fsec_116',['UPLOAD_INTERVAL_SEC',['../noisemeter-device_8ino.html#a28fd97a4ad77244f9afe89c869f5aa05',1,'noisemeter-device.ino']]],
-  ['uploaddata_117',['uploadData',['../noisemeter-device_8ino.html#a29f94be472c52e98a58c19bb5acc6ba2',1,'noisemeter-device.ino']]],
-  ['url_118',['url',['../structOTAUpdate.html#a6f2fdb96dd4c9f6142b68df8364c58dd',1,'OTAUpdate']]],
-  ['uuid_119',['UUID',['../classUUID.html',1,'UUID'],['../classUUID.html#ae6b2084b43d0b3204e1ac53f64b0ce72',1,'UUID::UUID()']]],
-  ['uuid_2eh_120',['UUID.h',['../UUID_8h.html',1,'']]]
+  ['upload_5finterval_5fsec_129',['UPLOAD_INTERVAL_SEC',['../noisemeter-device_8ino.html#accc0af7cd587113a17098ce2ec959d67',1,'noisemeter-device.ino']]],
+  ['url_130',['url',['../structAPI_1_1Request.html#ac1ed273e77b895150fa098ff2d4e88a1',1,'API::Request::url()'],['../structAPI_1_1LatestSoftware.html#a3d366cba9641a74c44afaf1bb718eeec',1,'API::LatestSoftware::url()']]],
+  ['uuid_131',['UUID',['../classUUID.html',1,'UUID'],['../classUUID.html#ae6b2084b43d0b3204e1ac53f64b0ce72',1,'UUID::UUID()']]],
+  ['uuid_2eh_132',['UUID.h',['../UUID_8h.html',1,'']]]
 ];

@@ -90,36 +90,12 @@ $(function() {
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#define OTA_UPDATE_H</span></div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &lt;WString.h&gt;</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &lt;WiFiClientSecure.h&gt;</span></div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160; </div>
-<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="structOTAUpdate.html">   28</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structOTAUpdate.html">OTAUpdate</a></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;{</div>
-<div class="line"><a name="l00031"></a><span class="lineno"><a class="line" href="structOTAUpdate.html#af6e964b44050214de82721cafe80eb1f">   31</a></span>&#160;    String <a class="code" href="structOTAUpdate.html#af6e964b44050214de82721cafe80eb1f">version</a>;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
-<div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="structOTAUpdate.html#aa5a11ffab8b7fe264c4dbebb75a196b4">   37</a></span>&#160;    <a class="code" href="structOTAUpdate.html#aa5a11ffab8b7fe264c4dbebb75a196b4">OTAUpdate</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> *rootCA_):</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;        <a class="code" href="structOTAUpdate.html#af886d3c26ff7a32f69348e08a5f00d52">rootCA</a>(rootCA_) {}</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
-<div class="line"><a name="l00044"></a><span class="lineno"><a class="line" href="structOTAUpdate.html#aa4c9a0efcd33e90a8ef6d4a1a9b79e0c">   44</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="structOTAUpdate.html#aa4c9a0efcd33e90a8ef6d4a1a9b79e0c">available</a>();</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
-<div class="line"><a name="l00050"></a><span class="lineno"><a class="line" href="structOTAUpdate.html#af54267d9f4efc700c5ec135a41c53dfe">   50</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="structOTAUpdate.html#af54267d9f4efc700c5ec135a41c53dfe">download</a>();</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00054"></a><span class="lineno"><a class="line" href="structOTAUpdate.html#a6f2fdb96dd4c9f6142b68df8364c58dd">   54</a></span>&#160;    String <a class="code" href="structOTAUpdate.html#a6f2fdb96dd4c9f6142b68df8364c58dd">url</a>;</div>
-<div class="line"><a name="l00056"></a><span class="lineno"><a class="line" href="structOTAUpdate.html#af886d3c26ff7a32f69348e08a5f00d52">   56</a></span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span> *<a class="code" href="structOTAUpdate.html#af886d3c26ff7a32f69348e08a5f00d52">rootCA</a>;</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
-<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="structOTAUpdate.html#a9e2d803e6e7ee9a4a7431ec6a43b2798">   64</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="structOTAUpdate.html#a9e2d803e6e7ee9a4a7431ec6a43b2798">applyUpdate</a>(WiFiClientSecure&amp; client, <span class="keywordtype">int</span> totalSize);</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;};</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// OTA_UPDATE_H</span></div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
-<div class="ttc" id="astructOTAUpdate_html"><div class="ttname"><a href="structOTAUpdate.html">OTAUpdate</a></div><div class="ttdoc">Manages fetching and installing of OTA software updates.</div><div class="ttdef"><b>Definition:</b> <a href="ota-update_8h_source.html#l00028">ota-update.h:29</a></div></div>
-<div class="ttc" id="astructOTAUpdate_html_a6f2fdb96dd4c9f6142b68df8364c58dd"><div class="ttname"><a href="structOTAUpdate.html#a6f2fdb96dd4c9f6142b68df8364c58dd">OTAUpdate::url</a></div><div class="ttdeci">String url</div><div class="ttdoc">Stores fetched URL for the latest update.</div><div class="ttdef"><b>Definition:</b> <a href="ota-update_8h_source.html#l00054">ota-update.h:54</a></div></div>
-<div class="ttc" id="astructOTAUpdate_html_a9e2d803e6e7ee9a4a7431ec6a43b2798"><div class="ttname"><a href="structOTAUpdate.html#a9e2d803e6e7ee9a4a7431ec6a43b2798">OTAUpdate::applyUpdate</a></div><div class="ttdeci">bool applyUpdate(WiFiClientSecure &amp;client, int totalSize)</div><div class="ttdoc">Writes the received OTA update to flash memory.</div></div>
-<div class="ttc" id="astructOTAUpdate_html_aa4c9a0efcd33e90a8ef6d4a1a9b79e0c"><div class="ttname"><a href="structOTAUpdate.html#aa4c9a0efcd33e90a8ef6d4a1a9b79e0c">OTAUpdate::available</a></div><div class="ttdeci">bool available()</div><div class="ttdoc">Checks if a new OTA update is available.</div></div>
-<div class="ttc" id="astructOTAUpdate_html_aa5a11ffab8b7fe264c4dbebb75a196b4"><div class="ttname"><a href="structOTAUpdate.html#aa5a11ffab8b7fe264c4dbebb75a196b4">OTAUpdate::OTAUpdate</a></div><div class="ttdeci">OTAUpdate(const char *rootCA_)</div><div class="ttdoc">Creates an OTAUpdate object.</div><div class="ttdef"><b>Definition:</b> <a href="ota-update_8h_source.html#l00037">ota-update.h:37</a></div></div>
-<div class="ttc" id="astructOTAUpdate_html_af54267d9f4efc700c5ec135a41c53dfe"><div class="ttname"><a href="structOTAUpdate.html#af54267d9f4efc700c5ec135a41c53dfe">OTAUpdate::download</a></div><div class="ttdeci">bool download()</div><div class="ttdoc">Downloads and applies the latest OTA update.</div></div>
-<div class="ttc" id="astructOTAUpdate_html_af6e964b44050214de82721cafe80eb1f"><div class="ttname"><a href="structOTAUpdate.html#af6e964b44050214de82721cafe80eb1f">OTAUpdate::version</a></div><div class="ttdeci">String version</div><div class="ttdoc">Stores the latest version string from the server (for logging).</div><div class="ttdef"><b>Definition:</b> <a href="ota-update_8h_source.html#l00031">ota-update.h:31</a></div></div>
-<div class="ttc" id="astructOTAUpdate_html_af886d3c26ff7a32f69348e08a5f00d52"><div class="ttname"><a href="structOTAUpdate.html#af886d3c26ff7a32f69348e08a5f00d52">OTAUpdate::rootCA</a></div><div class="ttdeci">const char * rootCA</div><div class="ttdoc">Stores the given root certificate for HTTPS.</div><div class="ttdef"><b>Definition:</b> <a href="ota-update_8h_source.html#l00056">ota-update.h:56</a></div></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
+<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="ota-update_8h.html#a5481715c404bc196e640cfb4a3f40558">   28</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="ota-update_8h.html#a5481715c404bc196e640cfb4a3f40558">downloadOTAUpdate</a>(String url, String rootCA);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// OTA_UPDATE_H</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
+<div class="ttc" id="aota-update_8h_html_a5481715c404bc196e640cfb4a3f40558"><div class="ttname"><a href="ota-update_8h.html#a5481715c404bc196e640cfb4a3f40558">downloadOTAUpdate</a></div><div class="ttdeci">bool downloadOTAUpdate(String url, String rootCA)</div><div class="ttdoc">Downloads and applies the latest OTA update.</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

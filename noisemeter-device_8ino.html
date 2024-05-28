@@ -76,62 +76,38 @@ $(function() {
 
 <p>Main firmware code.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;ArduinoJson.h&gt;</code><br />
-<code>#include &lt;ArduinoJson.hpp&gt;</code><br />
-<code>#include &lt;HTTPClient.h&gt;</code><br />
-<code>#include &lt;WiFi.h&gt;</code><br />
-<code>#include &lt;WiFiClientSecure.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;WiFi.h&gt;</code><br />
 <code>#include &lt;esp_efuse.h&gt;</code><br />
 <code>#include &lt;esp_efuse_table.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="access-point_8h_source.html">access-point.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="api_8h_source.html">api.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="blinker_8h_source.html">blinker.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="board_8h_source.html">board.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="data-packet_8h_source.html">data-packet.h</a>&quot;</code><br />
-<code>#include &quot;certs.h&quot;</code><br />
-<code>#include &quot;secret.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="spl-meter_8h_source.html">spl-meter.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="storage_8h_source.html">storage.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="ota-update_8h_source.html">ota-update.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="UUID_8h_source.html">UUID/UUID.h</a>&quot;</code><br />
-<code>#include &lt;cmath&gt;</code><br />
 <code>#include &lt;cstdint&gt;</code><br />
 <code>#include &lt;list&gt;</code><br />
-<code>#include &lt;iterator&gt;</code><br />
 <code>#include &lt;optional&gt;</code><br />
 </div>
 <p><a href="noisemeter-device_8ino_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a82318e0efffb674d482520e0c37df4fc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a82318e0efffb674d482520e0c37df4fc">printArray</a> (float arr[], unsigned long length)</td></tr>
-<tr class="memdesc:a82318e0efffb674d482520e0c37df4fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Outputs an array of floating-point values over serial.  <a href="noisemeter-device_8ino.html#a82318e0efffb674d482520e0c37df4fc">More...</a><br /></td></tr>
-<tr class="separator:a82318e0efffb674d482520e0c37df4fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae8bcebb1dc083b5de76dac51dbe4f3fc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">printReadingToConsole</a> (double reading)</td></tr>
 <tr class="memdesc:ae8bcebb1dc083b5de76dac51dbe4f3fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Outputs the given decibel reading over serial.  <a href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">More...</a><br /></td></tr>
 <tr class="separator:ae8bcebb1dc083b5de76dac51dbe4f3fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0b9a871047865957dda66731ee223c9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#af0b9a871047865957dda66731ee223c9">saveNetworkCreds</a> (WebServer &amp;httpServer)</td></tr>
-<tr class="memdesc:af0b9a871047865957dda66731ee223c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback for <a class="el" href="classAccessPoint.html" title="Manages the WiFi access point, captive portal, and user setup form.">AccessPoint</a> that verifies and stores the submitted credentials.  <a href="noisemeter-device_8ino.html#af0b9a871047865957dda66731ee223c9">More...</a><br /></td></tr>
-<tr class="separator:af0b9a871047865957dda66731ee223c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60e7250389cbe6ae7e8aef27759fdaed"><td class="memItemLeft" align="right" valign="top">std::optional&lt; const char * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a60e7250389cbe6ae7e8aef27759fdaed">saveNetworkCreds</a> (WebServer &amp;httpServer)</td></tr>
+<tr class="memdesc:a60e7250389cbe6ae7e8aef27759fdaed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback for <a class="el" href="classAccessPoint.html" title="Manages the WiFi access point, captive portal, and user setup form.">AccessPoint</a> that verifies credentials and attempts registration.  <a href="noisemeter-device_8ino.html#a60e7250389cbe6ae7e8aef27759fdaed">More...</a><br /></td></tr>
+<tr class="separator:a60e7250389cbe6ae7e8aef27759fdaed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af520ea0ad43879e3ce51437c4df03bd2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classUUID.html">UUID</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a> ()</td></tr>
 <tr class="memdesc:af520ea0ad43879e3ce51437c4df03bd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a <a class="el" href="classUUID.html">UUID</a> that is unique to the hardware running this firmware.  <a href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">More...</a><br /></td></tr>
 <tr class="separator:af520ea0ad43879e3ce51437c4df03bd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acce324da2e7f0b8a20b9c54c4fd15bbf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#acce324da2e7f0b8a20b9c54c4fd15bbf">tryWifiConnection</a> ()</td></tr>
-<tr class="memdesc:acce324da2e7f0b8a20b9c54c4fd15bbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to establish a WiFi connected using the stored credentials.  <a href="noisemeter-device_8ino.html#acce324da2e7f0b8a20b9c54c4fd15bbf">More...</a><br /></td></tr>
-<tr class="separator:acce324da2e7f0b8a20b9c54c4fd15bbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae246ec49a4fb8f4f01921d5daa492255"><td class="memItemLeft" align="right" valign="top">String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#ae246ec49a4fb8f4f01921d5daa492255">createJSONPayload</a> (const <a class="el" href="structDataPacket.html">DataPacket</a> &amp;dp)</td></tr>
-<tr class="memdesc:ae246ec49a4fb8f4f01921d5daa492255"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a serialized JSON payload containing the given data.  <a href="noisemeter-device_8ino.html#ae246ec49a4fb8f4f01921d5daa492255">More...</a><br /></td></tr>
-<tr class="separator:ae246ec49a4fb8f4f01921d5daa492255"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a29f94be472c52e98a58c19bb5acc6ba2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a29f94be472c52e98a58c19bb5acc6ba2">uploadData</a> (String json)</td></tr>
-<tr class="memdesc:a29f94be472c52e98a58c19bb5acc6ba2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Upload a serialized JSON payload to our server.  <a href="noisemeter-device_8ino.html#a29f94be472c52e98a58c19bb5acc6ba2">More...</a><br /></td></tr>
-<tr class="separator:a29f94be472c52e98a58c19bb5acc6ba2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1cc0c82f2d9cb9e41c1d2750204a7819"><td class="memItemLeft" align="right" valign="top"><a id="a1cc0c82f2d9cb9e41c1d2750204a7819"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a1cc0c82f2d9cb9e41c1d2750204a7819">initMicrophone</a> ()</td></tr>
-<tr class="memdesc:a1cc0c82f2d9cb9e41c1d2750204a7819"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the I2S peripheral for reading microphone data. <br /></td></tr>
-<tr class="separator:a1cc0c82f2d9cb9e41c1d2750204a7819"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a129479a2e9f3f7c48504e4d370600883"><td class="memItemLeft" align="right" valign="top"><a id="a129479a2e9f3f7c48504e4d370600883"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a129479a2e9f3f7c48504e4d370600883">readMicrophoneData</a> ()</td></tr>
-<tr class="memdesc:a129479a2e9f3f7c48504e4d370600883"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads a set number of samples from the microphone and factors them into our decibel calculations and statistics. <br /></td></tr>
-<tr class="separator:a129479a2e9f3f7c48504e4d370600883"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a403c7c63fa968e24e5a77d44318b77f4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a403c7c63fa968e24e5a77d44318b77f4">tryWifiConnection</a> (wifi_mode_t mode=WIFI_STA, int timeout=<a class="el" href="noisemeter-device_8ino.html#adc86d8575bec8caa2f1d8b5efed50937">WIFI_CONNECT_TIMEOUT_SEC</a>)</td></tr>
+<tr class="memdesc:a403c7c63fa968e24e5a77d44318b77f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to establish a WiFi connected using the stored credentials.  <a href="noisemeter-device_8ino.html#a403c7c63fa968e24e5a77d44318b77f4">More...</a><br /></td></tr>
+<tr class="separator:a403c7c63fa968e24e5a77d44318b77f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4fc01d736fe50cf5b977f755b675f11d"><td class="memItemLeft" align="right" valign="top"><a id="a4fc01d736fe50cf5b977f755b675f11d"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a4fc01d736fe50cf5b977f755b675f11d">setup</a> ()</td></tr>
 <tr class="memdesc:a4fc01d736fe50cf5b977f755b675f11d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Firmware entry point and initialization routine. <br /></td></tr>
@@ -142,22 +118,26 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="nois
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a6df603e1520def84cd8642c3e1f1fde4"><td class="memItemLeft" align="right" valign="top"><a id="a6df603e1520def84cd8642c3e1f1fde4"></a>
-constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a6df603e1520def84cd8642c3e1f1fde4">WIFI_CONNECT_TIMEOUT_MS</a> = 20 * 1000</td></tr>
-<tr class="memdesc:a6df603e1520def84cd8642c3e1f1fde4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of milliseconds to wait for successful WiFi connection. <br /></td></tr>
-<tr class="separator:a6df603e1520def84cd8642c3e1f1fde4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a28fd97a4ad77244f9afe89c869f5aa05"><td class="memItemLeft" align="right" valign="top"><a id="a28fd97a4ad77244f9afe89c869f5aa05"></a>
-const unsigned long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a28fd97a4ad77244f9afe89c869f5aa05">UPLOAD_INTERVAL_SEC</a> = 60 * 5</td></tr>
-<tr class="memdesc:a28fd97a4ad77244f9afe89c869f5aa05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies how frequently to upload data points to the server. <br /></td></tr>
-<tr class="separator:a28fd97a4ad77244f9afe89c869f5aa05"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af888ba6ab8315459fdd70a7b5110b034"><td class="memItemLeft" align="right" valign="top"><a id="af888ba6ab8315459fdd70a7b5110b034"></a>
-const unsigned long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#af888ba6ab8315459fdd70a7b5110b034">OTA_INTERVAL_SEC</a> = 60 * 60 * 24</td></tr>
-<tr class="memdesc:af888ba6ab8315459fdd70a7b5110b034"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies how frequently to check for OTA updates from our server. <br /></td></tr>
-<tr class="separator:af888ba6ab8315459fdd70a7b5110b034"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad9d154e7e2c2b745419b4e9520fbca2d"><td class="memItemLeft" align="right" valign="top"><a id="ad9d154e7e2c2b745419b4e9520fbca2d"></a>
-constexpr unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#ad9d154e7e2c2b745419b4e9520fbca2d">MAX_SAVED_PACKETS</a> = 14 * 24 * 60 * 60 / <a class="el" href="noisemeter-device_8ino.html#a28fd97a4ad77244f9afe89c869f5aa05">UPLOAD_INTERVAL_SEC</a></td></tr>
-<tr class="memdesc:ad9d154e7e2c2b745419b4e9520fbca2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of data packets to retain when WiFi is unavailable. <br /></td></tr>
-<tr class="separator:ad9d154e7e2c2b745419b4e9520fbca2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc86d8575bec8caa2f1d8b5efed50937"><td class="memItemLeft" align="right" valign="top"><a id="adc86d8575bec8caa2f1d8b5efed50937"></a>
+constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#adc86d8575bec8caa2f1d8b5efed50937">WIFI_CONNECT_TIMEOUT_SEC</a> = MIN_TO_SEC(2)</td></tr>
+<tr class="memdesc:adc86d8575bec8caa2f1d8b5efed50937"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of seconds to wait for successful WiFi connection. <br /></td></tr>
+<tr class="separator:adc86d8575bec8caa2f1d8b5efed50937"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a195abc3b621b87fd8336f94e4bbb312a"><td class="memItemLeft" align="right" valign="top"><a id="a195abc3b621b87fd8336f94e4bbb312a"></a>
+constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a195abc3b621b87fd8336f94e4bbb312a">WIFI_NEW_CONNECT_TIMEOUT_SEC</a> = 20</td></tr>
+<tr class="memdesc:a195abc3b621b87fd8336f94e4bbb312a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of seconds to try making new WiFi connection. <br /></td></tr>
+<tr class="separator:a195abc3b621b87fd8336f94e4bbb312a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accc0af7cd587113a17098ce2ec959d67"><td class="memItemLeft" align="right" valign="top"><a id="accc0af7cd587113a17098ce2ec959d67"></a>
+constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#accc0af7cd587113a17098ce2ec959d67">UPLOAD_INTERVAL_SEC</a> = MIN_TO_SEC(5)</td></tr>
+<tr class="memdesc:accc0af7cd587113a17098ce2ec959d67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies how frequently to upload data points to the server. <br /></td></tr>
+<tr class="separator:accc0af7cd587113a17098ce2ec959d67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31696764590da99bc3572553a6604915"><td class="memItemLeft" align="right" valign="top"><a id="a31696764590da99bc3572553a6604915"></a>
+constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a31696764590da99bc3572553a6604915">OTA_INTERVAL_SEC</a> = HR_TO_SEC(24)</td></tr>
+<tr class="memdesc:a31696764590da99bc3572553a6604915"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies how frequently to check for OTA updates from our server. <br /></td></tr>
+<tr class="separator:a31696764590da99bc3572553a6604915"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b5cbef01be470713408910f62cd6580"><td class="memItemLeft" align="right" valign="top"><a id="a9b5cbef01be470713408910f62cd6580"></a>
+constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a9b5cbef01be470713408910f62cd6580">MAX_SAVED_PACKETS</a> = DAY_TO_SEC(14) / <a class="el" href="noisemeter-device_8ino.html#accc0af7cd587113a17098ce2ec959d67">UPLOAD_INTERVAL_SEC</a></td></tr>
+<tr class="memdesc:a9b5cbef01be470713408910f62cd6580"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of data packets to retain when WiFi is unavailable. <br /></td></tr>
+<tr class="separator:a9b5cbef01be470713408910f62cd6580"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a25208458d80e7ee8971a1b1bc319fcdd"><td class="memItemLeft" align="right" valign="top"><a id="a25208458d80e7ee8971a1b1bc319fcdd"></a>
 static <a class="el" href="classSPLMeter.html">SPLMeter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a25208458d80e7ee8971a1b1bc319fcdd">SPL</a></td></tr>
 <tr class="memdesc:a25208458d80e7ee8971a1b1bc319fcdd"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classSPLMeter.html" title="Provides a minimal interface for reading decibel levels from the microphone.">SPLMeter</a> instance to manage decibel level measurement. <br /></td></tr>
@@ -177,6 +157,10 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a26ae57f27914c5211684c5c0e010b109">lastOTACheck</a> = <a class="el" href="classTimestamp.html#a66f54270c50d2435a310c6a459e3b747">Timestamp::invalidTimestamp</a>()</td></tr>
 <tr class="memdesc:a26ae57f27914c5211684c5c0e010b109"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tracks when the last OTA update check occurred. <br /></td></tr>
 <tr class="separator:a26ae57f27914c5211684c5c0e010b109"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27adacff5c04e526faf81e901a03aff4"><td class="memItemLeft" align="right" valign="top"><a id="a27adacff5c04e526faf81e901a03aff4"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a27adacff5c04e526faf81e901a03aff4">firstSend</a></td></tr>
+<tr class="memdesc:a27adacff5c04e526faf81e901a03aff4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Track first measurement upload so diagnostics can be sent/included. <br /></td></tr>
+<tr class="separator:a27adacff5c04e526faf81e901a03aff4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Main firmware code. </p>
@@ -201,36 +185,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 <p>Generates a <a class="el" href="classUUID.html">UUID</a> that is unique to the hardware running this firmware. </p>
 <dl class="section return"><dt>Returns</dt><dd>A device-unique <a class="el" href="classUUID.html">UUID</a> object </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00321">321</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
-
-</div>
-</div>
-<a id="ae246ec49a4fb8f4f01921d5daa492255"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae246ec49a4fb8f4f01921d5daa492255">&#9670;&nbsp;</a></span>createJSONPayload()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">String createJSONPayload </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="structDataPacket.html">DataPacket</a> &amp;&#160;</td>
-          <td class="paramname"><em>dp</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Creates a serialized JSON payload containing the given data. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">dp</td><td><a class="el" href="structDataPacket.html" title="Stores data points included in an uploaded &quot;measurement&quot;.">DataPacket</a> containing the data to serialize </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>String containing the resulting JSON payload </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00349">349</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00311">311</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -252,47 +207,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 <p>Main loop for the firmware. </p>
 <p>This function is run continuously, getting called within an infinite loop. </p>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00200">200</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
-
-</div>
-</div>
-<a id="a82318e0efffb674d482520e0c37df4fc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a82318e0efffb674d482520e0c37df4fc">&#9670;&nbsp;</a></span>printArray()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void printArray </td>
-          <td>(</td>
-          <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>arr</em>[], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned long&#160;</td>
-          <td class="paramname"><em>length</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Outputs an array of floating-point values over serial. </p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>Unused and unlikely to be used in the future </dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">arr</td><td>The array to output </td></tr>
-    <tr><td class="paramname">length</td><td>Number of values from arr to display </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00279">279</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00174">174</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -320,18 +235,18 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00289">289</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00259">259</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
-<a id="af0b9a871047865957dda66731ee223c9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af0b9a871047865957dda66731ee223c9">&#9670;&nbsp;</a></span>saveNetworkCreds()</h2>
+<a id="a60e7250389cbe6ae7e8aef27759fdaed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a60e7250389cbe6ae7e8aef27759fdaed">&#9670;&nbsp;</a></span>saveNetworkCreds()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void saveNetworkCreds </td>
+          <td class="memname">std::optional&lt; const char * &gt; saveNetworkCreds </td>
           <td>(</td>
           <td class="paramtype">WebServer &amp;&#160;</td>
           <td class="paramname"><em>httpServer</em></td><td>)</td>
@@ -340,20 +255,21 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
       </table>
 </div><div class="memdoc">
 
-<p>Callback for <a class="el" href="classAccessPoint.html" title="Manages the WiFi access point, captive portal, and user setup form.">AccessPoint</a> that verifies and stores the submitted credentials. </p>
+<p>Callback for <a class="el" href="classAccessPoint.html" title="Manages the WiFi access point, captive portal, and user setup form.">AccessPoint</a> that verifies credentials and attempts registration. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">httpServer</td><td>HTTP server which served the setup form </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>An error message if not successful </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00301">301</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00272">272</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
-<a id="acce324da2e7f0b8a20b9c54c4fd15bbf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acce324da2e7f0b8a20b9c54c4fd15bbf">&#9670;&nbsp;</a></span>tryWifiConnection()</h2>
+<a id="a403c7c63fa968e24e5a77d44318b77f4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a403c7c63fa968e24e5a77d44318b77f4">&#9670;&nbsp;</a></span>tryWifiConnection()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -361,45 +277,34 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
         <tr>
           <td class="memname">int tryWifiConnection </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">wifi_mode_t&#160;</td>
+          <td class="paramname"><em>mode</em> = <code>WIFI_STA</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>timeout</em> = <code><a class="el" href="noisemeter-device_8ino.html#adc86d8575bec8caa2f1d8b5efed50937">WIFI_CONNECT_TIMEOUT_SEC</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Attempt to establish a WiFi connected using the stored credentials. </p>
-<dl class="section return"><dt>Returns</dt><dd>Zero on success or a negative number on failure </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00328">328</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
-
-</div>
-</div>
-<a id="a29f94be472c52e98a58c19bb5acc6ba2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a29f94be472c52e98a58c19bb5acc6ba2">&#9670;&nbsp;</a></span>uploadData()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int uploadData </td>
-          <td>(</td>
-          <td class="paramtype">String&#160;</td>
-          <td class="paramname"><em>json</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Upload a serialized JSON payload to our server. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">json</td><td>JSON payload to be sent </td></tr>
+    <tr><td class="paramname">mode</td><td>WiFi mode to run in (e.g. WIFI_STA or WIFI_AP_STA) </td></tr>
+    <tr><td class="paramname">timout</td><td>Connection timeout in seconds </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Zero on success or a negative number on failure </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00374">374</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00318">318</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -427,7 +332,7 @@ static <a class="el" href="classTimestamp.html">Timestamp</a>&#160;</td><td clas
 <p>Linked list of completed data packets. </p>
 <p>This list should only grow if WiFi is unavailable. </p>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00066">66</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00061">61</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>

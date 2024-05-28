@@ -68,6 +68,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#define-members">Macros</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">timestamp.h File Reference</div>  </div>
@@ -87,10 +88,25 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Timestamping facility that uses NTP to provide accurate date and time.  <a href="classTimestamp.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a0efa7a23b0dc358be02ee827b5fccefa"><td class="memItemLeft" align="right" valign="top"><a id="a0efa7a23b0dc358be02ee827b5fccefa"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SEC_TO_MS</b>(s)&#160;&#160;&#160;(s * 1000)</td></tr>
+<tr class="separator:a0efa7a23b0dc358be02ee827b5fccefa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac75b0b8af4a9628a63d053d6d1238b77"><td class="memItemLeft" align="right" valign="top"><a id="ac75b0b8af4a9628a63d053d6d1238b77"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>MIN_TO_SEC</b>(m)&#160;&#160;&#160;(m * 60)</td></tr>
+<tr class="separator:ac75b0b8af4a9628a63d053d6d1238b77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b8dd14b97d79fbfd436f2783f6772e9"><td class="memItemLeft" align="right" valign="top"><a id="a6b8dd14b97d79fbfd436f2783f6772e9"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>HR_TO_SEC</b>(h)&#160;&#160;&#160;MIN_TO_SEC(60)</td></tr>
+<tr class="separator:a6b8dd14b97d79fbfd436f2783f6772e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4c26d34fd1f08c8da96f6bfa61d22da"><td class="memItemLeft" align="right" valign="top"><a id="ab4c26d34fd1f08c8da96f6bfa61d22da"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>DAY_TO_SEC</b>(h)&#160;&#160;&#160;HR_TO_SEC(24)</td></tr>
+<tr class="separator:ab4c26d34fd1f08c8da96f6bfa61d22da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:ac2c2221b23f80ab0e69e1cdc4bc1b4c5"><td class="memItemLeft" align="right" valign="top"><a id="ac2c2221b23f80ab0e69e1cdc4bc1b4c5"></a>
-constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="timestamp_8h.html#ac2c2221b23f80ab0e69e1cdc4bc1b4c5">NTP_CONNECT_TIMEOUT_MS</a> = 20 * 1000</td></tr>
+constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="timestamp_8h.html#ac2c2221b23f80ab0e69e1cdc4bc1b4c5">NTP_CONNECT_TIMEOUT_MS</a> = SEC_TO_MS(20)</td></tr>
 <tr class="memdesc:ac2c2221b23f80ab0e69e1cdc4bc1b4c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of milliseconds to wait for NTP sync to succeed. <br /></td></tr>
 <tr class="separator:ac2c2221b23f80ab0e69e1cdc4bc1b4c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>

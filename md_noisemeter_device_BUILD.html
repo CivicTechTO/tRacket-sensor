@@ -69,11 +69,9 @@ $(function() {
 <div class="textblock"><h1><a class="anchor" id="autotoc_md1"></a>
 Source code preparation</h1>
 <ol type="1">
-<li>Update SSL certificate using the following command: <div class="fragment"><div class="line">python cert.py -s noisemeter.webcomand.com -n webcomand</div>
-</div><!-- fragment --> Then copy the console output to certs.h.</li>
-<li>Create secret.h file with thre following contents: <div class="fragment"><div class="line"><span class="keyword">const</span> <span class="keywordtype">char</span>* API_TOKEN = <span class="stringliteral">&quot;Your API token here&quot;</span>;</div>
-</div><!-- fragment --> (Replace "Your API token here" with your API token)</li>
-<li>Copy <code><a class="el" href="config_8h_8example_source.html">config.h.example</a></code> to <code>config.h</code> and edit the file to select your board type and set your device ID.</li>
+<li>Save the SSL root certificate to <code>certs.h</code> using the following command: <div class="fragment"><div class="line">python certs.py -s api.tracket.info &gt; certs.h</div>
+</div><!-- fragment --></li>
+<li>Copy <code><a class="el" href="config_8h_8example_source.html">config.h.example</a></code> to <code>config.h</code>; if compiling with the Arduino IDE, edit the file to select your board type.</li>
 </ol>
 <h1><a class="anchor" id="autotoc_md2"></a>
 Code compiling and upload</h1>
@@ -98,16 +96,30 @@ HMAC encryption key</h1>
 <div class="fragment"><div class="line">dd if=/dev/urandom of=hmac_key bs=1 count=32</div>
 <div class="line">pio pkg exec -- espefuse.py --port /dev/ttyACM0 burn_key BLOCK4 hmac_key HMAC_UP</div>
 </div><!-- fragment --><h1><a class="anchor" id="autotoc_md6"></a>
-Operating Instructions:</h1>
+Enable secure download mode</h1>
+<p>Enabling secure download mode prevents users from using USB/serial download mode to dump memory contents (WiFi credentials and <a class="el" href="classAPI.html" title="Provides interface for API calls.">API</a> token):</p>
+<div class="fragment"><div class="line">pio pkg exec -- espefuse.py --port /dev/ttyACM0 burn_efuse ENABLE_SECURE_DOWNLOAD</div>
+</div><!-- fragment --><p>Then, if new firmware is to be uploaded over USB in the future, upload using this command:</p>
+<div class="fragment"><div class="line">pio pkg exec -- esptool.py write_flash 0x10000 .pio/build/esp32-pcb/firmware.bin</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md7"></a>
+Signing OTA updates</h1>
+<p>A 4096-bit RSA key is used to sign OTA updates. Whoever controls the private OTA signing key can create a public key with this command and include its contents in <code>noisemeter_device/ota_update.cpp</code>:</p>
+<div class="fragment"><div class="line">openssl rsa -in priv_key.pem -pubout &gt; rsa_key.pub</div>
+</div><!-- fragment --><p>They may also sign a firmware update with these commands (the signature is prepended to the firmware binary):</p>
+<div class="fragment"><div class="line">openssl dgst -sign priv_key.pem -keyform PEM -sha256 -out firmware.sign -binary .pio/build/esp32-pcb/firmware.bin</div>
+<div class="line">cat firmware.sign .pio/build/esp32-pcb/firmware.bin &gt; firmware_signed.bin</div>
+</div><!-- fragment --><p><code>firmware_signed.bin</code> is then uploaded to the OTA server.</p>
+<h1><a class="anchor" id="autotoc_md8"></a>
+Operation Overview:</h1>
 <ul>
-<li>Power on the device by connecting it to power. The device should start in Hotspot mode.</li>
-<li>Connect to device's wifi hotspot, which will be called "Noise Meter". Password is "noisemeter".</li>
-<li>Open a web browser and navigate to IP address 4.3.2.1 and fill out your Wifi network SSID and password. This will then bbe saved to the onboard flash, and should persist between restarts.</li>
-<li>The device should reset and begin attempting to connect to wifi. Use Serial monitor to confirm this.</li>
+<li>After initial programming or a factory reset, the device will enter Hotspot mode once it is powered on. This is indicated by a blinking LED.</li>
+<li>In Hotspot mode, you can connect to the device's "Noise meter" WiFi network to set it up. Password is "noisemeter".</li>
+<li>Once connected, a captive portal will bring you to a form to enter your WiFi credentials and email for registration. Your credentials will be encrypted and stored to the on-board flash memory.</li>
+<li>After completing the form, the device will reboot and attempt to connect to your WiFi.</li>
 <li>Once connected, the device will sync itself with a NTP time server and then begin taking readings.</li>
-<li>The device fills a buffer with integer readings from the microphone until it has enough to</li>
-<li>Periodically (at a time interval determined by UPLOAD_INTERVAL_MS) the device will collate its data and upload it to the server, whereupon it will clear its cached data and begin taking readings again.</li>
-<li>To clear your saved information, hold the Reset button (Pin 5 in this example) while you power on the device, or hold the Reset button and reset the device using the built-in reset button. </li>
+<li>The device takes 100-millisecond audio recordings and instantly converts them to decibel "loudness" values. Each recording is discarded as soon as it is processed.</li>
+<li>Over time, the decibel values are aggregated into minimum, average, and maximum values. Periodically, these values will be uploaded to the server at which point the device will clear its cached data and begin taking a new set of readings.</li>
+<li>To factory reset the device and clear your saved credentials, hold the Reset button while you power on the device until the LED begins blinking. </li>
 </ul>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
