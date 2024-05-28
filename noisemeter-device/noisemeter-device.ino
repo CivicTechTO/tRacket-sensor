@@ -34,12 +34,9 @@
 #include <list>
 #include <optional>
 
-#if defined(BUILD_PLATFORMIO) && defined(BOARD_ESP32_PCB)
+#ifdef BOARD_ESP32_PCB
 HWCDC USBSerial;
 #endif
-
-// Uncomment these to disable WiFi and/or data upload
-//#define UPLOAD_DISABLED
 
 /** Maximum number of seconds to wait for successful WiFi connection. */
 constexpr auto WIFI_CONNECT_TIMEOUT_SEC = MIN_TO_SEC(2);
