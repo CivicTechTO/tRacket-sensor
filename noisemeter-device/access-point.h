@@ -22,6 +22,8 @@
 #include <DNSServer.h>
 #include <WebServer.h>
 
+#include <optional>
+
 /**
  * @brief Manages the WiFi access point, captive portal, and user setup form.
  *
@@ -45,25 +47,31 @@ class AccessPoint : public RequestHandler
 
 public:
     /**
+     * Submission handler receives WebServer for input data and returns an
+     * error message on failure.
+     */
+    using SubmissionHandler = std::optional<const char *> (*)(WebServer&);
+
+    /**
      * Starts the WiFi access point using the fixed credentials.
      * @param func Callback to handle user setup form submission.
      */
-    AccessPoint(void (*func)(WebServer&)):
-        server(80),
-        onCredentialsReceived(func) {}
+    AccessPoint(SubmissionHandler func);
 
     /**
      * Enters an infinite loop to handle the access point and web server.
      */
-    [[noreturn]] void run();
+    void run();
 
 private:
+
+    unsigned long timeout;
     /** DNS server object for captive portal redirection. */
     DNSServer dns;
     /** Web server object for running the setup form. */
     WebServer server;
     /** Callback for setup form completion. */
-    void (*onCredentialsReceived)(WebServer&);
+    SubmissionHandler onCredentialsReceived;
 
     /** Hard-coded IP address for the ESP32 when hosting the access point. */
     static const IPAddress IP;
@@ -73,6 +81,8 @@ private:
     static const char *htmlSetup;
     /** Hard-coded HTML for the page shown after completing the form. */
     static const char *htmlSubmit;
+    /** Provides HTML for an error page with the given message. */
+    static String htmlFromMsg(const char *msg);
 
     /** Determines which HTTP requests should be handled. */
     bool canHandle(HTTPMethod, String) override;

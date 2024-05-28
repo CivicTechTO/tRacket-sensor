@@ -22,8 +22,13 @@
 #include <Arduino.h>
 #include <ctime>
 
+#define SEC_TO_MS(s)  (s * 1000)
+#define MIN_TO_SEC(m) (m * 60)
+#define HR_TO_SEC(h)  MIN_TO_SEC(60)
+#define DAY_TO_SEC(h) HR_TO_SEC(24)
+
 /** Maximum number of milliseconds to wait for NTP sync to succeed. */
-constexpr auto NTP_CONNECT_TIMEOUT_MS = 20 * 1000;
+constexpr auto NTP_CONNECT_TIMEOUT_MS = SEC_TO_MS(20);
 
 /**
  * Timestamping facility that uses NTP to provide accurate date and time.
@@ -43,7 +48,7 @@ public:
      * @return True if the timestamp is valid.
      */
     bool valid() const noexcept {
-        return tm >= 8 * 3600 * 2;
+        return tm >= HR_TO_SEC(16);
     }
 
     /**
@@ -53,7 +58,7 @@ public:
     operator String() const noexcept {
         char tsbuf[32];
         const auto timeinfo = std::gmtime(&tm);
-        const auto success = std::strftime(tsbuf, sizeof(tsbuf), "%c", timeinfo) > 0;
+        const auto success = std::strftime(tsbuf, sizeof(tsbuf), "%FT%T+00:00", timeinfo) > 0;
 
         return success ? tsbuf : "(error)";
     }

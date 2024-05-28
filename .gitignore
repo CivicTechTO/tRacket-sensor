@@ -1,3 +1,4 @@
+.pio
 doc
 noisemeter-device/config.h
 noisemeter-device/secret.h
@@ -7,10 +8,12 @@ hardware/pcb-*/production
 hardware/pcb-*/fp-info-cache
 hardware/pcb-*/fp-lib-table
 hardware/pcb-*/sym-lib-table
+hmac_key
 *.kicad_prl
 *.step
 *.lck
 *.sw*
 *.bin
 *.FCBak
-.pio
+*.pem
+*.pub

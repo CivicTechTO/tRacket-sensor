@@ -20,6 +20,9 @@
 // Uncomment to print credentials over serial (for debugging).
 //#define STORAGE_SHOW_CREDENTIALS
 
+// Uncomment to print verbose API logging over serial (for debugging).
+//#define API_VERBOSE
+
 // Define only *one* of the follwoing board options.
 // If using PlatformIO, the selected 'env' will override this selection.
 #if !defined(BOARD_ESP32_PCB) && \

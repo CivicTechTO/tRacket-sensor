@@ -16,29 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include <ArduinoJson.h> // https://arduinojson.org/
-#include <ArduinoJson.hpp>
-#include <HTTPClient.h>
 #include <WiFi.h>
-#include <WiFiClientSecure.h>
 #include <esp_efuse.h>
 #include <esp_efuse_table.h>
 
 #include "access-point.h"
+#include "api.h"
 #include "blinker.h"
 #include "board.h"
 #include "data-packet.h"
-#include "certs.h"
-#include "secret.h"
 #include "spl-meter.h"
 #include "storage.h"
 #include "ota-update.h"
 #include "UUID/UUID.h"
 
-#include <cmath>
 #include <cstdint>
 #include <list>
-#include <iterator>
 #include <optional>
 
 #if defined(BUILD_PLATFORMIO) && defined(BOARD_ESP32_PCB)
@@ -48,14 +41,16 @@ HWCDC USBSerial;
 // Uncomment these to disable WiFi and/or data upload
 //#define UPLOAD_DISABLED
 
-/** Maximum number of milliseconds to wait for successful WiFi connection. */
-constexpr auto WIFI_CONNECT_TIMEOUT_MS = 20 * 1000;
+/** Maximum number of seconds to wait for successful WiFi connection. */
+constexpr auto WIFI_CONNECT_TIMEOUT_SEC = MIN_TO_SEC(2);
+/** Maximum number of seconds to try making new WiFi connection. */
+constexpr auto WIFI_NEW_CONNECT_TIMEOUT_SEC = 20;
 /** Specifies how frequently to upload data points to the server. */
-const unsigned long UPLOAD_INTERVAL_SEC = 60 * 5; // Upload every 5 mins
+constexpr auto UPLOAD_INTERVAL_SEC = MIN_TO_SEC(5);
 /** Specifies how frequently to check for OTA updates from our server. */
-const unsigned long OTA_INTERVAL_SEC = 60 * 60 * 24; // Check for updates daily
+constexpr auto OTA_INTERVAL_SEC = HR_TO_SEC(24);
 /** Maximum number of data packets to retain when WiFi is unavailable. */
-constexpr unsigned MAX_SAVED_PACKETS = 14 * 24 * 60 * 60 / UPLOAD_INTERVAL_SEC;
+constexpr auto MAX_SAVED_PACKETS = DAY_TO_SEC(14) / UPLOAD_INTERVAL_SEC;
 
 /** SPLMeter instance to manage decibel level measurement. */
 static SPLMeter SPL;
@@ -68,14 +63,8 @@ static std::list<DataPacket> packets;
 static Timestamp lastUpload = Timestamp::invalidTimestamp();
 /** Tracks when the last OTA update check occurred. */
 static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
-
-/**
- * Outputs an array of floating-point values over serial.
- * @deprecated Unused and unlikely to be used in the future
- * @param arr The array to output
- * @param length Number of values from arr to display
- */
-void printArray(float arr[], unsigned long length);
+/** Track first measurement upload so diagnostics can be sent/included. */
+static bool firstSend;
 
 /**
  * Outputs the given decibel reading over serial.
@@ -84,10 +73,11 @@ void printArray(float arr[], unsigned long length);
 void printReadingToConsole(double reading);
 
 /**
- * Callback for AccessPoint that verifies and stores the submitted credentials.
+ * Callback for AccessPoint that verifies credentials and attempts registration.
  * @param httpServer HTTP server which served the setup form
+ * @return An error message if not successful
  */
-void saveNetworkCreds(WebServer& httpServer);
+std::optional<const char *> saveNetworkCreds(WebServer& httpServer);
 
 /**
  * Generates a UUID that is unique to the hardware running this firmware.
@@ -97,34 +87,11 @@ UUID buildDeviceId();
 
 /**
  * Attempt to establish a WiFi connected using the stored credentials.
+ * @param mode WiFi mode to run in (e.g. WIFI_STA or WIFI_AP_STA)
+ * @param timout Connection timeout in seconds
  * @return Zero on success or a negative number on failure
  */
-int tryWifiConnection();
-
-/**
- * Creates a serialized JSON payload containing the given data.
- * @param dp DataPacket containing the data to serialize
- * @return String containing the resulting JSON payload
- */
-String createJSONPayload(const DataPacket& dp);
-
-/**
- * Upload a serialized JSON payload to our server.
- * @param json JSON payload to be sent
- * @return Zero on success or a negative number on failure
- */
-int uploadData(String json);
-
-/**
- * Prepares the I2S peripheral for reading microphone data.
- */
-void initMicrophone();
-
-/**
- * Reads a set number of samples from the microphone and factors them into
- * our decibel calculations and statistics.
- */
-void readMicrophoneData();
+int tryWifiConnection(wifi_mode_t mode = WIFI_STA, int timeout = WIFI_CONNECT_TIMEOUT_SEC);
 
 /**
  * Firmware entry point and initialization routine.
@@ -136,10 +103,6 @@ void setup() {
   // Grounding this pin (e.g. with a button) will force access open to start.
   // Useful as a "reset" button to overwrite currently saved credentials.
   pinMode(PIN_BUTTON, INPUT_PULLUP);
-
-  // If needed, now you can actually lower the CPU frquency,
-  // i.e. if you want to (slightly) reduce ESP32 power consumption
-  // setCpuFrequencyMhz(80);  // It should run as low as 80MHz
 
   SERIAL.begin(115200);
   delay(2000);
@@ -167,7 +130,11 @@ void setup() {
     SERIAL.println(" done.");
 
     isAPNeeded = true;
-  } else if (tryWifiConnection() < 0 || Timestamp::synchronize() < 0) {
+  } else if (Creds.get(Storage::Entry::Token).length() == 0) {
+    isAPNeeded = true;
+  } else if (tryWifiConnection(WIFI_STA) < 0) {
+    isAPNeeded = true;
+  } else if (Timestamp::synchronize() < 0) {
     isAPNeeded = true;
   }
 
@@ -176,12 +143,19 @@ void setup() {
     AccessPoint ap (saveNetworkCreds);
     Blinker bl (500);
 
-    ap.run(); // does not return
+    ap.run();
+
+    // Access point timed out: power off.
+    SERIAL.println("No connections. Power off.");
+    delay(500);
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
+    esp_deep_sleep_start();
   }
 
   Timestamp now;
   lastUpload = now;
   lastOTACheck = now;
+  firstSend = true;
 
   SERIAL.println("Connected to the WiFi network.");
   SERIAL.print("Local ESP32 IP: ");
@@ -216,20 +190,22 @@ void loop() {
     }
 
     if (WiFi.status() == WL_CONNECTED) {
-      {
+      API api (buildDeviceId(), Creds.get(Storage::Entry::Token));
+
+      if (firstSend) {
+        if (api.sendMeasurementWithDiagnostics(packets.back(), NOISEMETER_VERSION, lastUpload)) {
+            packets.pop_back();
+            firstSend = false;
+        }
+      } else {
         std::optional<Blinker> bl;
 
         // Only blink if there's multiple packets to send
         if (++packets.cbegin() != packets.cend())
           bl.emplace(300);
 
-        packets.remove_if([](const auto& pkt) {
-          if (pkt.count > 0) {
-            const auto payload = createJSONPayload(pkt);
-            return uploadData(payload) == 0;
-          } else {
-            return true; // Discard empty packets
-          }
+        packets.remove_if([&api](const auto& pkt) {
+          return pkt.count <= 0 || api.sendMeasurement(pkt);
         });
       }
 
@@ -239,20 +215,24 @@ void loop() {
         lastOTACheck = now;
         SERIAL.println("Checking for updates...");
 
-        OTAUpdate ota (cert_ISRG_Root_X1);
-        if (ota.available()) {
-          SERIAL.print(ota.version);
-          SERIAL.println(" available!");
+        const auto ota = api.getLatestSoftware();
+        if (ota) {
+          if (ota->version.compareTo(NOISEMETER_VERSION) > 0) {
+            SERIAL.print(ota->version);
+            SERIAL.println(" available!");
 
-          if (ota.download()) {
-            SERIAL.println("Download success! Restarting...");
-            delay(1000);
-            ESP.restart();
+            if (downloadOTAUpdate(ota->url, api.rootCertificate())) {
+              SERIAL.println("Download success! Restarting...");
+              delay(1000);
+              ESP.restart();
+            } else {
+              SERIAL.println("Update download failed.");
+            }
           } else {
-            SERIAL.println("Update download failed.");
+            SERIAL.println("No new updates.");
           }
         } else {
-          SERIAL.println("No update available.");
+          SERIAL.println("Failed to reach update server!");
         }
       }
 #endif // BOARD_ESP32_PCB
@@ -276,16 +256,6 @@ void loop() {
 #endif // !UPLOAD_DISABLED
 }
 
-void printArray(float arr[], unsigned long length) {
-  SERIAL.print(length);
-  SERIAL.print(" {");
-  for (int i = 0; i < length; i++) {
-    SERIAL.print(arr[i]);
-    if (i < length - 1) SERIAL.print(", ");
-  }
-  SERIAL.println("}");
-}
-
 void printReadingToConsole(double reading) {
   String output = "";
   output += std::lround(reading);
@@ -295,14 +265,17 @@ void printReadingToConsole(double reading) {
   if (currentCount > 1) {
     output += " [+" + String(currentCount - 1) + " more]";
   }
-  SERIAL.println(output);
+  SERIAL.print("\r                    \r");
+  SERIAL.print(output);
 }
 
-void saveNetworkCreds(WebServer& httpServer) {
+std::optional<const char *> saveNetworkCreds(WebServer& httpServer)
+{
   // Confirm that the form was actually submitted.
-  if (httpServer.hasArg("ssid") && httpServer.hasArg("psk")) {
+  if (httpServer.hasArg("ssid") && httpServer.hasArg("psk") && httpServer.hasArg("email")) {
     const auto ssid = httpServer.arg("ssid");
     const auto psk = httpServer.arg("psk");
+    const auto email = httpServer.arg("email");
 
     // Confirm that the given credentials will fit in the allocated EEPROM space.
     if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk)) {
@@ -310,12 +283,29 @@ void saveNetworkCreds(WebServer& httpServer) {
       Creds.set(Storage::Entry::Passkey, psk);
       Creds.commit();
 
-      ESP.restart(); // Software reset.
+      if (tryWifiConnection(WIFI_AP_STA, WIFI_NEW_CONNECT_TIMEOUT_SEC) == 0 && Timestamp::synchronize() == 0) {
+        if (email.length() > 0) {
+          API api (buildDeviceId());
+
+          if (const auto reg = api.sendRegister(email); reg) {
+            SERIAL.println("Registered!");
+            Creds.set(Storage::Entry::Token, *reg);
+            Creds.commit();
+
+            return {};
+          } else {
+            return "Device registration failed!";
+          }
+        } else {
+          return {};
+        }
+      } else {
+        return "Failed to connect to the internet!";
+      }
     }
   }
 
-  // TODO inform user that something went wrong...
-  SERIAL.println("Error: Invalid network credentials!");
+  return "Invalid network credentials!";
 }
 
 UUID buildDeviceId()
@@ -325,10 +315,12 @@ UUID buildDeviceId()
   return UUID(mac[0] | (mac[1] << 8) | (mac[2] << 16), mac[3] | (mac[4] << 8) | (mac[5] << 16));
 }
 
-int tryWifiConnection()
+int tryWifiConnection(wifi_mode_t mode, int timeout)
 {
-  WiFi.mode(WIFI_STA);
-  const auto stat = WiFi.begin(Creds.get(Storage::Entry::SSID).c_str(), Creds.get(Storage::Entry::Passkey).c_str());
+  WiFi.mode(mode);
+  const auto stat = WiFi.begin(
+    Creds.get(Storage::Entry::SSID).c_str(),
+    Creds.get(Storage::Entry::Passkey).c_str());
   if (stat == WL_CONNECT_FAILED)
     return -1;
 
@@ -337,83 +329,13 @@ int tryWifiConnection()
   const auto start = millis();
   bool connected;
 
+  timeout = SEC_TO_MS(timeout);
   do {
     connected = WiFi.status() == WL_CONNECTED;
     SERIAL.print(".");
     delay(500);
-  } while (!connected && millis() - start < WIFI_CONNECT_TIMEOUT_MS);
+  } while (!connected && millis() - start < timeout);
 
   return connected ? 0 : -1;
-}
-
-String createJSONPayload(const DataPacket& dp)
-{
-#ifdef BUILD_PLATFORMIO
-  JsonDocument doc;
-#else
-  DynamicJsonDocument doc (2048);
-#endif
-
-  doc["parent"] = "/Bases/nm1";
-  doc["data"]["type"] = "comand";
-  doc["data"]["version"] = "1.0";
-  doc["data"]["contents"][0]["Type"] = "Noise";
-  doc["data"]["contents"][0]["Min"] = std::lround(dp.minimum);
-  doc["data"]["contents"][0]["Max"] = std::lround(dp.maximum);
-  doc["data"]["contents"][0]["Mean"] = std::lround(dp.average);
-  doc["data"]["contents"][0]["DeviceID"] = String(buildDeviceId());
-  doc["data"]["contents"][0]["Timestamp"] = String(dp.timestamp);
-
-  // Serialize JSON document
-  String json;
-  serializeJson(doc, json);
-  return json;
-}
-
-// Given a serialized JSON payload, upload the data to webcomand
-int uploadData(String json)
-{
-  WiFiClientSecure client;
-  HTTPClient https;
-
-  client.setCACert(cert_ISRG_Root_X1);
-
-  SERIAL.print("[HTTPS] begin...\n");
-  if (https.begin(client, "https://noisemeter.webcomand.com/ws/put")) {
-    SERIAL.print("[HTTPS] POST...\n");
-
-    // start connection and send HTTP header
-    https.addHeader("Authorization", String("Token ") + API_TOKEN);
-    https.addHeader("Content-Type", "application/json");
-    https.addHeader("Content-Length", String(json.length()));
-    https.addHeader("User-Agent", "ESP32");
-
-    int httpCode = https.POST(json);
-
-    // httpCode will be negative on error
-    if (httpCode > 0) {
-      // HTTP header has been send and Server response header has been handled
-      SERIAL.printf("[HTTPS] POST... code: %d\n", httpCode);
-
-      // file found at server
-      if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY) {
-        String payload = https.getString();
-        SERIAL.println(payload);
-      } else {
-        SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
-        return -1;
-      }
-    } else {
-      SERIAL.printf("[HTTPS] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
-      return -1;
-    }
-
-    https.end();
-  } else {
-    SERIAL.printf("[HTTPS] Unable to connect\n");
-    return -1;
-  }
-
-  return 0;
 }
 
