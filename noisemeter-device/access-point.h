@@ -77,10 +77,6 @@ private:
     static const IPAddress IP;
     /** Hard-coded netmask for access point configuration. */
     static const IPAddress Netmask;
-    /** Hard-coded HTML for the setup form page. */
-    static const char *htmlSetup;
-    /** Hard-coded HTML for the page shown after completing the form. */
-    static const char *htmlSubmit;
     /** Provides HTML for an error page with the given message. */
     static String htmlFromMsg(const char *msg);
 

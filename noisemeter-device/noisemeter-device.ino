@@ -294,18 +294,18 @@ std::optional<const char *> saveNetworkCreds(WebServer& httpServer)
 
             return {};
           } else {
-            return "Device registration failed!";
+            return "The sensor was not able to register with the server.";
           }
         } else {
           return {};
         }
       } else {
-        return "Failed to connect to the internet!";
+        return "The sensor connected to your WiFi, but failed to reach the internet.";
       }
     }
   }
 
-  return "Invalid network credentials!";
+  return "The sensor was not able to connect to your WiFi using the info entered.";
 }
 
 UUID buildDeviceId()
