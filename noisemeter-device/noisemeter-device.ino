@@ -202,7 +202,7 @@ void loop() {
 
         // Only blink if there's multiple packets to send
         if (++packets.cbegin() != packets.cend())
-          bl.emplace(300);
+          bl.emplace(200);
 
         packets.remove_if([&api](const auto& pkt) {
           return pkt.count <= 0 || api.sendMeasurement(pkt);
@@ -281,6 +281,9 @@ std::optional<const char *> saveNetworkCreds(WebServer& httpServer)
     if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk)) {
       Creds.set(Storage::Entry::SSID, ssid);
       Creds.set(Storage::Entry::Passkey, psk);
+      if (!email.isEmpty())
+        Creds.set(Storage::Entry::Token, {});
+      Creds.set(Storage::Entry::Unused, {});
       Creds.commit();
 
       if (tryWifiConnection(WIFI_AP_STA, WIFI_NEW_CONNECT_TIMEOUT_SEC) == 0 && Timestamp::synchronize() == 0) {
