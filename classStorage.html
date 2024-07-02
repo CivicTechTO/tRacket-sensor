@@ -93,7 +93,8 @@ Public Types</h2></td></tr>
 , <a class="el" href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5a816da2672a1205347a4ae8e9eb25f0bd">Passkey</a> = SSID + StringSize
 , <a class="el" href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5a459a6f79ad9b13cbcb5f692d2cc7a94d">Token</a> = Passkey + StringSize
 , <br />
-&#160;&#160;<a class="el" href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5af7ecf3708a4c33dfa5b3f7404ace4110">TotalSize</a> = Token + StringSize
+&#160;&#160;<a class="el" href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5a92e592d90b9548016776a6fb68dccded">Unused</a> = Token + StringSize
+, <a class="el" href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5af7ecf3708a4c33dfa5b3f7404ace4110">TotalSize</a> = Unused + StringSize
 <br />
  }</td></tr>
 <tr class="memdesc:ab298f0c46e684cb9ef430e15de050cc5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tags to identify the stored settings.  <a href="classStorage.html#ab298f0c46e684cb9ef430e15de050cc5">More...</a><br /></td></tr>
@@ -182,7 +183,9 @@ static constexpr unsigned&#160;</td><td class="memItemRight" valign="bottom"><a 
 </td></tr>
 <tr><td class="fieldname"><a id="ab298f0c46e684cb9ef430e15de050cc5a459a6f79ad9b13cbcb5f692d2cc7a94d"></a>Token&#160;</td><td class="fielddoc"><p>User's WiFi passkey. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="ab298f0c46e684cb9ef430e15de050cc5af7ecf3708a4c33dfa5b3f7404ace4110"></a>TotalSize&#160;</td><td class="fielddoc"><p>Device <a class="el" href="classAPI.html" title="Provides interface for API calls.">API</a> token. </p>
+<tr><td class="fieldname"><a id="ab298f0c46e684cb9ef430e15de050cc5a92e592d90b9548016776a6fb68dccded"></a>Unused&#160;</td><td class="fielddoc"><p>Device <a class="el" href="classAPI.html" title="Provides interface for API calls.">API</a> token. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ab298f0c46e684cb9ef430e15de050cc5af7ecf3708a4c33dfa5b3f7404ace4110"></a>TotalSize&#160;</td><td class="fielddoc"><p>Unused (used to be email) </p>
 </td></tr>
 </table>
 
@@ -224,7 +227,7 @@ static constexpr unsigned&#160;</td><td class="memItemRight" valign="bottom"><a 
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The address of the entry within the storage address space </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="storage_8h_source.html#l00112">112</a> of file <a class="el" href="storage_8h_source.html">storage.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="storage_8h_source.html#l00113">113</a> of file <a class="el" href="storage_8h_source.html">storage.h</a>.</p>
 
 </div>
 </div>
