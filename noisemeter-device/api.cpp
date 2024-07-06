@@ -26,18 +26,18 @@
 
 API::Request::Request(const char endpoint[])
 {
-    url.reserve(256);
+    url.reserve(128);
     url.concat(Base);
     url.concat(endpoint);
-    url.concat('?');
+    params.reserve(128);
 }
 
 API::Request& API::Request::addParam(const char param[], String value)
 {
-    url.concat(param);
-    url.concat('=');
-    url.concat(urlEncode(value));
-    url.concat('&');
+    params.concat('&');
+    params.concat(param);
+    params.concat('=');
+    params.concat(urlEncode(value));
     return *this;
 }
 
@@ -53,8 +53,9 @@ std::optional<JsonDocument> API::sendAuthorizedRequest(const API::Request& req)
 
     HTTPClient https;
     if (https.begin(client, req.url)) {
+        https.addHeader("Content-Type", "application/x-www-form-urlencoded");
         https.addHeader("Authorization", String("Token ") + token);
-        return sendHttpRequest(https);
+        return sendHttpRequest(https, req.params.substring(1));
 #ifdef API_VERBOSE
     } else {
         SERIAL.println("[api] Failed to https.begin()");
@@ -75,19 +76,25 @@ std::optional<JsonDocument> API::sendNonauthorizedRequest(const API::Request& re
 #endif
 
     HTTPClient https;
-    if (https.begin(client, req.url))
-        return sendHttpRequest(https);
+    if (https.begin(client, req.url)) {
+        https.addHeader("Content-Type", "application/x-www-form-urlencoded");
+        return sendHttpRequest(https, req.params.substring(1));
 #ifdef API_VERBOSE
-    else
+    } else {
         SERIAL.println("[api] Failed to https.begin()");
 #endif
+    }
 
     return {};
 }
 
-std::optional<JsonDocument> API::sendHttpRequest(HTTPClient& https)
+std::optional<JsonDocument> API::sendHttpRequest(HTTPClient& https, const String& payload)
 {
-    if (const auto code = https.GET(); code > 0) {
+#ifdef API_VERBOSE
+    SERIAL.print("[api] payload: ");
+    SERIAL.println(payload);
+#endif
+    if (const auto code = https.POST(payload); code > 0) {
         const auto response = https.getString();
         const auto json = responseToJson(response);
         https.end();
