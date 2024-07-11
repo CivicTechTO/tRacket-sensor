@@ -33,15 +33,17 @@ AccessPoint::AccessPoint(SubmissionHandler func):
     onCredentialsReceived(func) {}
 
 // HTML to show when a submission is rejected.
-String AccessPoint::htmlFromMsg(const char *msg)
+String AccessPoint::htmlFromMsg(const char *msg, const char *extra)
 {
     String html;
     html.reserve(2048);
     html += HTML_HEADER;
+    html += HTML_CONTAINER;
     html += "<p>";
     html += msg;
     html += "</p>";
-    html += "<p>Please <a href='/'>go back and try again</a>.</p>";
+    if (extra)
+        html += extra;
     html += HTML_FOOTER;
     return html;
 }
@@ -59,10 +61,16 @@ void AccessPoint::run()
 
     SERIAL.println("Running setup access point.");
 
-    for (auto start = 0UL; start / 100 < timeout; ++start) {
+    restarting = false;
+    for (auto start = 0UL; start / (1000 / 10) < timeout; ++start) {
         dns.processNextRequest();
         server.handleClient();
         delay(10);
+
+        if (restarting) {
+            delay(5000);
+            ESP.restart(); // Software reset.
+        }
     }
 }
 
@@ -71,27 +79,58 @@ bool AccessPoint::canHandle(HTTPMethod, String)
     return true;
 }
 
+void AccessPoint::taskOnCredentialsReceived(void *param)
+{
+    auto ap = reinterpret_cast<AccessPoint *>(param);
+
+    if (ap->onCredentialsReceived) {
+        const auto msg = ap->onCredentialsReceived(ap->ssid, ap->psk, ap->email);
+
+        if (msg) {
+            ap->finishHtml = htmlFromMsg(
+                *msg,
+                "<p>Please <a href=\"http://8.8.4.4/\">go back and try again</a>.</p>");
+        } else {
+            ap->finishHtml = htmlFromMsg(
+                "The sensor has connected; the sensor will now restart and begin monitoring noise levels. "
+                "You will receive an email with a link to your dashboard page.");
+        }
+
+        ap->finishGood = !msg;
+        ap->complete = true;
+    }
+
+    vTaskDelete(xTaskGetHandle("credrecv"));
+    while (1)
+        delay(1000);
+}
+
+static String waitingHtml()
+{
+    String html;
+    html.reserve(2048);
+    html += HTML_HEADER;
+    html += "<meta http-equiv=\"refresh\" content=\"2;url=http://8.8.4.4/submit\"/>";
+    html += HTML_CONTAINER;
+    html += "<p>The sensor is trying to connect to wifi...</p>"
+            "<div class='meter'><span style='width:100%;'><span class='progress'></span></span></div>";
+    html += HTML_FOOTER;
+    return html;
+}
+
 bool AccessPoint::handle(WebServer& server, HTTPMethod method, String uri)
 {
     if (method == HTTP_POST) {
-        if (uri == "/") {
+        if (uri == "/submit") {
+            const auto html = waitingHtml();
             server.client().setNoDelay(true);
+            server.send_P(200, PSTR("text/html"), html.c_str());
 
-            if (onCredentialsReceived) {
-                const auto msg = onCredentialsReceived(server);
-                const auto html = htmlFromMsg(
-                    msg ? *msg
-                        : "The sensor has connected; the sensor will now restart and begin monitoring noise levels. "
-                          "You will receive an email with a link to your dashboard page.");
-
-                server.send_P(200, PSTR("text/html"), html.c_str());
-                delay(3000);
-
-                if (!msg)
-                    ESP.restart(); // Software reset.
-                else
-                    WiFi.mode(WIFI_AP); // Restart access point
-            }
+            ssid = server.arg("ssid");
+            psk = server.arg("psk");
+            email = server.arg("email");
+            complete = false;
+            xTaskCreate(taskOnCredentialsReceived, "credrecv", 4096, this, 1, nullptr);
         } else {
             server.sendHeader("Location", "http://8.8.4.4/");
             server.send(301);
@@ -99,10 +138,25 @@ bool AccessPoint::handle(WebServer& server, HTTPMethod method, String uri)
     } else if (method == HTTP_GET) {
         // Redirects taken from https://github.com/CDFER/Captive-Portal-ESP32
 
-        if (uri == "/") {
+        if (uri == "/submit") {
+            server.client().setNoDelay(true);
+
+            if (!complete) {
+                const auto html = waitingHtml();
+                server.send_P(200, PSTR("text/html"), html.c_str());
+            } else {
+                server.send_P(200, PSTR("text/html"), finishHtml.c_str());
+
+                if (finishGood)
+                    restarting = true;
+                else
+                    WiFi.mode(WIFI_AP); // Restart access point
+            }
+        } else if (uri == "/") {
             String response;
             response.reserve(2048);
             response += HTML_HEADER;
+            response += HTML_CONTAINER;
             response += HTML_BODY_FORM;
             response += HTML_FOOTER;
 

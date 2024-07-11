@@ -32,9 +32,9 @@ margin-top: 3px;
 }
 .progress {
     background-color: #e4c465;
-    -webkit-animation: progressBar 30s ease-in-out;
+    -webkit-animation: progressBar 2s ease-in-out;
     -webkit-animation-fill-mode:both; 
-    -moz-animation: progressBar 30s ease-in-out;
+    -moz-animation: progressBar 2s ease-in-out;
     -moz-animation-fill-mode:both; 
 }
 @-webkit-keyframes progressBar {
@@ -46,6 +46,9 @@ margin-top: 3px;
   100% { width: 100%; }
 }
 </style>
+)html";
+
+const char *HTML_CONTAINER = R"html(
 </head>
 <body>
 <div id="page-container">
@@ -71,7 +74,7 @@ const char *HTML_FOOTER = R"html(
 
 const char *HTML_BODY_FORM = R"html(
 <p>Enter the wifi network name and password for your home network, which the sensor can connect to to get online:<br/><br/></p>
-    <form method='POST' action='' enctype='multipart/form-data'>
+    <form method='POST' action='/submit' enctype='multipart/form-data'>
       <p>Wifi network name:</p>
       <input type='text' name='ssid' required>
       <p>Wifi network password:</p>

@@ -74,10 +74,12 @@ void printReadingToConsole(double reading);
 
 /**
  * Callback for AccessPoint that verifies credentials and attempts registration.
- * @param httpServer HTTP server which served the setup form
+ * @param ssid The name of the network to connect to
+ * @param psk The named network's password
+ * @param email The user's email for registration, or leave empty
  * @return An error message if not successful
  */
-std::optional<const char *> saveNetworkCreds(WebServer& httpServer);
+std::optional<const char *> saveNetworkCreds(String ssid, String psk, String email);
 
 /**
  * Generates a UUID that is unique to the hardware running this firmware.
@@ -269,43 +271,40 @@ void printReadingToConsole(double reading) {
   SERIAL.print(output);
 }
 
-std::optional<const char *> saveNetworkCreds(WebServer& httpServer)
+std::optional<const char *> saveNetworkCreds(String ssid, String psk, String email)
 {
-  // Confirm that the form was actually submitted.
-  if (httpServer.hasArg("ssid") && httpServer.hasArg("psk") && httpServer.hasArg("email")) {
-    const auto ssid = httpServer.arg("ssid");
-    const auto psk = httpServer.arg("psk");
-    const auto email = httpServer.arg("email");
+  // Confirm that the given credentials will fit in the allocated EEPROM space.
+  if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk)) {
+    Creds.set(Storage::Entry::SSID, ssid);
+    Creds.set(Storage::Entry::Passkey, psk);
+    Creds.commit();
 
-    // Confirm that the given credentials will fit in the allocated EEPROM space.
-    if (!ssid.isEmpty() && Creds.canStore(ssid) && Creds.canStore(psk)) {
-      Creds.set(Storage::Entry::SSID, ssid);
-      Creds.set(Storage::Entry::Passkey, psk);
-      Creds.commit();
-
-      if (tryWifiConnection(WIFI_AP_STA, WIFI_NEW_CONNECT_TIMEOUT_SEC) == 0 && Timestamp::synchronize() == 0) {
+    if (tryWifiConnection(WIFI_AP_STA, WIFI_NEW_CONNECT_TIMEOUT_SEC) == 0) {
+      if (Timestamp::synchronize() == 0) {
         if (email.length() > 0) {
           API api (buildDeviceId());
 
-          if (const auto reg = api.sendRegister(email); reg) {
+          //if (const auto reg = api.sendRegister(email); reg) {
             SERIAL.println("Registered!");
-            Creds.set(Storage::Entry::Token, *reg);
-            Creds.commit();
+            //Creds.set(Storage::Entry::Token, *reg);
+            //Creds.commit();
 
             return {};
-          } else {
-            return "The sensor was not able to register with the server.";
-          }
+          //} else {
+          //  return "The sensor was not able to register with the server.";
+          //}
         } else {
           return {};
         }
       } else {
         return "The sensor connected to your WiFi, but failed to reach the internet.";
       }
+    } else {
+      return "The sensor was not able to connect to your WiFi using the info entered.";
     }
+  } else {
+    return "No network name given, or network name or password is too long.";
   }
-
-  return "The sensor was not able to connect to your WiFi using the info entered.";
 }
 
 UUID buildDeviceId()

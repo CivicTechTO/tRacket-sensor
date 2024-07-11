@@ -41,7 +41,7 @@
 class AccessPoint : public RequestHandler
 {
     /** Hard-coded SSID for the access point. */
-    static constexpr auto SSID = "tRacket Setup";
+    static constexpr auto SSID = "tRacket_Setup";
     /** Hard-coded passkey for the access point. */
     static constexpr auto Passkey = "noise123";
 
@@ -50,7 +50,7 @@ public:
      * Submission handler receives WebServer for input data and returns an
      * error message on failure.
      */
-    using SubmissionHandler = std::optional<const char *> (*)(WebServer&);
+    using SubmissionHandler = std::optional<const char *> (*)(String, String, String);
 
     /**
      * Starts the WiFi access point using the fixed credentials.
@@ -73,17 +73,25 @@ private:
     /** Callback for setup form completion. */
     SubmissionHandler onCredentialsReceived;
 
+    // There variables are used for handling setup form completion.
+    String ssid, psk, email, finishHtml;
+    bool finishGood;
+    bool complete;
+    bool restarting;
+
     /** Hard-coded IP address for the ESP32 when hosting the access point. */
     static const IPAddress IP;
     /** Hard-coded netmask for access point configuration. */
     static const IPAddress Netmask;
     /** Provides HTML for an error page with the given message. */
-    static String htmlFromMsg(const char *msg);
+    static String htmlFromMsg(const char *msg, const char *extra = nullptr);
 
     /** Determines which HTTP requests should be handled. */
     bool canHandle(HTTPMethod, String) override;
     /** Handles requests by redirecting to the setup page. */
     bool handle(WebServer&, HTTPMethod, String) override;
+
+    static void taskOnCredentialsReceived(void *param);
 };
 
 #endif // ACCESS_POINT_H
