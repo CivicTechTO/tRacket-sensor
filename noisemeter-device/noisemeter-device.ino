@@ -267,8 +267,7 @@ void printReadingToConsole(double reading) {
   if (currentCount > 1) {
     output += " [+" + String(currentCount - 1) + " more]";
   }
-  SERIAL.print("\r                    \r");
-  SERIAL.print(output);
+  SERIAL.println(output);
 }
 
 std::optional<const char *> saveNetworkCreds(String ssid, String psk, String email)
