@@ -283,15 +283,15 @@ std::optional<const char *> saveNetworkCreds(String ssid, String psk, String ema
         if (email.length() > 0) {
           API api (buildDeviceId());
 
-          //if (const auto reg = api.sendRegister(email); reg) {
+          if (const auto reg = api.sendRegister(email); reg) {
             SERIAL.println("Registered!");
-            //Creds.set(Storage::Entry::Token, *reg);
-            //Creds.commit();
+            Creds.set(Storage::Entry::Token, *reg);
+            Creds.commit();
 
             return {};
-          //} else {
-          //  return "The sensor was not able to register with the server.";
-          //}
+          } else {
+            return "The sensor was not able to register with the server.";
+          }
         } else {
           return {};
         }
