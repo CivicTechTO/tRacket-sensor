@@ -130,7 +130,7 @@ bool AccessPoint::handle(WebServer& server, HTTPMethod method, String uri)
             psk = server.arg("psk");
             email = server.arg("email");
             complete = false;
-            xTaskCreate(taskOnCredentialsReceived, "credrecv", 4096, this, 1, nullptr);
+            xTaskCreate(taskOnCredentialsReceived, "credrecv", 10000, this, 1, nullptr);
         } else {
             server.sendHeader("Location", "http://8.8.4.4/");
             server.send(301);
