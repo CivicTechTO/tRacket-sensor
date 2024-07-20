@@ -48,6 +48,7 @@ void Storage::clear() noexcept
     for (auto i = 0u; i < addrOf(Entry::TotalSize); ++i)
         writeByte(i, 0xFF);
 
+    set(Entry::Token, "\0");
     EEPROMClass::commit();
 }
 

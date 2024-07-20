@@ -132,7 +132,7 @@ void setup() {
     SERIAL.println(" done.");
 
     isAPNeeded = true;
-  } else if (Creds.get(Storage::Entry::Token).length() == 0) {
+  } else if (Creds.get(Storage::Entry::Token)[0] == '\0') {
     isAPNeeded = true;
   } else if (tryWifiConnection(WIFI_STA) < 0) {
     isAPNeeded = true;
@@ -292,8 +292,10 @@ std::optional<const char *> saveNetworkCreds(String ssid, String psk, String ema
           } else {
             return "The sensor was not able to register with the server.";
           }
-        } else {
+        } else if (Creds.get(Storage::Entry::Token)[0] != '\0') {
           return {};
+        } else {
+          return "An email is required to register the sensor with the server.";
         }
       } else {
         return "The sensor connected to your WiFi, but failed to reach the internet.";
