@@ -76,12 +76,12 @@ const char *HTML_BODY_FORM = R"html(
 <p>Enter the wifi network name and password for your home network, which the sensor can connect to to get online:<br/><br/></p>
     <form method='POST' action='/submit' enctype='multipart/form-data'>
       <p>Wifi network name:</p>
-      <input type='text' name='ssid' required>
+      <input type='text' name='ssid' autocorrect='off' autocapitalize='none' autocomplete='off' required/>
       <p>Wifi network password:</p>
-      <input type='password' name='psk'>
+      <input type='password' name='psk'/>
       <p>Your Email (also your username for logging into the tRacket portal):</p>
-      <input type='email' name='email'>
-      <p><input type='submit' value='Connect'></p>
+      <input type='email' name='email'/>
+      <p><input type='submit' value='Connect'/></p>
     </form>
 )html";
 
