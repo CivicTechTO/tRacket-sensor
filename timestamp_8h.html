@@ -97,11 +97,11 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>MIN_TO_SEC</b>(m)&#160;&#160;&#160;(m * 60)</td></tr>
 <tr class="separator:ac75b0b8af4a9628a63d053d6d1238b77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b8dd14b97d79fbfd436f2783f6772e9"><td class="memItemLeft" align="right" valign="top"><a id="a6b8dd14b97d79fbfd436f2783f6772e9"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>HR_TO_SEC</b>(h)&#160;&#160;&#160;MIN_TO_SEC(60)</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>HR_TO_SEC</b>(h)&#160;&#160;&#160;(h * MIN_TO_SEC(60))</td></tr>
 <tr class="separator:a6b8dd14b97d79fbfd436f2783f6772e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab4c26d34fd1f08c8da96f6bfa61d22da"><td class="memItemLeft" align="right" valign="top"><a id="ab4c26d34fd1f08c8da96f6bfa61d22da"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>DAY_TO_SEC</b>(h)&#160;&#160;&#160;HR_TO_SEC(24)</td></tr>
-<tr class="separator:ab4c26d34fd1f08c8da96f6bfa61d22da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6cdcfb1ad81626d6c512e77c8a0385b6"><td class="memItemLeft" align="right" valign="top"><a id="a6cdcfb1ad81626d6c512e77c8a0385b6"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>DAY_TO_SEC</b>(d)&#160;&#160;&#160;(d * HR_TO_SEC(24))</td></tr>
+<tr class="separator:a6cdcfb1ad81626d6c512e77c8a0385b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>

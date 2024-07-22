@@ -94,8 +94,8 @@ $(function() {
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160; </div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#define SEC_TO_MS(s)  (s * 1000)</span></div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#define MIN_TO_SEC(m) (m * 60)</span></div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#define HR_TO_SEC(h)  MIN_TO_SEC(60)</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#define DAY_TO_SEC(h) HR_TO_SEC(24)</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#define HR_TO_SEC(h)  (h * MIN_TO_SEC(60))</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#define DAY_TO_SEC(d) (d * HR_TO_SEC(24))</span></div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
 <div class="line"><a name="l00031"></a><span class="lineno"><a class="line" href="timestamp_8h.html#ac2c2221b23f80ab0e69e1cdc4bc1b4c5">   31</a></span>&#160;constexpr <span class="keyword">auto</span> <a class="code" href="timestamp_8h.html#ac2c2221b23f80ab0e69e1cdc4bc1b4c5">NTP_CONNECT_TIMEOUT_MS</a> = SEC_TO_MS(20);</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
