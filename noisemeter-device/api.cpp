@@ -55,7 +55,7 @@ std::optional<JsonDocument> API::sendAuthorizedRequest(const API::Request& req)
     if (https.begin(client, req.url)) {
         https.addHeader("Content-Type", "application/x-www-form-urlencoded");
         https.addHeader("Authorization", String("Token ") + token);
-        return sendHttpRequest(https, req.params.substring(1));
+        return sendHttpPOST(https, req.params.substring(1));
 #ifdef API_VERBOSE
     } else {
         SERIAL.println("[api] Failed to https.begin()");
@@ -78,7 +78,7 @@ std::optional<JsonDocument> API::sendNonauthorizedRequest(const API::Request& re
     HTTPClient https;
     if (https.begin(client, req.url)) {
         https.addHeader("Content-Type", "application/x-www-form-urlencoded");
-        return sendHttpRequest(https, req.params.substring(1));
+        return sendHttpPOST(https, req.params.substring(1));
 #ifdef API_VERBOSE
     } else {
         SERIAL.println("[api] Failed to https.begin()");
@@ -88,41 +88,57 @@ std::optional<JsonDocument> API::sendNonauthorizedRequest(const API::Request& re
     return {};
 }
 
-std::optional<JsonDocument> API::sendHttpRequest(HTTPClient& https, const String& payload)
+std::optional<JsonDocument> API::sendHttpGET(HTTPClient& https)
+{
+    const auto code = https.GET();
+    if (code == HTTP_CODE_OK || code == HTTP_CODE_MOVED_PERMANENTLY) {
+        return handleHttpResponse(https);
+#ifdef API_VERBOSE
+    } else {
+        SERIAL.print("[api] HTTP error: ");
+        SERIAL.println(code);
+        return {};
+#endif
+    }
+}
+
+std::optional<JsonDocument> API::sendHttpPOST(HTTPClient& https, const String& payload)
 {
 #ifdef API_VERBOSE
     SERIAL.print("[api] payload: ");
     SERIAL.println(payload);
 #endif
-    if (const auto code = https.POST(payload); code > 0) {
-        const auto response = https.getString();
-        const auto json = responseToJson(response);
-        https.end();
 
-        if (json) {
-            SERIAL.print("[api] ");
-            SERIAL.print((String)(*json)["result"]);
-            SERIAL.print(": ");
-            SERIAL.println((String)(*json)["message"]);
-
-            if (code == HTTP_CODE_OK || code == HTTP_CODE_MOVED_PERMANENTLY) {
-                return *json;
-#ifdef API_VERBOSE
-            } else {
-                SERIAL.print("[api] HTTP error: ");
-                SERIAL.println(code);
-#endif
-            }
-#ifdef API_VERBOSE
-        } else {
-            SERIAL.print("[api] Invalid JSON! HTTP error: ");
-            SERIAL.println(code);
-#endif
-        }
+    const auto code = https.POST(payload);
+    if (code == HTTP_CODE_OK || code == HTTP_CODE_MOVED_PERMANENTLY) {
+        return handleHttpResponse(https);
 #ifdef API_VERBOSE
     } else {
         SERIAL.print("[api] HTTP error: ");
         SERIAL.println(code);
+        return {};
+#endif
+    }
+}
+
+std::optional<JsonDocument> API::handleHttpResponse(HTTPClient& https)
+{
+    const auto response = https.getString();
+    const auto json = responseToJson(response);
+    https.end();
+
+    if (json) {
+#ifdef API_VERBOSE
+        SERIAL.print("[api] ");
+        SERIAL.print((String)(*json)["result"]);
+        SERIAL.print(": ");
+        SERIAL.println((String)(*json)["message"]);
+#endif
+
+        return *json;
+#ifdef API_VERBOSE
+    } else {
+        SERIAL.print("[api] Invalid JSON!");
 #endif
     }
 
@@ -190,17 +206,35 @@ std::optional<API::LatestSoftware> API::getLatestSoftware()
 {
     const auto request = Request("software/latest");
 
-    const auto resp = sendNonauthorizedRequest(request);
-    if (resp && (*resp)["result"] == "ok") {
-        LatestSoftware ls = {
-            (*resp)["version"],
-            (*resp)["url"]
-        };
+    WiFiClientSecure client;
+    client.setCACert(rootCertificate());
 
-        return ls;
+    String endpoint = request.url + '?' + request.params.substring(1);
+
+#ifdef API_VERBOSE
+    SERIAL.print("[api] Non-authorized request: ");
+    SERIAL.println(endpoint);
+#endif
+
+    HTTPClient https;
+    if (https.begin(client, endpoint)) {
+        const auto resp = sendHttpGET(https);
+
+        if (resp && (*resp)["result"] == "ok") {
+            LatestSoftware ls = {
+                (*resp)["version"],
+                (*resp)["url"]
+            };
+
+            return ls;
+        }
+#ifdef API_VERBOSE
     } else {
-        return {};
+        SERIAL.println("[api] Failed to https.begin()");
+#endif
     }
+
+    return {};
 }
 
 const char *API::rootCertificate()
