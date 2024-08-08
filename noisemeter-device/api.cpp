@@ -97,9 +97,10 @@ std::optional<JsonDocument> API::sendHttpGET(HTTPClient& https)
     } else {
         SERIAL.print("[api] HTTP error: ");
         SERIAL.println(code);
-        return {};
 #endif
     }
+
+    return {};
 }
 
 std::optional<JsonDocument> API::sendHttpPOST(HTTPClient& https, const String& payload)
@@ -116,9 +117,10 @@ std::optional<JsonDocument> API::sendHttpPOST(HTTPClient& https, const String& p
     } else {
         SERIAL.print("[api] HTTP error: ");
         SERIAL.println(code);
-        return {};
 #endif
     }
+
+    return {};
 }
 
 std::optional<JsonDocument> API::handleHttpResponse(HTTPClient& https)
