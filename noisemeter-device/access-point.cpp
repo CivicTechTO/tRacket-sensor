@@ -15,24 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "access-point.h"
+#include "access-point-html.hpp"
 #include "board.h"
 #include "timestamp.h"
 
 #include <WiFiAP.h>
-
-#define HTML_HEADER \
-    "<!DOCTYPE html>" \
-    "<html lang='en'>" \
-    "<head>" \
-    "<meta charset='utf-8'>" \
-    "<meta name='viewport' content='width=device-width,initial-scale=1'/>" \
-    "</head>" \
-    "<body>" \
-    "<h1>Noise Meter Setup</h1>"
-
-#define HTML_FOOTER \
-    "</body>" \
-    "</html>"
 
 constexpr int DNSPort = 53;
 constexpr auto ACCESS_POINT_TIMEOUT_SEC = MIN_TO_SEC(30);
@@ -40,39 +27,23 @@ constexpr auto ACCESS_POINT_TIMEOUT_SEC = MIN_TO_SEC(30);
 const IPAddress AccessPoint::IP (8, 8, 4, 4);
 const IPAddress AccessPoint::Netmask (255, 255, 255, 0);
 
-// Main webpage HTML with form to collect WiFi credentials.
-const char *AccessPoint::htmlSetup =
-    HTML_HEADER
-    "<form method='POST' action='' enctype='multipart/form-data'>"
-    "<p>SSID:</p>"
-    "<input type='text' name='ssid' required>"
-    "<p>Password:</p>"
-    "<input type='password' name='psk'>"
-    "<p>Email (if registering new device):</p>"
-    "<input type='email' name='email'>"
-    "<input type='submit' value='Connect'>"
-    "</form>"
-    HTML_FOOTER;
-
-// HTML to show after credentials are submitted.
-const char *AccessPoint::htmlSubmit =
-    HTML_HEADER
-    "<p>Connected and registered! Restarting...</p>"
-    HTML_FOOTER;
-
 AccessPoint::AccessPoint(SubmissionHandler func):
     timeout(ACCESS_POINT_TIMEOUT_SEC),
     server(80),
     onCredentialsReceived(func) {}
 
 // HTML to show when a submission is rejected.
-String AccessPoint::htmlFromMsg(const char *msg)
+String AccessPoint::htmlFromMsg(const char *msg, const char *extra)
 {
-    String html (HTML_HEADER);
+    String html;
+    html.reserve(2048);
+    html += HTML_HEADER;
+    html += HTML_CONTAINER;
     html += "<p>";
     html += msg;
     html += "</p>";
-    html += "<p>Please <a href='/'>go back and try again</a>.</p>";
+    if (extra)
+        html += extra;
     html += HTML_FOOTER;
     return html;
 }
@@ -90,10 +61,16 @@ void AccessPoint::run()
 
     SERIAL.println("Running setup access point.");
 
-    for (auto start = 0UL; start / 100 < timeout; ++start) {
+    restarting = false;
+    for (auto start = 0UL; start / (1000 / 10) < timeout; ++start) {
         dns.processNextRequest();
         server.handleClient();
         delay(10);
+
+        if (restarting) {
+            delay(5000);
+            ESP.restart(); // Software reset.
+        }
     }
 }
 
@@ -102,24 +79,58 @@ bool AccessPoint::canHandle(HTTPMethod, String)
     return true;
 }
 
+void AccessPoint::taskOnCredentialsReceived(void *param)
+{
+    auto ap = reinterpret_cast<AccessPoint *>(param);
+
+    if (ap->onCredentialsReceived) {
+        const auto msg = ap->onCredentialsReceived(ap->ssid, ap->psk, ap->email);
+
+        if (msg) {
+            ap->finishHtml = htmlFromMsg(
+                *msg,
+                "<p>Please <a href=\"http://8.8.4.4/\">go back and try again</a>.</p>");
+        } else {
+            ap->finishHtml = htmlFromMsg(
+                "The sensor has connected; the sensor will now restart and begin monitoring noise levels. "
+                "You will receive an email with a link to your dashboard page.");
+        }
+
+        ap->finishGood = !msg;
+        ap->complete = true;
+    }
+
+    vTaskDelete(xTaskGetHandle("credrecv"));
+    while (1)
+        delay(1000);
+}
+
+static String waitingHtml()
+{
+    String html;
+    html.reserve(2048);
+    html += HTML_HEADER;
+    html += "<meta http-equiv=\"refresh\" content=\"2;url=http://8.8.4.4/submit\"/>";
+    html += HTML_CONTAINER;
+    html += "<p>The sensor is trying to connect to wifi...</p>"
+            "<div class='meter'><span style='width:100%;'><span class='progress'></span></span></div>";
+    html += HTML_FOOTER;
+    return html;
+}
+
 bool AccessPoint::handle(WebServer& server, HTTPMethod method, String uri)
 {
     if (method == HTTP_POST) {
-        if (uri == "/") {
+        if (uri == "/submit") {
+            const auto html = waitingHtml();
             server.client().setNoDelay(true);
+            server.send_P(200, PSTR("text/html"), html.c_str());
 
-            if (onCredentialsReceived) {
-                auto msg = onCredentialsReceived(server);
-                if (!msg) {
-                    server.send_P(200, PSTR("text/html"), htmlSubmit);
-                    delay(3000);
-                    ESP.restart(); // Software reset.
-                } else {
-                    auto msgStr = htmlFromMsg(*msg);
-                    server.send_P(200, PSTR("text/html"), msgStr.c_str());
-                    WiFi.mode(WIFI_AP);
-                }
-            }
+            ssid = server.arg("ssid");
+            psk = server.arg("psk");
+            email = server.arg("email");
+            complete = false;
+            xTaskCreate(taskOnCredentialsReceived, "credrecv", 10000, this, 1, nullptr);
         } else {
             server.sendHeader("Location", "http://8.8.4.4/");
             server.send(301);
@@ -127,9 +138,30 @@ bool AccessPoint::handle(WebServer& server, HTTPMethod method, String uri)
     } else if (method == HTTP_GET) {
         // Redirects taken from https://github.com/CDFER/Captive-Portal-ESP32
 
-        if (uri == "/") {
+        if (uri == "/submit") {
+            server.client().setNoDelay(true);
+
+            if (!complete) {
+                const auto html = waitingHtml();
+                server.send_P(200, PSTR("text/html"), html.c_str());
+            } else {
+                server.send_P(200, PSTR("text/html"), finishHtml.c_str());
+
+                if (finishGood)
+                    restarting = true;
+                else
+                    WiFi.mode(WIFI_AP); // Restart access point
+            }
+        } else if (uri == "/") {
+            String response;
+            response.reserve(2048);
+            response += HTML_HEADER;
+            response += HTML_CONTAINER;
+            response += HTML_BODY_FORM;
+            response += HTML_FOOTER;
+
             timeout = DAY_TO_SEC(30);
-            server.send_P(200, PSTR("text/html"), htmlSetup);
+            server.send_P(200, PSTR("text/html"), response.c_str());
         } else if (uri == "/connecttest.txt") {
             // windows 11 captive portal workaround
             server.sendHeader("Location", "http://logout.net");

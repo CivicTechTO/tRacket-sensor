@@ -56,6 +56,7 @@ class API
 
         /** Stores the resulting request URL. */
         String url;
+        String params;
     };
 
 public:
@@ -123,7 +124,9 @@ private:
     /** Attempts the given request and returns the JSON response on success. */
     std::optional<JsonDocument> sendNonauthorizedRequest(const Request& req);
 
-    std::optional<JsonDocument> sendHttpRequest(HTTPClient& https);
+    std::optional<JsonDocument> sendHttpGET(HTTPClient& https);
+    std::optional<JsonDocument> sendHttpPOST(HTTPClient& https, const String& payload);
+    std::optional<JsonDocument> handleHttpResponse(HTTPClient& https);
 };
 
 #endif // API_H
