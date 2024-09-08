@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Noisemeter Device: API Class Reference</title>
+<title>tRacket Sensor: API Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,8 +21,8 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">Noisemeter Device
-   &#160;<span id="projectnumber">0.0.4</span>
+   <div id="projectname">tRacket Sensor
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -128,9 +128,15 @@ std::optional&lt; JsonDocument &gt;&#160;</td><td class="memItemRight" valign="b
 std::optional&lt; JsonDocument &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAPI.html#a92a951a4884552b7301a5fd06437b033">sendNonauthorizedRequest</a> (const <a class="el" href="structAPI_1_1Request.html">Request</a> &amp;req)</td></tr>
 <tr class="memdesc:a92a951a4884552b7301a5fd06437b033"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts the given request and returns the JSON response on success. <br /></td></tr>
 <tr class="separator:a92a951a4884552b7301a5fd06437b033"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4fe81e172ad432e1789b0b2e283d1b68"><td class="memItemLeft" align="right" valign="top"><a id="a4fe81e172ad432e1789b0b2e283d1b68"></a>
-std::optional&lt; JsonDocument &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>sendHttpRequest</b> (HTTPClient &amp;https)</td></tr>
-<tr class="separator:a4fe81e172ad432e1789b0b2e283d1b68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a235b38d5460836dcbc6b71a9119e7a61"><td class="memItemLeft" align="right" valign="top"><a id="a235b38d5460836dcbc6b71a9119e7a61"></a>
+std::optional&lt; JsonDocument &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>sendHttpGET</b> (HTTPClient &amp;https)</td></tr>
+<tr class="separator:a235b38d5460836dcbc6b71a9119e7a61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa54ee820743c220be283eb0b295b2317"><td class="memItemLeft" align="right" valign="top"><a id="aa54ee820743c220be283eb0b295b2317"></a>
+std::optional&lt; JsonDocument &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>sendHttpPOST</b> (HTTPClient &amp;https, const String &amp;payload)</td></tr>
+<tr class="separator:aa54ee820743c220be283eb0b295b2317"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7aee6040f00bc901f06bde93aa0a9f51"><td class="memItemLeft" align="right" valign="top"><a id="a7aee6040f00bc901f06bde93aa0a9f51"></a>
+std::optional&lt; JsonDocument &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>handleHttpResponse</b> (HTTPClient &amp;https)</td></tr>
+<tr class="separator:a7aee6040f00bc901f06bde93aa0a9f51"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Private Attributes</h2></td></tr>

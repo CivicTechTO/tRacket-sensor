@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['max_5fsaved_5fpackets_254',['MAX_SAVED_PACKETS',['../noisemeter-device_8ino.html#a9b5cbef01be470713408910f62cd6580',1,'noisemeter-device.ino']]],
-  ['maximum_255',['maximum',['../structDataPacket.html#a932840e12a30bfc175a87573bc7da29a',1,'DataPacket']]],
-  ['minimum_256',['minimum',['../structDataPacket.html#a8cd7df92da2eea9abb845f87f98271cc',1,'DataPacket']]]
+  ['netmask_253',['Netmask',['../classAccessPoint.html#ada7c40107a91f1a189e2d3f127580bb8',1,'AccessPoint']]],
+  ['ntp_5fconnect_5ftimeout_5fms_254',['NTP_CONNECT_TIMEOUT_MS',['../timestamp_8h.html#ac2c2221b23f80ab0e69e1cdc4bc1b4c5',1,'timestamp.h']]],
+  ['num_5fsos_255',['num_sos',['../structSOS__IIR__Filter.html#ac17401eaf60a867bddef56b0affd5f4d',1,'SOS_IIR_Filter::num_sos()'],['../structNo__IIR__Filter.html#ab208529141905dc16805de73956ee659',1,'No_IIR_Filter::num_sos()']]]
 ];

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Noisemeter Device: AccessPoint Class Reference</title>
+<title>tRacket Sensor: AccessPoint Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,8 +21,8 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">Noisemeter Device
-   &#160;<span id="projectnumber">0.0.4</span>
+   <div id="projectname">tRacket Sensor
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -88,14 +88,14 @@ Inheritance diagram for AccessPoint:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a6495f55f1ca6f6e9289671d5f7f42248"><td class="memItemLeft" align="right" valign="top"><a id="a6495f55f1ca6f6e9289671d5f7f42248"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#a6495f55f1ca6f6e9289671d5f7f42248">SubmissionHandler</a> = std::optional&lt; const char * &gt;(*)(WebServer &amp;)</td></tr>
-<tr class="memdesc:a6495f55f1ca6f6e9289671d5f7f42248"><td class="mdescLeft">&#160;</td><td class="mdescRight">Submission handler receives WebServer for input data and returns an error message on failure. <br /></td></tr>
-<tr class="separator:a6495f55f1ca6f6e9289671d5f7f42248"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77210eb7cfc8277b119c9bc2b34d060f"><td class="memItemLeft" align="right" valign="top"><a id="a77210eb7cfc8277b119c9bc2b34d060f"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#a77210eb7cfc8277b119c9bc2b34d060f">SubmissionHandler</a> = std::optional&lt; const char * &gt;(*)(String, String, String)</td></tr>
+<tr class="memdesc:a77210eb7cfc8277b119c9bc2b34d060f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Submission handler receives WebServer for input data and returns an error message on failure. <br /></td></tr>
+<tr class="separator:a77210eb7cfc8277b119c9bc2b34d060f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:af11202ff1159ecd9cc083092458e15af"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#af11202ff1159ecd9cc083092458e15af">AccessPoint</a> (<a class="el" href="classAccessPoint.html#a6495f55f1ca6f6e9289671d5f7f42248">SubmissionHandler</a> func)</td></tr>
+<tr class="memitem:af11202ff1159ecd9cc083092458e15af"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#af11202ff1159ecd9cc083092458e15af">AccessPoint</a> (<a class="el" href="classAccessPoint.html#a77210eb7cfc8277b119c9bc2b34d060f">SubmissionHandler</a> func)</td></tr>
 <tr class="memdesc:af11202ff1159ecd9cc083092458e15af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Starts the WiFi access point using the fixed credentials.  <a href="classAccessPoint.html#af11202ff1159ecd9cc083092458e15af">More...</a><br /></td></tr>
 <tr class="separator:af11202ff1159ecd9cc083092458e15af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a15a3a0117ab2644a47c9b7569d193c"><td class="memItemLeft" align="right" valign="top"><a id="a0a15a3a0117ab2644a47c9b7569d193c"></a>
@@ -116,10 +116,13 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-static-methods"></a>
 Static Private Member Functions</h2></td></tr>
-<tr class="memitem:adbfc4ad33b21cbfb74922aa259fe56cb"><td class="memItemLeft" align="right" valign="top"><a id="adbfc4ad33b21cbfb74922aa259fe56cb"></a>
-static String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#adbfc4ad33b21cbfb74922aa259fe56cb">htmlFromMsg</a> (const char *msg)</td></tr>
-<tr class="memdesc:adbfc4ad33b21cbfb74922aa259fe56cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides HTML for an error page with the given message. <br /></td></tr>
-<tr class="separator:adbfc4ad33b21cbfb74922aa259fe56cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9d6ebccc1986c09d3685d8c30bc1d31"><td class="memItemLeft" align="right" valign="top"><a id="af9d6ebccc1986c09d3685d8c30bc1d31"></a>
+static String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#af9d6ebccc1986c09d3685d8c30bc1d31">htmlFromMsg</a> (const char *msg, const char *extra=nullptr)</td></tr>
+<tr class="memdesc:af9d6ebccc1986c09d3685d8c30bc1d31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides HTML for an error page with the given message. <br /></td></tr>
+<tr class="separator:af9d6ebccc1986c09d3685d8c30bc1d31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67f569b3f489973655f52e5af72cbdfa"><td class="memItemLeft" align="right" valign="top"><a id="a67f569b3f489973655f52e5af72cbdfa"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>taskOnCredentialsReceived</b> (void *param)</td></tr>
+<tr class="separator:a67f569b3f489973655f52e5af72cbdfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
@@ -135,18 +138,39 @@ WebServer&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href=
 <tr class="memdesc:aa47c85bbeee5e407a8e5e8d929c5fa12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Web server object for running the setup form. <br /></td></tr>
 <tr class="separator:aa47c85bbeee5e407a8e5e8d929c5fa12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad5cfa31a98d0e4bbfd7ec2be3b38840"><td class="memItemLeft" align="right" valign="top"><a id="aad5cfa31a98d0e4bbfd7ec2be3b38840"></a>
-<a class="el" href="classAccessPoint.html#a6495f55f1ca6f6e9289671d5f7f42248">SubmissionHandler</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#aad5cfa31a98d0e4bbfd7ec2be3b38840">onCredentialsReceived</a></td></tr>
+<a class="el" href="classAccessPoint.html#a77210eb7cfc8277b119c9bc2b34d060f">SubmissionHandler</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#aad5cfa31a98d0e4bbfd7ec2be3b38840">onCredentialsReceived</a></td></tr>
 <tr class="memdesc:aad5cfa31a98d0e4bbfd7ec2be3b38840"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback for setup form completion. <br /></td></tr>
 <tr class="separator:aad5cfa31a98d0e4bbfd7ec2be3b38840"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acaf60b49a3643f0037be46c35996f6ba"><td class="memItemLeft" align="right" valign="top"><a id="acaf60b49a3643f0037be46c35996f6ba"></a>
+String&#160;</td><td class="memItemRight" valign="bottom"><b>ssid</b></td></tr>
+<tr class="separator:acaf60b49a3643f0037be46c35996f6ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a890369cac2b92c515faf381d2559288e"><td class="memItemLeft" align="right" valign="top"><a id="a890369cac2b92c515faf381d2559288e"></a>
+String&#160;</td><td class="memItemRight" valign="bottom"><b>psk</b></td></tr>
+<tr class="separator:a890369cac2b92c515faf381d2559288e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a023f81dacf1e12423c2e600660301fc7"><td class="memItemLeft" align="right" valign="top"><a id="a023f81dacf1e12423c2e600660301fc7"></a>
+String&#160;</td><td class="memItemRight" valign="bottom"><b>email</b></td></tr>
+<tr class="separator:a023f81dacf1e12423c2e600660301fc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4da11f550524b8264689c381f330352e"><td class="memItemLeft" align="right" valign="top"><a id="a4da11f550524b8264689c381f330352e"></a>
+String&#160;</td><td class="memItemRight" valign="bottom"><b>finishHtml</b></td></tr>
+<tr class="separator:a4da11f550524b8264689c381f330352e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a208ab48355b707b7a88300669a6347bc"><td class="memItemLeft" align="right" valign="top"><a id="a208ab48355b707b7a88300669a6347bc"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>finishGood</b></td></tr>
+<tr class="separator:a208ab48355b707b7a88300669a6347bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa128f2c7925981ec9ad451320ba5a580"><td class="memItemLeft" align="right" valign="top"><a id="aa128f2c7925981ec9ad451320ba5a580"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>complete</b></td></tr>
+<tr class="separator:aa128f2c7925981ec9ad451320ba5a580"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d3c7d9d40cabea5e16722934167176b"><td class="memItemLeft" align="right" valign="top"><a id="a5d3c7d9d40cabea5e16722934167176b"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>restarting</b></td></tr>
+<tr class="separator:a5d3c7d9d40cabea5e16722934167176b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-static-attribs"></a>
 Static Private Attributes</h2></td></tr>
 <tr class="memitem:adb892734d658017b0946c096dd2de419"><td class="memItemLeft" align="right" valign="top"><a id="adb892734d658017b0946c096dd2de419"></a>
-static constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#adb892734d658017b0946c096dd2de419">SSID</a> = &quot;Noise meter&quot;</td></tr>
+static constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#adb892734d658017b0946c096dd2de419">SSID</a> = &quot;tRacket_Setup&quot;</td></tr>
 <tr class="memdesc:adb892734d658017b0946c096dd2de419"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hard-coded SSID for the access point. <br /></td></tr>
 <tr class="separator:adb892734d658017b0946c096dd2de419"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a33e8ecd9f0552c09556462d7462c0099"><td class="memItemLeft" align="right" valign="top"><a id="a33e8ecd9f0552c09556462d7462c0099"></a>
-static constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#a33e8ecd9f0552c09556462d7462c0099">Passkey</a> = &quot;noisemeter&quot;</td></tr>
+static constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#a33e8ecd9f0552c09556462d7462c0099">Passkey</a> = &quot;noise123&quot;</td></tr>
 <tr class="memdesc:a33e8ecd9f0552c09556462d7462c0099"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hard-coded passkey for the access point. <br /></td></tr>
 <tr class="separator:a33e8ecd9f0552c09556462d7462c0099"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1facd6c1e266341be70ffaef1167c02d"><td class="memItemLeft" align="right" valign="top"><a id="a1facd6c1e266341be70ffaef1167c02d"></a>
@@ -157,14 +181,6 @@ static const IPAddress&#160;</td><td class="memItemRight" valign="bottom"><a cla
 static const IPAddress&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#ada7c40107a91f1a189e2d3f127580bb8">Netmask</a></td></tr>
 <tr class="memdesc:ada7c40107a91f1a189e2d3f127580bb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hard-coded netmask for access point configuration. <br /></td></tr>
 <tr class="separator:ada7c40107a91f1a189e2d3f127580bb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a63c45db3edd6083a85df7053fc4511af"><td class="memItemLeft" align="right" valign="top"><a id="a63c45db3edd6083a85df7053fc4511af"></a>
-static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#a63c45db3edd6083a85df7053fc4511af">htmlSetup</a></td></tr>
-<tr class="memdesc:a63c45db3edd6083a85df7053fc4511af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hard-coded HTML for the setup form page. <br /></td></tr>
-<tr class="separator:a63c45db3edd6083a85df7053fc4511af"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa691032f8d919e01f3c95230022a0e51"><td class="memItemLeft" align="right" valign="top"><a id="aa691032f8d919e01f3c95230022a0e51"></a>
-static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAccessPoint.html#aa691032f8d919e01f3c95230022a0e51">htmlSubmit</a></td></tr>
-<tr class="memdesc:aa691032f8d919e01f3c95230022a0e51"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hard-coded HTML for the page shown after completing the form. <br /></td></tr>
-<tr class="separator:aa691032f8d919e01f3c95230022a0e51"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Manages the WiFi access point, captive portal, and user setup form. </p>
@@ -182,7 +198,7 @@ static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class=
         <tr>
           <td class="memname">AccessPoint::AccessPoint </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classAccessPoint.html#a6495f55f1ca6f6e9289671d5f7f42248">SubmissionHandler</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classAccessPoint.html#a77210eb7cfc8277b119c9bc2b34d060f">SubmissionHandler</a>&#160;</td>
           <td class="paramname"><em>func</em></td><td>)</td>
           <td></td>
         </tr>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Noisemeter Device: noisemeter-device/noisemeter-device.ino File Reference</title>
+<title>tRacket Sensor: noisemeter-device/noisemeter-device.ino File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,8 +21,8 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">Noisemeter Device
-   &#160;<span id="projectnumber">0.0.4</span>
+   <div id="projectname">tRacket Sensor
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -99,9 +99,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ae8bcebb1dc083b5de76dac51dbe4f3fc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">printReadingToConsole</a> (double reading)</td></tr>
 <tr class="memdesc:ae8bcebb1dc083b5de76dac51dbe4f3fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Outputs the given decibel reading over serial.  <a href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">More...</a><br /></td></tr>
 <tr class="separator:ae8bcebb1dc083b5de76dac51dbe4f3fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a60e7250389cbe6ae7e8aef27759fdaed"><td class="memItemLeft" align="right" valign="top">std::optional&lt; const char * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a60e7250389cbe6ae7e8aef27759fdaed">saveNetworkCreds</a> (WebServer &amp;httpServer)</td></tr>
-<tr class="memdesc:a60e7250389cbe6ae7e8aef27759fdaed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback for <a class="el" href="classAccessPoint.html" title="Manages the WiFi access point, captive portal, and user setup form.">AccessPoint</a> that verifies credentials and attempts registration.  <a href="noisemeter-device_8ino.html#a60e7250389cbe6ae7e8aef27759fdaed">More...</a><br /></td></tr>
-<tr class="separator:a60e7250389cbe6ae7e8aef27759fdaed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaaac53f976c91508ace9778f2a7c51f2"><td class="memItemLeft" align="right" valign="top">std::optional&lt; const char * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#aaaac53f976c91508ace9778f2a7c51f2">saveNetworkCreds</a> (String ssid, String psk, String email)</td></tr>
+<tr class="memdesc:aaaac53f976c91508ace9778f2a7c51f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback for <a class="el" href="classAccessPoint.html" title="Manages the WiFi access point, captive portal, and user setup form.">AccessPoint</a> that verifies credentials and attempts registration.  <a href="noisemeter-device_8ino.html#aaaac53f976c91508ace9778f2a7c51f2">More...</a><br /></td></tr>
+<tr class="separator:aaaac53f976c91508ace9778f2a7c51f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af520ea0ad43879e3ce51437c4df03bd2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classUUID.html">UUID</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">buildDeviceId</a> ()</td></tr>
 <tr class="memdesc:af520ea0ad43879e3ce51437c4df03bd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates a <a class="el" href="classUUID.html">UUID</a> that is unique to the hardware running this firmware.  <a href="noisemeter-device_8ino.html#af520ea0ad43879e3ce51437c4df03bd2">More...</a><br /></td></tr>
 <tr class="separator:af520ea0ad43879e3ce51437c4df03bd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -185,7 +185,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <p>Generates a <a class="el" href="classUUID.html">UUID</a> that is unique to the hardware running this firmware. </p>
 <dl class="section return"><dt>Returns</dt><dd>A device-unique <a class="el" href="classUUID.html">UUID</a> object </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00314">314</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00312">312</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -207,7 +207,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <p>Main loop for the firmware. </p>
 <p>This function is run continuously, getting called within an infinite loop. </p>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00174">174</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00176">176</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -235,12 +235,12 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00259">259</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00261">261</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
-<a id="a60e7250389cbe6ae7e8aef27759fdaed"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a60e7250389cbe6ae7e8aef27759fdaed">&#9670;&nbsp;</a></span>saveNetworkCreds()</h2>
+<a id="aaaac53f976c91508ace9778f2a7c51f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaaac53f976c91508ace9778f2a7c51f2">&#9670;&nbsp;</a></span>saveNetworkCreds()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -248,9 +248,25 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">std::optional&lt; const char * &gt; saveNetworkCreds </td>
           <td>(</td>
-          <td class="paramtype">WebServer &amp;&#160;</td>
-          <td class="paramname"><em>httpServer</em></td><td>)</td>
+          <td class="paramtype">String&#160;</td>
+          <td class="paramname"><em>ssid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">String&#160;</td>
+          <td class="paramname"><em>psk</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">String&#160;</td>
+          <td class="paramname"><em>email</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -258,13 +274,15 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <p>Callback for <a class="el" href="classAccessPoint.html" title="Manages the WiFi access point, captive portal, and user setup form.">AccessPoint</a> that verifies credentials and attempts registration. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">httpServer</td><td>HTTP server which served the setup form </td></tr>
+    <tr><td class="paramname">ssid</td><td>The name of the network to connect to </td></tr>
+    <tr><td class="paramname">psk</td><td>The named network's password </td></tr>
+    <tr><td class="paramname">email</td><td>The user's email for registration, or leave empty </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>An error message if not successful </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00272">272</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00273">273</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -304,7 +322,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Zero on success or a negative number on failure </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00321">321</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00319">319</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>

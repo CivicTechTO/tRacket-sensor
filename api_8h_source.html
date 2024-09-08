@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Noisemeter Device: noisemeter-device/api.h Source File</title>
+<title>tRacket Sensor: noisemeter-device/api.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,8 +21,8 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">Noisemeter Device
-   &#160;<span id="projectnumber">0.0.4</span>
+   <div id="projectname">tRacket Sensor
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -109,43 +109,46 @@ $(function() {
 <div class="line"><a name="l00055"></a><span class="lineno"><a class="line" href="structAPI_1_1Request.html#ab85a8817c6e57c135ae20ed4c8a7080f">   55</a></span>&#160;        <a class="code" href="structAPI_1_1Request.html">Request</a>&amp; <a class="code" href="structAPI_1_1Request.html#ab85a8817c6e57c135ae20ed4c8a7080f">addParam</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> param[], String value);</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
 <div class="line"><a name="l00058"></a><span class="lineno"><a class="line" href="structAPI_1_1Request.html#ac1ed273e77b895150fa098ff2d4e88a1">   58</a></span>&#160;        String <a class="code" href="structAPI_1_1Request.html#ac1ed273e77b895150fa098ff2d4e88a1">url</a>;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    };</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00063"></a><span class="lineno"><a class="line" href="structAPI_1_1LatestSoftware.html">   63</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structAPI_1_1LatestSoftware.html">LatestSoftware</a> {</div>
-<div class="line"><a name="l00065"></a><span class="lineno"><a class="line" href="structAPI_1_1LatestSoftware.html#acbd0d6cc7032f96b785b1c5af2fa111f">   65</a></span>&#160;        String <a class="code" href="structAPI_1_1LatestSoftware.html#acbd0d6cc7032f96b785b1c5af2fa111f">version</a>;</div>
-<div class="line"><a name="l00067"></a><span class="lineno"><a class="line" href="structAPI_1_1LatestSoftware.html#a3d366cba9641a74c44afaf1bb718eeec">   67</a></span>&#160;        String <a class="code" href="structAPI_1_1LatestSoftware.html#a3d366cba9641a74c44afaf1bb718eeec">url</a>;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    };</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
-<div class="line"><a name="l00075"></a><span class="lineno"><a class="line" href="classAPI.html#aca6120ab8e7663f2d83eddc5bf85f2e4">   75</a></span>&#160;    <a class="code" href="classAPI.html#aca6120ab8e7663f2d83eddc5bf85f2e4">API</a>(<a class="code" href="classUUID.html">UUID</a> id_, String token_ = {});</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
-<div class="line"><a name="l00083"></a><span class="lineno"><a class="line" href="classAPI.html#aa56b80cab82a2b51156c5decc6d57020">   83</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classAPI.html#aa56b80cab82a2b51156c5decc6d57020">sendMeasurement</a>(<span class="keyword">const</span> <a class="code" href="structDataPacket.html">DataPacket</a>&amp; packet);</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
-<div class="line"><a name="l00093"></a><span class="lineno"><a class="line" href="classAPI.html#ad1a8cd2379212cbb9d5fa5edf058107a">   93</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classAPI.html#ad1a8cd2379212cbb9d5fa5edf058107a">sendMeasurementWithDiagnostics</a>(<span class="keyword">const</span> <a class="code" href="structDataPacket.html">DataPacket</a>&amp; packet, String version, String boottime);</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
-<div class="line"><a name="l00100"></a><span class="lineno"><a class="line" href="classAPI.html#a357947959eb3ee1f4491ad9dc9820fec">  100</a></span>&#160;    std::optional&lt;String&gt; <a class="code" href="classAPI.html#a357947959eb3ee1f4491ad9dc9820fec">sendRegister</a>(String email);</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
-<div class="line"><a name="l00106"></a><span class="lineno"><a class="line" href="classAPI.html#a0587bdcd65c4782a8c06f912703c89bd">  106</a></span>&#160;    std::optional&lt;LatestSoftware&gt; <a class="code" href="classAPI.html#a0587bdcd65c4782a8c06f912703c89bd">getLatestSoftware</a>();</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
-<div class="line"><a name="l00111"></a><span class="lineno"><a class="line" href="classAPI.html#a51de56dee9feec7fa81a7f330a3d0f31">  111</a></span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span> *<a class="code" href="classAPI.html#a51de56dee9feec7fa81a7f330a3d0f31">rootCertificate</a>();</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00115"></a><span class="lineno"><a class="line" href="classAPI.html#ae30c1b907bd31044253fdefa2fba7d05">  115</a></span>&#160;    <a class="code" href="classUUID.html">UUID</a> <a class="code" href="classAPI.html#ae30c1b907bd31044253fdefa2fba7d05">id</a>;</div>
-<div class="line"><a name="l00117"></a><span class="lineno"><a class="line" href="classAPI.html#a2f230c506eebd06856b9bbd1ff25695e">  117</a></span>&#160;    String <a class="code" href="classAPI.html#a2f230c506eebd06856b9bbd1ff25695e">token</a>;</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; </div>
-<div class="line"><a name="l00120"></a><span class="lineno"><a class="line" href="classAPI.html#a42a29e29c435ac5edc68251014059e2e">  120</a></span>&#160;    std::optional&lt;JsonDocument&gt; <a class="code" href="classAPI.html#a42a29e29c435ac5edc68251014059e2e">responseToJson</a>(<span class="keyword">const</span> String&amp; response);</div>
-<div class="line"><a name="l00122"></a><span class="lineno"><a class="line" href="classAPI.html#a4a11ebf9e50cdf3869c12a081fb93561">  122</a></span>&#160;    std::optional&lt;JsonDocument&gt; <a class="code" href="classAPI.html#a4a11ebf9e50cdf3869c12a081fb93561">sendAuthorizedRequest</a>(<span class="keyword">const</span> <a class="code" href="structAPI_1_1Request.html">Request</a>&amp; req);</div>
-<div class="line"><a name="l00124"></a><span class="lineno"><a class="line" href="classAPI.html#a92a951a4884552b7301a5fd06437b033">  124</a></span>&#160;    std::optional&lt;JsonDocument&gt; <a class="code" href="classAPI.html#a92a951a4884552b7301a5fd06437b033">sendNonauthorizedRequest</a>(<span class="keyword">const</span> <a class="code" href="structAPI_1_1Request.html">Request</a>&amp; req);</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160; </div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    std::optional&lt;JsonDocument&gt; sendHttpRequest(HTTPClient&amp; https);</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;};</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160; </div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// API_H</span></div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160; </div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        String params;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    };</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="structAPI_1_1LatestSoftware.html">   64</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structAPI_1_1LatestSoftware.html">LatestSoftware</a> {</div>
+<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="structAPI_1_1LatestSoftware.html#acbd0d6cc7032f96b785b1c5af2fa111f">   66</a></span>&#160;        String <a class="code" href="structAPI_1_1LatestSoftware.html#acbd0d6cc7032f96b785b1c5af2fa111f">version</a>;</div>
+<div class="line"><a name="l00068"></a><span class="lineno"><a class="line" href="structAPI_1_1LatestSoftware.html#a3d366cba9641a74c44afaf1bb718eeec">   68</a></span>&#160;        String <a class="code" href="structAPI_1_1LatestSoftware.html#a3d366cba9641a74c44afaf1bb718eeec">url</a>;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    };</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
+<div class="line"><a name="l00076"></a><span class="lineno"><a class="line" href="classAPI.html#aca6120ab8e7663f2d83eddc5bf85f2e4">   76</a></span>&#160;    <a class="code" href="classAPI.html#aca6120ab8e7663f2d83eddc5bf85f2e4">API</a>(<a class="code" href="classUUID.html">UUID</a> id_, String token_ = {});</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; </div>
+<div class="line"><a name="l00084"></a><span class="lineno"><a class="line" href="classAPI.html#aa56b80cab82a2b51156c5decc6d57020">   84</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classAPI.html#aa56b80cab82a2b51156c5decc6d57020">sendMeasurement</a>(<span class="keyword">const</span> <a class="code" href="structDataPacket.html">DataPacket</a>&amp; packet);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
+<div class="line"><a name="l00094"></a><span class="lineno"><a class="line" href="classAPI.html#ad1a8cd2379212cbb9d5fa5edf058107a">   94</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classAPI.html#ad1a8cd2379212cbb9d5fa5edf058107a">sendMeasurementWithDiagnostics</a>(<span class="keyword">const</span> <a class="code" href="structDataPacket.html">DataPacket</a>&amp; packet, String version, String boottime);</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
+<div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="classAPI.html#a357947959eb3ee1f4491ad9dc9820fec">  101</a></span>&#160;    std::optional&lt;String&gt; <a class="code" href="classAPI.html#a357947959eb3ee1f4491ad9dc9820fec">sendRegister</a>(String email);</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
+<div class="line"><a name="l00107"></a><span class="lineno"><a class="line" href="classAPI.html#a0587bdcd65c4782a8c06f912703c89bd">  107</a></span>&#160;    std::optional&lt;LatestSoftware&gt; <a class="code" href="classAPI.html#a0587bdcd65c4782a8c06f912703c89bd">getLatestSoftware</a>();</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
+<div class="line"><a name="l00112"></a><span class="lineno"><a class="line" href="classAPI.html#a51de56dee9feec7fa81a7f330a3d0f31">  112</a></span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span> *<a class="code" href="classAPI.html#a51de56dee9feec7fa81a7f330a3d0f31">rootCertificate</a>();</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160; </div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00116"></a><span class="lineno"><a class="line" href="classAPI.html#ae30c1b907bd31044253fdefa2fba7d05">  116</a></span>&#160;    <a class="code" href="classUUID.html">UUID</a> <a class="code" href="classAPI.html#ae30c1b907bd31044253fdefa2fba7d05">id</a>;</div>
+<div class="line"><a name="l00118"></a><span class="lineno"><a class="line" href="classAPI.html#a2f230c506eebd06856b9bbd1ff25695e">  118</a></span>&#160;    String <a class="code" href="classAPI.html#a2f230c506eebd06856b9bbd1ff25695e">token</a>;</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160; </div>
+<div class="line"><a name="l00121"></a><span class="lineno"><a class="line" href="classAPI.html#a42a29e29c435ac5edc68251014059e2e">  121</a></span>&#160;    std::optional&lt;JsonDocument&gt; <a class="code" href="classAPI.html#a42a29e29c435ac5edc68251014059e2e">responseToJson</a>(<span class="keyword">const</span> String&amp; response);</div>
+<div class="line"><a name="l00123"></a><span class="lineno"><a class="line" href="classAPI.html#a4a11ebf9e50cdf3869c12a081fb93561">  123</a></span>&#160;    std::optional&lt;JsonDocument&gt; <a class="code" href="classAPI.html#a4a11ebf9e50cdf3869c12a081fb93561">sendAuthorizedRequest</a>(<span class="keyword">const</span> <a class="code" href="structAPI_1_1Request.html">Request</a>&amp; req);</div>
+<div class="line"><a name="l00125"></a><span class="lineno"><a class="line" href="classAPI.html#a92a951a4884552b7301a5fd06437b033">  125</a></span>&#160;    std::optional&lt;JsonDocument&gt; <a class="code" href="classAPI.html#a92a951a4884552b7301a5fd06437b033">sendNonauthorizedRequest</a>(<span class="keyword">const</span> <a class="code" href="structAPI_1_1Request.html">Request</a>&amp; req);</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160; </div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    std::optional&lt;JsonDocument&gt; sendHttpGET(HTTPClient&amp; https);</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    std::optional&lt;JsonDocument&gt; sendHttpPOST(HTTPClient&amp; https, <span class="keyword">const</span> String&amp; payload);</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    std::optional&lt;JsonDocument&gt; handleHttpResponse(HTTPClient&amp; https);</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;};</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160; </div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// API_H</span></div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160; </div>
 <div class="ttc" id="aUUID_8h_html"><div class="ttname"><a href="UUID_8h.html">UUID.h</a></div><div class="ttdoc">Arduino Library for generating UUID's.</div></div>
 <div class="ttc" id="aclassAPI_html"><div class="ttname"><a href="classAPI.html">API</a></div><div class="ttdoc">Provides interface for API calls.</div><div class="ttdef"><b>Definition:</b> <a href="api_8h_source.html#l00035">api.h:36</a></div></div>
 <div class="ttc" id="aclassAPI_html_a0587bdcd65c4782a8c06f912703c89bd"><div class="ttname"><a href="classAPI.html#a0587bdcd65c4782a8c06f912703c89bd">API::getLatestSoftware</a></div><div class="ttdeci">std::optional&lt; LatestSoftware &gt; getLatestSoftware()</div><div class="ttdoc">Attempts to get the latest available software info (for OTA).</div></div>
-<div class="ttc" id="aclassAPI_html_a2f230c506eebd06856b9bbd1ff25695e"><div class="ttname"><a href="classAPI.html#a2f230c506eebd06856b9bbd1ff25695e">API::token</a></div><div class="ttdeci">String token</div><div class="ttdoc">Device's API token for authorized requests.</div><div class="ttdef"><b>Definition:</b> <a href="api_8h_source.html#l00117">api.h:117</a></div></div>
+<div class="ttc" id="aclassAPI_html_a2f230c506eebd06856b9bbd1ff25695e"><div class="ttname"><a href="classAPI.html#a2f230c506eebd06856b9bbd1ff25695e">API::token</a></div><div class="ttdeci">String token</div><div class="ttdoc">Device's API token for authorized requests.</div><div class="ttdef"><b>Definition:</b> <a href="api_8h_source.html#l00118">api.h:118</a></div></div>
 <div class="ttc" id="aclassAPI_html_a357947959eb3ee1f4491ad9dc9820fec"><div class="ttname"><a href="classAPI.html#a357947959eb3ee1f4491ad9dc9820fec">API::sendRegister</a></div><div class="ttdeci">std::optional&lt; String &gt; sendRegister(String email)</div><div class="ttdoc">Attempts to register the device with the given email.</div></div>
 <div class="ttc" id="aclassAPI_html_a42a29e29c435ac5edc68251014059e2e"><div class="ttname"><a href="classAPI.html#a42a29e29c435ac5edc68251014059e2e">API::responseToJson</a></div><div class="ttdeci">std::optional&lt; JsonDocument &gt; responseToJson(const String &amp;response)</div><div class="ttdoc">Converts response string into JSON.</div></div>
 <div class="ttc" id="aclassAPI_html_a4a11ebf9e50cdf3869c12a081fb93561"><div class="ttname"><a href="classAPI.html#a4a11ebf9e50cdf3869c12a081fb93561">API::sendAuthorizedRequest</a></div><div class="ttdeci">std::optional&lt; JsonDocument &gt; sendAuthorizedRequest(const Request &amp;req)</div><div class="ttdoc">Attempts the given request and returns the JSON response on success.</div></div>
@@ -155,12 +158,12 @@ $(function() {
 <div class="ttc" id="aclassAPI_html_aa56b80cab82a2b51156c5decc6d57020"><div class="ttname"><a href="classAPI.html#aa56b80cab82a2b51156c5decc6d57020">API::sendMeasurement</a></div><div class="ttdeci">bool sendMeasurement(const DataPacket &amp;packet)</div><div class="ttdoc">Sends a DataPacket (dB measurement) to the server.</div></div>
 <div class="ttc" id="aclassAPI_html_aca6120ab8e7663f2d83eddc5bf85f2e4"><div class="ttname"><a href="classAPI.html#aca6120ab8e7663f2d83eddc5bf85f2e4">API::API</a></div><div class="ttdeci">API(UUID id_, String token_={})</div><div class="ttdoc">Creates a new API interface for the given device (ID).</div></div>
 <div class="ttc" id="aclassAPI_html_ad1a8cd2379212cbb9d5fa5edf058107a"><div class="ttname"><a href="classAPI.html#ad1a8cd2379212cbb9d5fa5edf058107a">API::sendMeasurementWithDiagnostics</a></div><div class="ttdeci">bool sendMeasurementWithDiagnostics(const DataPacket &amp;packet, String version, String boottime)</div><div class="ttdoc">Sends diagnostic/analytic data to the server along with a DataPacket.</div></div>
-<div class="ttc" id="aclassAPI_html_ae30c1b907bd31044253fdefa2fba7d05"><div class="ttname"><a href="classAPI.html#ae30c1b907bd31044253fdefa2fba7d05">API::id</a></div><div class="ttdeci">UUID id</div><div class="ttdoc">Device's UUID.</div><div class="ttdef"><b>Definition:</b> <a href="api_8h_source.html#l00115">api.h:115</a></div></div>
+<div class="ttc" id="aclassAPI_html_ae30c1b907bd31044253fdefa2fba7d05"><div class="ttname"><a href="classAPI.html#ae30c1b907bd31044253fdefa2fba7d05">API::id</a></div><div class="ttdeci">UUID id</div><div class="ttdoc">Device's UUID.</div><div class="ttdef"><b>Definition:</b> <a href="api_8h_source.html#l00116">api.h:116</a></div></div>
 <div class="ttc" id="aclassUUID_html"><div class="ttname"><a href="classUUID.html">UUID</a></div><div class="ttdef"><b>Definition:</b> <a href="UUID_8h_source.html#l00034">UUID.h:35</a></div></div>
 <div class="ttc" id="adata-packet_8h_html"><div class="ttname"><a href="data-packet_8h.html">data-packet.h</a></div><div class="ttdoc">Management for storage of collected data points.</div></div>
-<div class="ttc" id="astructAPI_1_1LatestSoftware_html"><div class="ttname"><a href="structAPI_1_1LatestSoftware.html">API::LatestSoftware</a></div><div class="ttdoc">Results of the software update endpoint.</div><div class="ttdef"><b>Definition:</b> <a href="api_8h_source.html#l00063">api.h:63</a></div></div>
-<div class="ttc" id="astructAPI_1_1LatestSoftware_html_a3d366cba9641a74c44afaf1bb718eeec"><div class="ttname"><a href="structAPI_1_1LatestSoftware.html#a3d366cba9641a74c44afaf1bb718eeec">API::LatestSoftware::url</a></div><div class="ttdeci">String url</div><div class="ttdoc">Download URL for latest software.</div><div class="ttdef"><b>Definition:</b> <a href="api_8h_source.html#l00067">api.h:67</a></div></div>
-<div class="ttc" id="astructAPI_1_1LatestSoftware_html_acbd0d6cc7032f96b785b1c5af2fa111f"><div class="ttname"><a href="structAPI_1_1LatestSoftware.html#acbd0d6cc7032f96b785b1c5af2fa111f">API::LatestSoftware::version</a></div><div class="ttdeci">String version</div><div class="ttdoc">Version number of latest available software.</div><div class="ttdef"><b>Definition:</b> <a href="api_8h_source.html#l00065">api.h:65</a></div></div>
+<div class="ttc" id="astructAPI_1_1LatestSoftware_html"><div class="ttname"><a href="structAPI_1_1LatestSoftware.html">API::LatestSoftware</a></div><div class="ttdoc">Results of the software update endpoint.</div><div class="ttdef"><b>Definition:</b> <a href="api_8h_source.html#l00064">api.h:64</a></div></div>
+<div class="ttc" id="astructAPI_1_1LatestSoftware_html_a3d366cba9641a74c44afaf1bb718eeec"><div class="ttname"><a href="structAPI_1_1LatestSoftware.html#a3d366cba9641a74c44afaf1bb718eeec">API::LatestSoftware::url</a></div><div class="ttdeci">String url</div><div class="ttdoc">Download URL for latest software.</div><div class="ttdef"><b>Definition:</b> <a href="api_8h_source.html#l00068">api.h:68</a></div></div>
+<div class="ttc" id="astructAPI_1_1LatestSoftware_html_acbd0d6cc7032f96b785b1c5af2fa111f"><div class="ttname"><a href="structAPI_1_1LatestSoftware.html#acbd0d6cc7032f96b785b1c5af2fa111f">API::LatestSoftware::version</a></div><div class="ttdeci">String version</div><div class="ttdoc">Version number of latest available software.</div><div class="ttdef"><b>Definition:</b> <a href="api_8h_source.html#l00066">api.h:66</a></div></div>
 <div class="ttc" id="astructAPI_1_1Request_html"><div class="ttname"><a href="structAPI_1_1Request.html">API::Request</a></div><div class="ttdoc">String builder to create URLs for API endpoints and requests.</div><div class="ttdef"><b>Definition:</b> <a href="api_8h_source.html#l00041">api.h:41</a></div></div>
 <div class="ttc" id="astructAPI_1_1Request_html_ab85a8817c6e57c135ae20ed4c8a7080f"><div class="ttname"><a href="structAPI_1_1Request.html#ab85a8817c6e57c135ae20ed4c8a7080f">API::Request::addParam</a></div><div class="ttdeci">Request &amp; addParam(const char param[], String value)</div><div class="ttdoc">Adds a parameter to the given request.</div></div>
 <div class="ttc" id="astructAPI_1_1Request_html_ac1ed273e77b895150fa098ff2d4e88a1"><div class="ttname"><a href="structAPI_1_1Request.html#ac1ed273e77b895150fa098ff2d4e88a1">API::Request::url</a></div><div class="ttdeci">String url</div><div class="ttdoc">Stores the resulting request URL.</div><div class="ttdef"><b>Definition:</b> <a href="api_8h_source.html#l00058">api.h:58</a></div></div>
