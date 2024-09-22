@@ -6,7 +6,7 @@
 	(paper "A4")
 	(title_block
 		(title "tRacket Sensor")
-		(date "2024-09-21")
+		(date "2024-09-22")
 		(rev "3")
 		(company "Civic Tech Toronto")
 		(comment 1 "Drawn by Clyne Sullivan")
@@ -4571,7 +4571,7 @@
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0fc07064-2780-499e-a9cb-9b5a3354e616")
 		(property "Reference" "H2"
@@ -5343,7 +5343,7 @@
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(uuid "4abb56d3-786d-4178-9593-89d8ff32f5f4")
 		(property "Reference" "TP1"
 			(at 135.89 97.79 90)
@@ -6685,28 +6685,28 @@
 			)
 		)
 		(pin "5"
-			(uuid "b3de1797-b042-4450-a2f7-4d95b5bfadbd")
+			(uuid "b3de1797-b042-4450-a2f7-4d95b5bfadbe")
 		)
 		(pin "8"
-			(uuid "a1e0ad07-8698-4b02-9bde-0f5d425ab2b9")
+			(uuid "a1e0ad07-8698-4b02-9bde-0f5d425ab2ba")
 		)
 		(pin "1"
-			(uuid "22f3d741-3688-40ad-9929-dbcfc67b0231")
+			(uuid "22f3d741-3688-40ad-9929-dbcfc67b0232")
 		)
 		(pin "4"
-			(uuid "76cda6a7-9497-4d20-83a3-eb2728223542")
+			(uuid "76cda6a7-9497-4d20-83a3-eb2728223543")
 		)
 		(pin "2"
-			(uuid "a1d49f76-700d-4344-8d92-df1faa5b1a93")
+			(uuid "a1d49f76-700d-4344-8d92-df1faa5b1a94")
 		)
 		(pin "6"
-			(uuid "92a3983a-ff5c-4f41-909a-6ebf15da0e31")
+			(uuid "92a3983a-ff5c-4f41-909a-6ebf15da0e32")
 		)
 		(pin "3"
-			(uuid "121ea303-59e0-4c8b-9557-3ac6c8bcd880")
+			(uuid "121ea303-59e0-4c8b-9557-3ac6c8bcd881")
 		)
 		(pin "7"
-			(uuid "bcc539d5-577a-4f24-aaa7-664631828d30")
+			(uuid "bcc539d5-577a-4f24-aaa7-664631828d31")
 		)
 		(instances
 			(project ""
@@ -6917,28 +6917,28 @@
 			)
 		)
 		(pin "5"
-			(uuid "b3de1797-b042-4450-a2f7-4d95b5bfadbd")
+			(uuid "b3de1797-b042-4450-a2f7-4d95b5bfadbf")
 		)
 		(pin "8"
-			(uuid "a1e0ad07-8698-4b02-9bde-0f5d425ab2b9")
+			(uuid "a1e0ad07-8698-4b02-9bde-0f5d425ab2bb")
 		)
 		(pin "1"
-			(uuid "22f3d741-3688-40ad-9929-dbcfc67b0231")
+			(uuid "22f3d741-3688-40ad-9929-dbcfc67b0233")
 		)
 		(pin "4"
-			(uuid "76cda6a7-9497-4d20-83a3-eb2728223542")
+			(uuid "76cda6a7-9497-4d20-83a3-eb2728223544")
 		)
 		(pin "2"
-			(uuid "a1d49f76-700d-4344-8d92-df1faa5b1a93")
+			(uuid "a1d49f76-700d-4344-8d92-df1faa5b1a95")
 		)
 		(pin "6"
-			(uuid "92a3983a-ff5c-4f41-909a-6ebf15da0e31")
+			(uuid "92a3983a-ff5c-4f41-909a-6ebf15da0e33")
 		)
 		(pin "3"
-			(uuid "121ea303-59e0-4c8b-9557-3ac6c8bcd880")
+			(uuid "121ea303-59e0-4c8b-9557-3ac6c8bcd882")
 		)
 		(pin "7"
-			(uuid "bcc539d5-577a-4f24-aaa7-664631828d30")
+			(uuid "bcc539d5-577a-4f24-aaa7-664631828d32")
 		)
 		(instances
 			(project ""
@@ -7323,7 +7323,7 @@
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board yes)
-		(dnp yes)
+		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "ef53c574-004d-4a0c-986e-3306f9cf35bf")
 		(property "Reference" "H1"
@@ -7433,28 +7433,28 @@
 			)
 		)
 		(pin "5"
-			(uuid "b3de1797-b042-4450-a2f7-4d95b5bfadbd")
+			(uuid "b3de1797-b042-4450-a2f7-4d95b5bfadc0")
 		)
 		(pin "8"
-			(uuid "a1e0ad07-8698-4b02-9bde-0f5d425ab2b9")
+			(uuid "a1e0ad07-8698-4b02-9bde-0f5d425ab2bc")
 		)
 		(pin "1"
-			(uuid "22f3d741-3688-40ad-9929-dbcfc67b0231")
+			(uuid "22f3d741-3688-40ad-9929-dbcfc67b0234")
 		)
 		(pin "4"
-			(uuid "76cda6a7-9497-4d20-83a3-eb2728223542")
+			(uuid "76cda6a7-9497-4d20-83a3-eb2728223545")
 		)
 		(pin "2"
-			(uuid "a1d49f76-700d-4344-8d92-df1faa5b1a93")
+			(uuid "a1d49f76-700d-4344-8d92-df1faa5b1a96")
 		)
 		(pin "6"
-			(uuid "92a3983a-ff5c-4f41-909a-6ebf15da0e31")
+			(uuid "92a3983a-ff5c-4f41-909a-6ebf15da0e34")
 		)
 		(pin "3"
-			(uuid "121ea303-59e0-4c8b-9557-3ac6c8bcd880")
+			(uuid "121ea303-59e0-4c8b-9557-3ac6c8bcd883")
 		)
 		(pin "7"
-			(uuid "bcc539d5-577a-4f24-aaa7-664631828d30")
+			(uuid "bcc539d5-577a-4f24-aaa7-664631828d33")
 		)
 		(instances
 			(project ""
