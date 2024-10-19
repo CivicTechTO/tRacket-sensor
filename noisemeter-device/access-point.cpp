@@ -170,8 +170,8 @@ bool AccessPoint::handle(WebServer& server, HTTPMethod method, String uri)
                 response += ssid;
                 response += "\">";
                 response += ssid;
-                if (auto ty = WiFi.encryptionType(i); ty != WIFI_AUTH_OPEN)
-                    response += " *";
+                if (WiFi.encryptionType(i) != WIFI_AUTH_OPEN)
+                    response += " &#x1f512;";
                 response += "</option>";
             }
 

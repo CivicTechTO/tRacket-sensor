@@ -19,6 +19,7 @@ font-size: 24px;
 padding: 5px;
 margin-top: 3px;
 }
+select, input{margin-bottom: 1em;min-width: 150px;}
 .meter { 
     height: 5px;
     position: relative;
@@ -75,16 +76,16 @@ const char *HTML_FOOTER = R"html(
 const char *HTML_BODY_FORM_HEADER = R"html(
 <p>Enter the wifi network name and password for your home network, which the sensor can connect to to get online:<br/><br/></p>
     <form method='POST' action='/submit' enctype='multipart/form-data'>
-      <p>Wifi network name: (* = password required)</p>
-      <select name='ssid' required>
+      <label for='ssid'>Wifi network name (&#x1f512; = password required):</label><br>
+      <select name='ssid' id='ssid' required>
 )html";
 
 const char *HTML_BODY_FORM_FOOTER = R"html(
-      </select>
-      <p>Wifi network password:</p>
-      <input type='password' name='psk'/>
-      <p>Your Email (also your username for logging into the tRacket portal):</p>
-      <input type='email' name='email'/>
+      </select><br>
+      <label for='psk'>Wifi network password:</label><br>
+      <input type='password' name='psk' id='psk'/><br>
+      <label for='email'>Your Email (also your username for logging into the tRacket portal):</label><br>
+      <input type='email' name='email' id='email'/><br>
       <p><input type='submit' value='Connect'/></p>
     </form>
 )html";
