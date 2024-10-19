@@ -23,7 +23,7 @@ We followed Privacy by Design principles in setting up the data collection.
 
 ## Source Code
 
-The [noisemeter-device](/noisemeter-device) folder contains the device's source code, which is written in C++ and can be built using [PlatformIO](https://platformio.org/). Build instructions are available [in the online documentation](https://civictechto.github.io/proj-noisemeter-device/md_noisemeter_device_BUILD.html).
+The [noisemeter-device](/noisemeter-device) folder contains the device's source code, which is written in C++ and can be built using [PlatformIO](https://platformio.org/). Build instructions are available [in the online documentation](https://civictechto.github.io/tRacket-sensor/md_noisemeter_device_BUILD.html).
 
 The source code is released under the [GNU GPL v3 license](/noisemeter-device/LICENSE).
 
@@ -36,5 +36,5 @@ The hardware design files are released under an [open hardware license](/hardwar
 ## For Developers
 
 * Check out the [Issues page](https://github.com/CivicTechTO/proj-noisemeter-device/issues) to see current bugs and feature requests. Any contributions are welcome!
-* Online documentation of the firmware [is available here](https://civictechto.github.io/proj-noisemeter-device/).
+* Online documentation of the firmware [is available here](https://civictechto.github.io/tRacket-sensor/).
 
