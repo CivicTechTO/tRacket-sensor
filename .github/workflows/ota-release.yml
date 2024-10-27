@@ -2,7 +2,7 @@ name: OTA Release
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
   generate:
