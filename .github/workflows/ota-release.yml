@@ -1,4 +1,4 @@
-name: PlatformIO CI
+name: OTA Release
 
 on:
   release:
@@ -36,8 +36,7 @@ jobs:
         run: pio run -e esp32-pcb
 
       - name: Upload signed firmware
-        uses: skx/github-action-publish-binaries@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: djn24/add-asset-to-release@v1
         with:
-          args: '${GITHUB_WORKSPACE}/firmware_signed.bin'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: '${GITHUB_WORKSPACE}/firmware_signed.bin'
