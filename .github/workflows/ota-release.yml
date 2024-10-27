@@ -38,5 +38,5 @@ jobs:
       - name: Upload signed firmware
         uses: djn24/add-asset-to-release@v1
         with:
-          token: ${{ secrets.RELEASE_KEY }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           path: 'firmware_signed.bin'
