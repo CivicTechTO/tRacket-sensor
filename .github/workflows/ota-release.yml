@@ -39,4 +39,4 @@ jobs:
         uses: djn24/add-asset-to-release@v1
         with:
           token: ${{ secrets.RELEASE_KEY }}
-          path: '${GITHUB_WORKSPACE}/firmware_signed.bin'
+          path: 'firmware_signed.bin'
