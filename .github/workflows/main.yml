@@ -24,7 +24,6 @@ jobs:
 
       - name: Create header files
         run: |
-          cp "${GITHUB_WORKSPACE}/.github/workflows/dummy_priv_key.pem" "${GITHUB_WORKSPACE}/priv_key.pem"
           cp "${GITHUB_WORKSPACE}/noisemeter-device/config.h.example" "${GITHUB_WORKSPACE}/noisemeter-device/config.h"
           python "${GITHUB_WORKSPACE}/noisemeter-device/certs.py" -s api.tracket.info > "${GITHUB_WORKSPACE}/noisemeter-device/certs.h"
 
@@ -33,3 +32,4 @@ jobs:
 
       - name: Build PlatformIO Project (esp32-breadboard)
         run: pio run -e esp32-breadboard
+
