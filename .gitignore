@@ -1,4 +1,5 @@
 .pio
+.vscode
 doc
 noisemeter-device/config.h
 noisemeter-device/secret.h
