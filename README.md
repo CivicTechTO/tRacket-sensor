@@ -29,12 +29,12 @@ The source code is released under the [GNU GPL v3 license](/noisemeter-device/LI
 
 ## Hardware Files
 
-The [hardware](/hardware) folder contains design files and documentation for each iteration of the noisemeter hardware. The PCBs are designed using [KiCAD](https://www.kicad.org/).
+The [hardware](/hardware) folder contains design files and documentation for each iteration of the sensor hardware. The PCBs are designed using [KiCAD](https://www.kicad.org/).
 
 The hardware design files are released under an [open hardware license](/hardware/pcb-rev2/LICENSE).
 
 ## For Developers
 
-* Check out the [Issues page](https://github.com/CivicTechTO/proj-noisemeter-device/issues) to see current bugs and feature requests. Any contributions are welcome!
+* Check out the [Issues page](https://github.com/CivicTechTO/tRacket-sensor/issues) to see current bugs and feature requests. Any contributions are welcome!
 * Online documentation of the firmware [is available here](https://civictechto.github.io/tRacket-sensor/).
 
