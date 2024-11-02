@@ -71,45 +71,35 @@ Source code preparation</h1>
 <ol type="1">
 <li>Save the SSL root certificate to <code>certs.h</code> using the following command: <div class="fragment"><div class="line">python certs.py -s api.tracket.info &gt; certs.h</div>
 </div><!-- fragment --></li>
-<li>Copy <code><a class="el" href="config_8h_8example_source.html">config.h.example</a></code> to <code>config.h</code>; if compiling with the Arduino IDE, edit the file to select your board type.</li>
 </ol>
 <h1><a class="anchor" id="autotoc_md2"></a>
-Code compiling and upload</h1>
-<h2><a class="anchor" id="autotoc_md3"></a>
-PlatformIO</h2>
+Code compilation and upload</h1>
 <ol type="1">
 <li><a href="https://platformio.org/install">Install PlatformIO</a>.</li>
 <li>Run <code>pio run</code> to compile for the PCB. A breadboard target is available too: <code>pio run -e esp32-breadboard</code>.</li>
 <li>Run <code>pio run -t upload</code> to upload to the device (this also compiles the code if there have been any changes).</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md4"></a>
-Arduino</h2>
-<ol type="1">
-<li>Install the Arduino IDE and <a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html">follow these instructions</a> to add support for ESP32 microcontrollers.</li>
-<li>Under "Tools" &gt; "Board: " &gt; "ESP32 Arduino", select either "ESP32C3 Dev Module" for the PCB boards or "ESP32-WROOM-DA Module" for the ESP32 breadboard prototype.</li>
-<li>Compile the sketch and upload it to the device.</li>
-</ol>
-<h1><a class="anchor" id="autotoc_md5"></a>
+<h1><a class="anchor" id="autotoc_md3"></a>
 HMAC encryption key</h1>
-<p>Data stored on the device (e.g. WiFi credentials) are encrypted with an "eFuse" key. This key can only be written once, and is not be read or written after that.</p>
-<p>Using PlatformIO:</p>
+<p>Data stored on the device (e.g. WiFi credentials) are encrypted with an "eFuse" key. This key can only be configured once, and cannot be read or written after that.</p>
 <div class="fragment"><div class="line">dd if=/dev/urandom of=hmac_key bs=1 count=32</div>
 <div class="line">pio pkg exec -- espefuse.py --port /dev/ttyACM0 burn_key BLOCK4 hmac_key HMAC_UP</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md6"></a>
+<div class="line">rm hmac_key</div>
+</div><!-- fragment --><p>This is done in the <code>bringup.sh</code> script that is used to program new sensors.</p>
+<p><b>Please generate a unique hmac_key for each device.</b></p>
+<h1><a class="anchor" id="autotoc_md4"></a>
 Enable secure download mode</h1>
 <p>Enabling secure download mode prevents users from using USB/serial download mode to dump memory contents (WiFi credentials and <a class="el" href="classAPI.html" title="Provides interface for API calls.">API</a> token):</p>
 <div class="fragment"><div class="line">pio pkg exec -- espefuse.py --port /dev/ttyACM0 burn_efuse ENABLE_SECURE_DOWNLOAD</div>
 </div><!-- fragment --><p>Then, if new firmware is to be uploaded over USB in the future, upload using this command:</p>
 <div class="fragment"><div class="line">pio pkg exec -- esptool.py write_flash 0x10000 .pio/build/esp32-pcb/firmware.bin</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md7"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md5"></a>
 Signing OTA updates</h1>
-<p>A 4096-bit RSA key is used to sign OTA updates. Whoever controls the private OTA signing key can create a public key with this command and include its contents in <code>noisemeter_device/ota_update.cpp</code>:</p>
+<p>OTA updates must be signed for deployed tRacket sensors to accept them. The GitHub repo is configured to automatically sign firmware updates when releases are published.</p>
+<p>Signing requires a 4096-bit RSA key. To sign an update (assuming you have the private key), run <code>pio run -t ota</code>.</p>
+<p>The public key is to be stored in <code>noisemeter_device/ota_update.cpp</code>. To obtain the public key (assuming you have the private key), run:</p>
 <div class="fragment"><div class="line">openssl rsa -in priv_key.pem -pubout &gt; rsa_key.pub</div>
-</div><!-- fragment --><p>They may also sign a firmware update with these commands (the signature is prepended to the firmware binary):</p>
-<div class="fragment"><div class="line">openssl dgst -sign priv_key.pem -keyform PEM -sha256 -out firmware.sign -binary .pio/build/esp32-pcb/firmware.bin</div>
-<div class="line">cat firmware.sign .pio/build/esp32-pcb/firmware.bin &gt; firmware_signed.bin</div>
-</div><!-- fragment --><p><code>firmware_signed.bin</code> is then uploaded to the OTA server.</p>
-<h1><a class="anchor" id="autotoc_md8"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md6"></a>
 Operation Overview:</h1>
 <ul>
 <li>After initial programming or a factory reset, the device will enter Hotspot mode once it is powered on. This is indicated by a blinking LED.</li>
