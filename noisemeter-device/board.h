@@ -3,7 +3,7 @@
 ///
 /// Each supported board must have a defined section here to specify the
 /// hardware pins and peripherals being used. Selecting a board for
-/// compilation is done either through PlatformIO or config.h.
+/// compilation is done through PlatformIO.
 /* noisemeter-device - Firmware for CivicTechTO's Noisemeter Device
  * Copyright (C) 2024  Clyne Sullivan, Nick Barnard
  *
@@ -22,8 +22,6 @@
  */
 #ifndef BOARD_H
 #define BOARD_H
-
-#include "config.h"
 
 #undef SERIAL
 
@@ -52,10 +50,8 @@
 /** Serial instance to use for logging output. */
 #define SERIAL      USBSerial
 
-#if defined(BUILD_PLATFORMIO)
 #include <HWCDC.h>
 extern HWCDC USBSerial;
-#endif
 
 #elif defined(BOARD_ESP32_BREADBOARD)
 
