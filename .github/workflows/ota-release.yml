@@ -29,7 +29,6 @@ jobs:
           OTA_KEY: ${{ secrets.OTA_SIGNING_KEY }}
         run: |
           echo "$OTA_KEY" > "${GITHUB_WORKSPACE}/priv_key.pem"
-          cp "${GITHUB_WORKSPACE}/noisemeter-device/config.h.example" "${GITHUB_WORKSPACE}/noisemeter-device/config.h"
           python "${GITHUB_WORKSPACE}/noisemeter-device/certs.py" -s api.tracket.info > "${GITHUB_WORKSPACE}/noisemeter-device/certs.h"
 
       - name: Build signed firmware
