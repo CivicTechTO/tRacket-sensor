@@ -74,18 +74,32 @@ const char *HTML_FOOTER = R"html(
 )html";
 
 const char *HTML_BODY_FORM_HEADER = R"html(
-<p>Enter the wifi network name and password for your home network, which the sensor can connect to to get online:<br/><br/></p>
+    <p>Select your home WiFi network below and enter its password to get the sensor online:<br><br></p>
     <form method='POST' action='/submit' enctype='multipart/form-data'>
-      <label for='ssid'>Wifi network name (&#x1f512; = password required):</label><br>
+      <label for='ssid'>Wifi network name:</label><br>
       <select name='ssid' id='ssid' required>
 )html";
 
 const char *HTML_BODY_FORM_FOOTER = R"html(
-      </select><br>
-      <label for='psk'>Wifi network password:</label><br>
+      </select>
+      <p style="font-size: 0.75em">(&#x1f512; = password required)<br>(Don't see your network? <a href="/manual">Enter it manually</a>)</p>
+      <br><label for='psk'>Wifi network password:</label><br>
       <input type='password' name='psk' id='psk'/><br>
       <label for='email'>Your Email (also your username for logging into the tRacket portal):</label><br>
       <input type='email' name='email' id='email'/><br>
+      <p><input type='submit' value='Connect'/></p>
+    </form>
+)html";
+
+const char *HTML_BODY_FORM_MANUAL = R"html(
+<p>Enter the wifi network name and password for your home network, which the sensor can connect to to get online:<br/><br/></p>
+    <form method='POST' action='/submit' enctype='multipart/form-data'>
+      <p>Wifi network name:</p>
+      <input type='text' name='ssid' autocorrect='off' autocapitalize='none' autocomplete='off' required/>
+      <p>Wifi network password:</p>
+      <input type='password' name='psk'/>
+      <p>Your Email (also your username for logging into the tRacket portal):</p>
+      <input type='email' name='email'/>
       <p><input type='submit' value='Connect'/></p>
     </form>
 )html";

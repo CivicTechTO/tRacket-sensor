@@ -180,6 +180,15 @@ bool AccessPoint::handle(WebServer& server, HTTPMethod method, String uri)
 
             timeout = DAY_TO_SEC(30);
             server.send_P(200, PSTR("text/html"), response.c_str());
+        } else if (uri == "/manual") {
+            String response;
+            response.reserve(2048);
+            response += HTML_HEADER;
+            response += HTML_CONTAINER;
+            response += HTML_BODY_FORM_MANUAL;
+            response += HTML_FOOTER;
+            timeout = DAY_TO_SEC(30);
+            server.send_P(200, PSTR("text/html"), response.c_str());
         } else if (uri == "/connecttest.txt") {
             // windows 11 captive portal workaround
             server.sendHeader("Location", "http://logout.net");
