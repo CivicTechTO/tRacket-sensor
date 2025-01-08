@@ -7,11 +7,7 @@
 python certs.py -s api.tracket.info > certs.h
 ```
 
-2. Copy `config.h.example` to `config.h`; if compiling with the Arduino IDE, edit the file to select your board type.
-
-## Code compiling and upload
-
-### PlatformIO
+## Code compilation and upload
 
 1. [Install PlatformIO](https://platformio.org/install).
 
@@ -19,24 +15,19 @@ python certs.py -s api.tracket.info > certs.h
 
 3. Run `pio run -t upload` to upload to the device (this also compiles the code if there have been any changes).
 
-### Arduino
-
-1. Install the Arduino IDE and [follow these instructions](https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html) to add support for ESP32 microcontrollers.
-
-2. Under "Tools" > "Board: " > "ESP32 Arduino", select either "ESP32C3 Dev Module" for the PCB boards or "ESP32-WROOM-DA Module" for the ESP32 breadboard prototype.
-
-3. Compile the sketch and upload it to the device.
-
 ## HMAC encryption key
 
-Data stored on the device (e.g. WiFi credentials) are encrypted with an "eFuse" key. This key can only be written once, and is not be read or written after that. 
-
-Using PlatformIO:
+Data stored on the device (e.g. WiFi credentials) are encrypted with an "eFuse" key. This key can only be configured once, and cannot be read or written after that. 
 
 ```bash
 dd if=/dev/urandom of=hmac_key bs=1 count=32
 pio pkg exec -- espefuse.py --port /dev/ttyACM0 burn_key BLOCK4 hmac_key HMAC_UP
+rm hmac_key
 ```
+
+This is done in the `bringup.sh` script that is used to program new sensors.
+
+**Please generate a unique hmac_key for each device.**
 
 ## Enable secure download mode
 
@@ -54,20 +45,19 @@ pio pkg exec -- esptool.py write_flash 0x10000 .pio/build/esp32-pcb/firmware.bin
 
 ## Signing OTA updates
 
-A 4096-bit RSA key is used to sign OTA updates. Whoever controls the private OTA signing key can create a public key with this command and include its contents in `noisemeter_device/ota_update.cpp`:
+OTA updates must be signed for deployed tRacket sensors to accept them. The
+GitHub repo is configured to automatically sign firmware updates when releases
+are published.
+
+Signing requires a 4096-bit RSA key. To sign an update (assuming you have the
+private key), run `pio run -t ota`.
+
+The public key is to be stored in `noisemeter_device/ota_update.cpp`. To obtain
+the public key (assuming you have the private key), run:
 
 ```bash
 openssl rsa -in priv_key.pem -pubout > rsa_key.pub
 ```
-
-They may also sign a firmware update with these commands (the signature is prepended to the firmware binary):
-
-```bash
-openssl dgst -sign priv_key.pem -keyform PEM -sha256 -out firmware.sign -binary .pio/build/esp32-pcb/firmware.bin
-cat firmware.sign .pio/build/esp32-pcb/firmware.bin > firmware_signed.bin
-```
-
-`firmware_signed.bin` is then uploaded to the OTA server.
 
 ## Operation Overview:
 
