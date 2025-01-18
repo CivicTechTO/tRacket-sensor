@@ -1,8 +1,10 @@
 var searchData=
 [
-  ['packets_71',['packets',['../noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692',1,'noisemeter-device.ino']]],
-  ['passkey_72',['Passkey',['../classAccessPoint.html#a33e8ecd9f0552c09556462d7462c0099',1,'AccessPoint::Passkey()'],['../classStorage.html#ab298f0c46e684cb9ef430e15de050cc5a816da2672a1205347a4ae8e9eb25f0bd',1,'Storage::Passkey()']]],
-  ['pin_5fconfig_73',['pin_config',['../classSPLMeter.html#a6fdd8b863fa35b7555bdc4c09443ea41',1,'SPLMeter']]],
-  ['printreadingtoconsole_74',['printReadingToConsole',['../noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc',1,'noisemeter-device.ino']]],
-  ['printto_75',['printTo',['../classUUID.html#a2b74b09bc835d6a77619e4e08e734d06',1,'UUID']]]
+  ['oncredentialsreceived_0',['onCredentialsReceived',['../classAccessPoint.html#aad5cfa31a98d0e4bbfd7ec2be3b38840',1,'AccessPoint']]],
+  ['operation_20overview_3a_1',['Operation Overview:',['../md_noisemeter-device_2BUILD.html#autotoc_md6',1,'']]],
+  ['operator_20string_2',['operator string',['../classTimestamp.html#ac5e5a9a52c9ff1625e63d8127c5e57f9',1,'Timestamp::operator String()'],['../classUUID.html#a5118291e77ff22458c00c8d6571d551c',1,'UUID::operator String()']]],
+  ['ota_20updates_3',['Signing OTA updates',['../md_noisemeter-device_2BUILD.html#autotoc_md5',1,'']]],
+  ['ota_2dupdate_2eh_4',['ota-update.h',['../ota-update_8h.html',1,'']]],
+  ['ota_5finterval_5fsec_5',['OTA_INTERVAL_SEC',['../noisemeter-device_8ino.html#a31696764590da99bc3572553a6604915',1,'noisemeter-device.ino']]],
+  ['overview_3a_6',['Operation Overview:',['../md_noisemeter-device_2BUILD.html#autotoc_md6',1,'']]]
 ];

@@ -1,8 +1,5 @@
 var searchData=
 [
-  ['w_134',['w',['../structSOS__IIR__Filter.html#a55415928e18faffd3a9963d1ee591ac4',1,'SOS_IIR_Filter']]],
-  ['w0_135',['w0',['../structSOS__Delay__State.html#a758862168743ac7d08f20832e5b0dda6',1,'SOS_Delay_State']]],
-  ['w1_136',['w1',['../structSOS__Delay__State.html#a9e7b7dc97a011573880b64a0ed79ad0c',1,'SOS_Delay_State']]],
-  ['wifi_5fconnect_5ftimeout_5fsec_137',['WIFI_CONNECT_TIMEOUT_SEC',['../noisemeter-device_8ino.html#adc86d8575bec8caa2f1d8b5efed50937',1,'noisemeter-device.ino']]],
-  ['wifi_5fnew_5fconnect_5ftimeout_5fsec_138',['WIFI_NEW_CONNECT_TIMEOUT_SEC',['../noisemeter-device_8ino.html#a195abc3b621b87fd8336f94e4bbb312a',1,'noisemeter-device.ino']]]
+  ['valid_0',['valid',['../classStorage.html#a23acb6693b153e7f0651bf6433027eea',1,'Storage::valid()'],['../classTimestamp.html#a796b02fa865e0a3183209f2d51723a51',1,'Timestamp::valid()']]],
+  ['version_1',['version',['../structAPI_1_1LatestSoftware.html#acbd0d6cc7032f96b785b1c5af2fa111f',1,'API::LatestSoftware']]]
 ];
