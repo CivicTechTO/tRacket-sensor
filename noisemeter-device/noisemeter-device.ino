@@ -172,7 +172,7 @@ void setup() {
  */
 void loop() {
   if (auto db = SPL.readMicrophoneData(); db) {
-    packets.front().add(*db);
+    packets.front().add(std::max(*db, 0.f));
     printReadingToConsole(*db);
   }
 
