@@ -27,6 +27,8 @@ constexpr auto ACCESS_POINT_TIMEOUT_SEC = MIN_TO_SEC(30);
 const IPAddress AccessPoint::IP (8, 8, 4, 4);
 const IPAddress AccessPoint::Netmask (255, 255, 255, 0);
 
+static int networkScanCount = 0;
+
 AccessPoint::AccessPoint(SubmissionHandler func):
     timeout(ACCESS_POINT_TIMEOUT_SEC),
     server(80),
@@ -50,6 +52,8 @@ String AccessPoint::htmlFromMsg(const char *msg, const char *extra)
 
 void AccessPoint::run()
 {
+    networkScanCount = WiFi.scanNetworks();
+
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(IP, IP, Netmask);
     WiFi.softAP(SSID, Passkey);
@@ -157,9 +161,32 @@ bool AccessPoint::handle(WebServer& server, HTTPMethod method, String uri)
             response.reserve(2048);
             response += HTML_HEADER;
             response += HTML_CONTAINER;
-            response += HTML_BODY_FORM;
+            response += HTML_BODY_FORM_HEADER;
+
+            for (int i = 0; i < networkScanCount; ++i) {
+                const auto ssid = WiFi.SSID(i);
+
+                response += "<option value=\"";
+                response += ssid;
+                response += "\">";
+                response += ssid;
+                if (WiFi.encryptionType(i) != WIFI_AUTH_OPEN)
+                    response += " &#x1f512;";
+                response += "</option>";
+            }
+
+            response += HTML_BODY_FORM_FOOTER;
             response += HTML_FOOTER;
 
+            timeout = DAY_TO_SEC(30);
+            server.send_P(200, PSTR("text/html"), response.c_str());
+        } else if (uri == "/manual") {
+            String response;
+            response.reserve(2048);
+            response += HTML_HEADER;
+            response += HTML_CONTAINER;
+            response += HTML_BODY_FORM_MANUAL;
+            response += HTML_FOOTER;
             timeout = DAY_TO_SEC(30);
             server.send_P(200, PSTR("text/html"), response.c_str());
         } else if (uri == "/connecttest.txt") {
