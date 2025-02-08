@@ -4,7 +4,7 @@
 
 Board used (ESP32-WROOM): [https://a.co/d/6XwJp64](https://a.co/d/6XwJp64)
 
-Mic module used (SPH0645LM4H): [https://www.adafruit.com/product/3421](https://a.co/d/6XwJp64)
+Mic module used (SPH0645LM4H): [https://www.adafruit.com/product/3421](https://www.adafruit.com/product/3421)
 
 ## Pin Connections:
 
