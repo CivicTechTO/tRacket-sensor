@@ -192,20 +192,22 @@ void loop() {
       API api (buildDeviceId(), Creds.get(Storage::Entry::Token));
 
       if (firstSend) {
-        if (api.sendMeasurementWithDiagnostics(packets.back(), NOISEMETER_VERSION, lastUpload)) {
-            packets.pop_back();
+        const bool success = api.sendMeasurementWithDiagnostics(
+          packets.front(), NOISEMETER_VERSION, lastUpload);
+
+        if (success) {
+            packets.pop_front();
             firstSend = false;
         }
-      } else {
-        std::optional<Blinker> bl;
+      }
 
-        // Only blink if there's multiple packets to send
-        if (++packets.cbegin() != packets.cend())
-          bl.emplace(200);
+      if (!packets.empty()) {
+        const bool success = (++packets.cbegin() != packets.cend())
+          ? api.sendMeasurements(packets)
+          : api.sendMeasurement(packets.front());
 
-        packets.remove_if([&api](const auto& pkt) {
-          return pkt.count <= 0 || api.sendMeasurement(pkt);
-        });
+        if (success)
+          packets.clear();
       }
 
 #if defined(BOARD_ESP32_PCB)

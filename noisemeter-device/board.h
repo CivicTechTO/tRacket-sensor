@@ -69,6 +69,8 @@ extern HWCDC USBSerial;
 
 #define SERIAL      Serial
 
+#elif defined(BOARD_TESTING)
+
 #else
 #error "Please select a board from the list in board.h!"
 #endif

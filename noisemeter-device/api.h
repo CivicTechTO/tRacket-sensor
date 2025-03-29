@@ -25,6 +25,7 @@
 #include <ArduinoJson.h>
 #include <WString.h>
 
+#include <list>
 #include <optional>
 
 class HTTPClient;
@@ -47,7 +48,6 @@ class API
 
         /**
          * Adds a parameter to the given request.
-         * Resulting URL e.g. "https://host/endpoint?parm1=123&parm2=456&"
          * @param param Name of parameter to add.
          * @param value Value of the added parameter.
          * @return *this
@@ -82,6 +82,8 @@ public:
      * @return True on success
      */
     bool sendMeasurement(const DataPacket& packet);
+
+    bool sendMeasurements(const std::list<DataPacket>& pkts);
 
     /**
      * Sends diagnostic/analytic data to the server along with a DataPacket.
@@ -120,7 +122,8 @@ private:
     /** Converts response string into JSON. */
     std::optional<JsonDocument> responseToJson(const String& response);
     /** Attempts the given request and returns the JSON response on success. */
-    std::optional<JsonDocument> sendAuthorizedRequest(const Request& req);
+    std::optional<JsonDocument> sendAuthorizedRequest(
+        const Request& req, String ctype = "application/x-www-form-urlencoded");
     /** Attempts the given request and returns the JSON response on success. */
     std::optional<JsonDocument> sendNonauthorizedRequest(const Request& req);
 

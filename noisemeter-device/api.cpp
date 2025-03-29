@@ -34,14 +34,17 @@ API::Request::Request(const char endpoint[])
 
 API::Request& API::Request::addParam(const char param[], String value)
 {
-    params.concat('&');
+    if (!params.isEmpty())
+        params.concat('&');
+
     params.concat(param);
     params.concat('=');
     params.concat(urlEncode(value));
     return *this;
 }
 
-std::optional<JsonDocument> API::sendAuthorizedRequest(const API::Request& req)
+std::optional<JsonDocument> API::sendAuthorizedRequest(
+    const API::Request& req, String ctype)
 {
     WiFiClientSecure client;
     client.setCACert(rootCertificate());
@@ -53,10 +56,10 @@ std::optional<JsonDocument> API::sendAuthorizedRequest(const API::Request& req)
 
     HTTPClient https;
     if (https.begin(client, req.url)) {
-        https.addHeader("Content-Type", "application/x-www-form-urlencoded");
+        https.addHeader("Content-Type", ctype);
         https.addHeader("Authorization", String("Token ") + token);
         https.addHeader("X-Tracket-Device", id);
-        return sendHttpPOST(https, req.params.substring(1));
+        return sendHttpPOST(https, req.params);
 #ifdef API_VERBOSE
     } else {
         SERIAL.println("[api] Failed to https.begin()");
@@ -80,7 +83,7 @@ std::optional<JsonDocument> API::sendNonauthorizedRequest(const API::Request& re
     if (https.begin(client, req.url)) {
         https.addHeader("Content-Type", "application/x-www-form-urlencoded");
         https.addHeader("X-Tracket-Device", id);
-        return sendHttpPOST(https, req.params.substring(1));
+        return sendHttpPOST(https, req.params);
 #ifdef API_VERBOSE
     } else {
         SERIAL.println("[api] Failed to https.begin()");
@@ -165,6 +168,34 @@ std::optional<JsonDocument> API::responseToJson(const String& response)
 API::API(UUID id_, String token_):
     id(id_), token(token_) {}
 
+bool API::sendMeasurements(const std::list<DataPacket>& pkts)
+{
+    String send;
+    JsonDocument doc;
+    auto data = doc["data"].to<JsonArray>();
+
+    for (const auto& packet : pkts) {
+        auto entry = data.add<JsonObject>();
+        entry["timestamp"] = String(packet.timestamp);
+        entry["min"]       = std::lround(packet.minimum);
+        entry["max"]       = std::lround(packet.maximum);
+        entry["mean"]      = std::lround(packet.average);
+    }
+
+    const auto size = serializeJson(data, send);
+
+    if (size == 0) {
+        SERIAL.println("sendMeasurements: serializeJson: failed!");
+        return false;
+    } else {
+        auto request = Request("measurements");
+        request.params = send;
+
+        const auto resp = sendAuthorizedRequest(request, "application/json");
+        return resp && (*resp)["result"] == "ok";
+    }
+}
+
 bool API::sendMeasurement(const DataPacket& packet)
 {
     const auto request = Request("measurement")
@@ -210,7 +241,7 @@ std::optional<API::LatestSoftware> API::getLatestSoftware()
     WiFiClientSecure client;
     client.setCACert(rootCertificate());
 
-    String endpoint = request.url + '?' + request.params.substring(1);
+    String endpoint = request.url + '?' + request.params;
 
 #ifdef API_VERBOSE
     SERIAL.print("[api] Non-authorized request: ");
