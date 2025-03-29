@@ -55,6 +55,7 @@ std::optional<JsonDocument> API::sendAuthorizedRequest(const API::Request& req)
     if (https.begin(client, req.url)) {
         https.addHeader("Content-Type", "application/x-www-form-urlencoded");
         https.addHeader("Authorization", String("Token ") + token);
+        https.addHeader("X-Tracket-Device", id);
         return sendHttpPOST(https, req.params.substring(1));
 #ifdef API_VERBOSE
     } else {
@@ -78,6 +79,7 @@ std::optional<JsonDocument> API::sendNonauthorizedRequest(const API::Request& re
     HTTPClient https;
     if (https.begin(client, req.url)) {
         https.addHeader("Content-Type", "application/x-www-form-urlencoded");
+        https.addHeader("X-Tracket-Device", id);
         return sendHttpPOST(https, req.params.substring(1));
 #ifdef API_VERBOSE
     } else {
@@ -166,7 +168,6 @@ API::API(UUID id_, String token_):
 bool API::sendMeasurement(const DataPacket& packet)
 {
     const auto request = Request("measurement")
-        .addParam("device",    id)
         .addParam("timestamp", packet.timestamp)
         .addParam("min",       String(std::lround(packet.minimum)))
         .addParam("max",       String(std::lround(packet.maximum)))
@@ -179,7 +180,6 @@ bool API::sendMeasurement(const DataPacket& packet)
 bool API::sendMeasurementWithDiagnostics(const DataPacket& packet, String version, String boottime)
 {
     const auto request = Request("measurement")
-        .addParam("device",    id)
         .addParam("timestamp", packet.timestamp)
         .addParam("min",       String(std::lround(packet.minimum)))
         .addParam("max",       String(std::lround(packet.maximum)))
@@ -194,7 +194,6 @@ bool API::sendMeasurementWithDiagnostics(const DataPacket& packet, String versio
 std::optional<String> API::sendRegister(String email)
 {
     const auto request = Request("device/register")
-        .addParam("device", id)
         .addParam("email", email);
 
     const auto resp = sendNonauthorizedRequest(request);
