@@ -49,8 +49,6 @@ constexpr auto OTA_INTERVAL_SEC = HR_TO_SEC(24);
 /** Maximum number of data packets to retain when WiFi is unavailable. */
 constexpr auto MAX_SAVED_PACKETS = DAY_TO_SEC(14) / UPLOAD_INTERVAL_SEC;
 
-/** SPLMeter instance to manage decibel level measurement. */
-static SPLMeter SPL;
 /** Storage instance to manage stored credentials. */
 static Storage Creds;
 /** Linked list of completed data packets.
@@ -104,6 +102,13 @@ void setup()
   pinMode(PIN_BUTTON, INPUT_PULLUP);
 
   SERIAL.begin(115200);
+
+  if (xTaskCreate(measurementHandler, "dba", 1024, nullptr,
+    uxTaskPriorityGet(nullptr), &measurementTask) == pdFAIL)
+  {
+    SERIAL.println("xTaskCreate failed!");
+  }
+
   delay(2000);
   SERIAL.println();
   SERIAL.print("Noisemeter ");
@@ -116,9 +121,6 @@ void setup()
 #ifdef STORAGE_SHOW_CREDENTIALS
   SERIAL.println(Creds);
 #endif
-
-  SPL.initMicrophone();
-  packets.emplace_front();
 
 #ifndef UPLOAD_DISABLED
   bool isAPNeeded = false;
@@ -161,19 +163,13 @@ void setup()
 #endif // !UPLOAD_DISABLED
 
   digitalWrite(PIN_LED1, HIGH);
-
-  if (xTaskCreate(measurementHandler, "dba", 1024, nullptr,
-    uxTaskPriorityGet(nullptr), &measurementTask) == pdFAIL)
-  {
-    SERIAL.println("xTaskCreate failed!");
-  }
 }
 
 void loop()
 {
 #ifndef UPLOAD_DISABLED
   static int wakeupCount = 0;
-  
+
   vTaskDelay(pdMS_TO_TICKS(SEC_TO_MS(UPLOAD_INTERVAL_SEC)));
 
   packets.front().timestamp = Timestamp();
@@ -242,6 +238,11 @@ void loop()
 
 void measurementHandler(void *)
 {
+  static SPLMeter SPL; // Large object, must be static
+
+  SPL.initMicrophone();
+  packets.emplace_front();
+
   while (1) {
     if (const auto db = SPL.readMicrophoneData(); db) {
       packets.front().add(*db);
