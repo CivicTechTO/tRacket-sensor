@@ -83,7 +83,8 @@ public:
      */
     bool sendMeasurement(const DataPacket& packet);
 
-    bool sendMeasurements(const std::list<DataPacket>& pkts);
+    bool sendMeasurements(const std::list<DataPacket>& packets,
+        const std::list<DataPacket>::const_iterator from);
 
     /**
      * Sends diagnostic/analytic data to the server along with a DataPacket.

@@ -168,19 +168,20 @@ std::optional<JsonDocument> API::responseToJson(const String& response)
 API::API(UUID id_, String token_):
     id(id_), token(token_) {}
 
-bool API::sendMeasurements(const std::list<DataPacket>& pkts)
+bool API::sendMeasurements(const std::list<DataPacket>& packets,
+    const std::list<DataPacket>::const_iterator from)
 {
     String send;
     JsonDocument doc;
     auto data = doc["data"].to<JsonArray>();
 
-    for (const auto& packet : pkts) {
+    for (auto it = from; it != packets.cend(); it++) {
         auto entry = data.add<JsonObject>();
-        entry["timestamp"] = String(packet.timestamp);
-        entry["min"]       = std::lround(packet.minimum);
-        entry["max"]       = std::lround(packet.maximum);
-        entry["mean"]      = std::lround(packet.average);
-    }
+        entry["timestamp"] = String(it->timestamp);
+        entry["min"]       = std::lround(it->minimum);
+        entry["max"]       = std::lround(it->maximum);
+        entry["mean"]      = std::lround(it->average);
+    };
 
     const auto size = serializeJson(data, send);
 

@@ -56,10 +56,6 @@ static Storage Creds;
 /** Linked list of completed data packets.
  * This list should only grow if WiFi is unavailable. */
 static std::list<DataPacket> packets;
-/** Tracks when the last measurement upload occurred. */
-static Timestamp lastUpload = Timestamp::invalidTimestamp();
-/** Tracks when the last OTA update check occurred. */
-static Timestamp lastOTACheck = Timestamp::invalidTimestamp();
 /** Track first measurement upload so diagnostics can be sent/included. */
 static bool firstSend;
 
@@ -92,10 +88,14 @@ UUID buildDeviceId();
  */
 int tryWifiConnection(wifi_mode_t mode = WIFI_STA, int timeout = WIFI_CONNECT_TIMEOUT_SEC);
 
+static TaskHandle_t measurementTask;
+static void measurementHandler(void *);
+
 /**
  * Firmware entry point and initialization routine.
  */
-void setup() {
+void setup()
+{
   pinMode(PIN_LED1, OUTPUT);
   digitalWrite(PIN_LED1, LOW);
 
@@ -151,114 +151,108 @@ void setup() {
     esp_deep_sleep_start();
   }
 
-  Timestamp now;
-  lastUpload = now;
-  lastOTACheck = now;
   firstSend = true;
 
   SERIAL.println("Connected to the WiFi network.");
   SERIAL.print("Local ESP32 IP: ");
   SERIAL.println(WiFi.localIP());
   SERIAL.print("Current time: ");
-  SERIAL.println(now);
+  SERIAL.println(Timestamp());
 #endif // !UPLOAD_DISABLED
 
   digitalWrite(PIN_LED1, HIGH);
+
+  if (xTaskCreate(measurementHandler, "dba", 1024, nullptr,
+    uxTaskPriorityGet(nullptr), &measurementTask) == pdFAIL)
+  {
+    SERIAL.println("xTaskCreate failed!");
+  }
 }
 
-/**
- * Main loop for the firmware.
- * This function is run continuously, getting called within an infinite loop.
- */
-void loop() {
-  if (auto db = SPL.readMicrophoneData(); db) {
-    packets.front().add(*db);
-    printReadingToConsole(*db);
+void loop()
+{
+#ifndef UPLOAD_DISABLED
+  static int wakeupCount = 0;
+  
+  vTaskDelay(pdMS_TO_TICKS(SEC_TO_MS(UPLOAD_INTERVAL_SEC)));
+
+  packets.front().timestamp = Timestamp();
+  packets.emplace_front();
+
+  if (WiFi.status() != WL_CONNECTED) {
+    SERIAL.println("Attempting WiFi reconnect...");
+    WiFi.reconnect();
+    delay(5000);
   }
 
-#ifndef UPLOAD_DISABLED
-  const auto now = Timestamp();
+  if (WiFi.status() == WL_CONNECTED) {
+    API api (buildDeviceId(), Creds.get(Storage::Entry::Token));
 
-  if (lastUpload.secondsBetween(now) >= UPLOAD_INTERVAL_SEC) {
-    packets.front().timestamp = now;
+    if (firstSend) {
+      const bool success = api.sendMeasurementWithDiagnostics(
+        packets.back(), NOISEMETER_VERSION, String(millis() / 1000));
 
-    if (WiFi.status() != WL_CONNECTED) {
-      SERIAL.println("Attempting WiFi reconnect...");
-      WiFi.reconnect();
-      delay(5000);
+      if (success) {
+        packets.pop_back();
+        firstSend = false;
+      }
     }
 
-    if (WiFi.status() == WL_CONNECTED) {
-      API api (buildDeviceId(), Creds.get(Storage::Entry::Token));
+    const auto size = packets.size();
+    if (size > 1) {
+      if (size == 2 && api.sendMeasurement(packets.back())) {
+        packets.pop_back();
+      } else if (size > 2 && api.sendMeasurements(packets, ++packets.cbegin())) {
+        packets.erase(++packets.cbegin(), packets.cend());
+      } else {
+        SERIAL.print(size - 1);
+        SERIAL.println(" packets still need to be sent!");
 
-      if (firstSend) {
-        const bool success = api.sendMeasurementWithDiagnostics(
-          packets.front(), NOISEMETER_VERSION, lastUpload);
-
-        if (success) {
-            packets.pop_front();
-            firstSend = false;
+        if (size >= MAX_SAVED_PACKETS) {
+          SERIAL.println("Discarded a packet!");
+          packets.pop_back();
         }
       }
-
-      if (!packets.empty()) {
-        const bool success = (++packets.cbegin() != packets.cend())
-          ? api.sendMeasurements(packets)
-          : api.sendMeasurement(packets.front());
-
-        if (success)
-          packets.clear();
-      }
+    }
 
 #if defined(BOARD_ESP32_PCB)
-      // We have WiFi: also check for software updates
-      if (lastOTACheck.secondsBetween(now) >= OTA_INTERVAL_SEC) {
-        lastOTACheck = now;
-        SERIAL.println("Checking for updates...");
+    // We have WiFi: also check for software updates
+    if (++wakeupCount >= OTA_INTERVAL_SEC / UPLOAD_INTERVAL_SEC) {
+      wakeupCount = 0;
+      SERIAL.println("Checking for updates...");
 
-        const auto ota = api.getLatestSoftware();
-        if (ota) {
-          if (ota->version.compareTo(NOISEMETER_VERSION) > 0) {
-            SERIAL.print(ota->version);
-            SERIAL.println(" available!");
+      const auto ota = api.getLatestSoftware();
+      if (ota) {
+        if (ota->version.compareTo(NOISEMETER_VERSION) > 0) {
+          SERIAL.print(ota->version);
+          SERIAL.println(" available!");
 
-            if (downloadOTAUpdate(ota->url, api.rootCertificate())) {
-              SERIAL.println("Download success! Restarting...");
-              delay(1000);
-              ESP.restart();
-            } else {
-              SERIAL.println("Update download failed.");
-            }
-          } else {
-            SERIAL.println("No new updates.");
-          }
-        } else {
-          SERIAL.println("Failed to reach update server!");
-        }
-      }
+          if (downloadOTAUpdate(ota->url, api.rootCertificate())) {
+            SERIAL.println("Download success! Restarting...");
+            delay(1000);
+            ESP.restart();
+          } else { SERIAL.println("Update download failed."); }
+        } /*else { SERIAL.println("No new updates."); }*/
+      } else { SERIAL.println("Failed to reach update server!"); }
+    }
 #endif // BOARD_ESP32_PCB
-    }
-
-    if (!packets.empty()) {
-      const auto count = std::distance(packets.cbegin(), packets.cend());
-      SERIAL.print(count);
-      SERIAL.println(" packets still need to be sent!");
-
-      if (count >= MAX_SAVED_PACKETS) {
-        SERIAL.println("Discarded a packet!");
-        packets.pop_back();
-      }
-    }
-
-    // Create new packet for next measurements
-    packets.emplace_front();
-    lastUpload = now;
   }
 #endif // !UPLOAD_DISABLED
 }
 
-void printReadingToConsole(double reading) {
-  String output = "";
+void measurementHandler(void *)
+{
+  while (1) {
+    if (const auto db = SPL.readMicrophoneData(); db) {
+      packets.front().add(*db);
+      printReadingToConsole(*db);
+    }
+  }
+}
+
+void printReadingToConsole(double reading)
+{
+  String output;
   output += std::lround(reading);
   output += "dB";
 
