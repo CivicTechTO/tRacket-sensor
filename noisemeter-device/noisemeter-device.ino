@@ -103,7 +103,7 @@ void setup()
 
   SERIAL.begin(115200);
 
-  if (xTaskCreate(measurementHandler, "dba", 1024, nullptr,
+  if (xTaskCreate(measurementHandler, "dba", 2048, nullptr,
     uxTaskPriorityGet(nullptr), &measurementTask) == pdFAIL)
   {
     SERIAL.println("xTaskCreate failed!");
@@ -245,7 +245,7 @@ void measurementHandler(void *)
 
   while (1) {
     if (const auto db = SPL.readMicrophoneData(); db) {
-      packets.front().add(*db);
+      //packets.front().add(*db);
       printReadingToConsole(*db);
     }
   }
