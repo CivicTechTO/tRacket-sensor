@@ -87,9 +87,9 @@ private:
     static String htmlFromMsg(const char *msg, const char *extra = nullptr);
 
     /** Determines which HTTP requests should be handled. */
-    bool canHandle(HTTPMethod, String) override;
+    virtual bool canHandle(HTTPMethod, const String&) override;
     /** Handles requests by redirecting to the setup page. */
-    bool handle(WebServer&, HTTPMethod, String) override;
+    virtual bool handle(WebServer&, HTTPMethod, const String&) override;
 
     static void taskOnCredentialsReceived(void *param);
 };

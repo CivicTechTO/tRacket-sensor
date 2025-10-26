@@ -24,7 +24,7 @@
 #include <WiFiClientSecure.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/md.h>
-#include <mbedtls/md_internal.h>
+#include <mbedtls/private_access.h>
 
 #include "board.h"
 
@@ -141,10 +141,11 @@ bool applyUpdate(WiFiClientSecure& client, int totalSize)
     }
 
     if (totalSize == 0) {
-        unsigned char hash[mdinfo->size];
+        const auto mdsize = mbedtls_md_get_size(mdinfo);
+        unsigned char hash[mdsize];
         mbedtls_md_finish(&rsa, hash);
 
-        auto ret = mbedtls_pk_verify(&pk, MBEDTLS_MD_SHA256, hash, mdinfo->size,
+        auto ret = mbedtls_pk_verify(&pk, MBEDTLS_MD_SHA256, hash, sizeof(hash),
             signature.data(), signature.size());
         mbedtls_md_free(&rsa);
         mbedtls_pk_free(&pk);
