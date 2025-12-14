@@ -29,6 +29,3 @@ jobs:
       - name: Build PlatformIO Project (esp32-pcb)
         run: pio run -e esp32-pcb
 
-      - name: Build PlatformIO Project (esp32-breadboard)
-        run: pio run -e esp32-breadboard
-
