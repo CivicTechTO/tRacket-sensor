@@ -6,7 +6,7 @@
 	(paper "USLetter")
 	(title_block
 		(title "tRacket Sensor")
-		(date "2025-11-14")
+		(date "2026-01-10")
 		(rev "4")
 		(company "Civic Tech Toronto")
 		(comment 1 "Drawn by Clyne Sullivan")
@@ -3724,6 +3724,16 @@
 		)
 		(uuid "26f64429-a322-46ab-b28d-3fcf011c38d6")
 	)
+	(text "Boot pins w/ internal pull-down"
+		(exclude_from_sim no)
+		(at 175.514 143.764 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "af4cdf09-5187-4a7d-a14c-a3f6d8c0f925")
+	)
 	(text "\"Factory reset\" button"
 		(exclude_from_sim no)
 		(at 80.772 105.41 0)
@@ -3760,12 +3770,6 @@
 		(uuid "22c75726-6dc0-42bd-acac-a75a417fabf5")
 	)
 	(junction
-		(at 158.75 121.92)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "32da890d-4816-4dd8-b643-031845ea94db")
-	)
-	(junction
 		(at 171.45 34.29)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3776,12 +3780,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "3b02baee-052d-47ad-815f-ec9f4f3fcbd9")
-	)
-	(junction
-		(at 158.75 124.46)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "409f2393-6294-43c9-b347-d5b6e649cb13")
 	)
 	(junction
 		(at 58.42 154.94)
@@ -3812,12 +3810,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "5f37b9de-b4cf-47d8-b002-600834a67cef")
-	)
-	(junction
-		(at 158.75 142.24)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "6b29c5e5-d216-437d-ba2f-e391533ee39e")
 	)
 	(junction
 		(at 123.19 124.46)
@@ -3860,12 +3852,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "7cdfc534-aedf-48e9-8220-e8a201bf5436")
-	)
-	(junction
-		(at 158.75 144.78)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "7d8708b9-e50a-4ed1-ae28-bd9d798a0d1f")
 	)
 	(junction
 		(at 123.19 129.54)
@@ -3914,12 +3900,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b6713731-2dad-42f6-95a3-04fb13d2f8c0")
-	)
-	(junction
-		(at 158.75 127)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "b80ecd45-a194-4dda-8fe1-1aa2a917de7e")
 	)
 	(junction
 		(at 88.9 154.94)
@@ -4014,6 +3994,14 @@
 	(no_connect
 		(at 125.73 109.22)
 		(uuid "086cf00f-9429-4888-8ab7-7e99f6c09806")
+	)
+	(no_connect
+		(at 156.21 144.78)
+		(uuid "42878a7b-017e-418a-95d0-06632df0b081")
+	)
+	(no_connect
+		(at 156.21 142.24)
+		(uuid "e65c5fbd-2c68-4302-87c1-637ad6da73e3")
 	)
 	(no_connect
 		(at 96.52 62.23)
@@ -4121,17 +4109,7 @@
 	)
 	(wire
 		(pts
-			(xy 158.75 142.24) (xy 156.21 142.24)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0fcbed98-f4e8-4d65-a16f-563ecc413196")
-	)
-	(wire
-		(pts
-			(xy 158.75 139.7) (xy 158.75 142.24)
+			(xy 158.75 139.7) (xy 158.75 147.32)
 		)
 		(stroke
 			(width 0)
@@ -4361,16 +4339,6 @@
 	)
 	(wire
 		(pts
-			(xy 158.75 142.24) (xy 158.75 144.78)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "362516e5-7f20-4a39-8a78-e4c1b67a587c")
-	)
-	(wire
-		(pts
 			(xy 88.9 133.35) (xy 111.76 133.35)
 		)
 		(stroke
@@ -4491,23 +4459,13 @@
 	)
 	(wire
 		(pts
-			(xy 158.75 121.92) (xy 158.75 124.46)
+			(xy 158.75 119.38) (xy 158.75 129.54)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "4c2f3598-9f44-41f9-b992-6318d9731f14")
-	)
-	(wire
-		(pts
-			(xy 158.75 119.38) (xy 158.75 121.92)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "531158ce-aa77-4bcc-84a4-5eb65cb2967b")
 	)
 	(wire
 		(pts
@@ -4648,16 +4606,6 @@
 			(type default)
 		)
 		(uuid "6f763a7b-9ab1-498f-84c4-546f62cb4801")
-	)
-	(wire
-		(pts
-			(xy 158.75 124.46) (xy 156.21 124.46)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "70188388-b554-4498-b0af-6c4dd788e7db")
 	)
 	(wire
 		(pts
@@ -4961,16 +4909,6 @@
 	)
 	(wire
 		(pts
-			(xy 158.75 124.46) (xy 158.75 127)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a7a14e6f-29fe-435e-84a1-c1ad52ade657")
-	)
-	(wire
-		(pts
 			(xy 90.17 106.68) (xy 92.71 106.68)
 		)
 		(stroke
@@ -5041,16 +4979,6 @@
 	)
 	(wire
 		(pts
-			(xy 158.75 144.78) (xy 158.75 147.32)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b626ad0d-5b99-4f38-a43a-112863c2dc68")
-	)
-	(wire
-		(pts
 			(xy 123.19 121.92) (xy 123.19 124.46)
 		)
 		(stroke
@@ -5101,16 +5029,6 @@
 	)
 	(wire
 		(pts
-			(xy 156.21 144.78) (xy 158.75 144.78)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c55e974a-9b19-45a8-abc5-37ab915648f0")
-	)
-	(wire
-		(pts
 			(xy 158.75 132.08) (xy 156.21 132.08)
 		)
 		(stroke
@@ -5138,26 +5056,6 @@
 			(type default)
 		)
 		(uuid "cee9c70d-b9c1-4cf2-9e49-11a8c4848b44")
-	)
-	(wire
-		(pts
-			(xy 158.75 121.92) (xy 156.21 121.92)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "cfb269cb-a337-46eb-b3a9-2146b8f649e1")
-	)
-	(wire
-		(pts
-			(xy 158.75 127) (xy 156.21 127)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d10c9d06-cb9c-42ab-8cf9-0f3e43dc31f6")
 	)
 	(wire
 		(pts
@@ -5328,16 +5226,6 @@
 			(type default)
 		)
 		(uuid "fd13d9ce-6995-43c6-817e-cc452378503f")
-	)
-	(wire
-		(pts
-			(xy 158.75 127) (xy 158.75 129.54)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fe48af66-963d-4bb9-811c-f2b5b17890c0")
 	)
 	(label "MIC_CLK"
 		(at 102.87 133.35 0)
@@ -5719,7 +5607,7 @@
 				)
 			)
 		)
-		(property "Value" "IM64A130A"
+		(property "Value" "IM64D130A"
 			(at 73.66 128.27 0)
 			(effects
 				(font
@@ -5918,6 +5806,72 @@
 			(project "noisemeter"
 				(path "/2019f223-1307-408a-bf87-dad398f72c59"
 					(reference "#PWR09")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 156.21 124.46 270)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "22ea14f1-6320-4168-96ee-520a580b63af")
+		(property "Reference" "TP6"
+			(at 162.56 124.46 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 159.512 121.92 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 156.21 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 156.21 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 156.21 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "cd3f184b-333c-4ef0-8657-d124b738c3a0")
+		)
+		(instances
+			(project "noisemeter"
+				(path "/2019f223-1307-408a-bf87-dad398f72c59"
+					(reference "TP6")
 					(unit 1)
 				)
 			)
@@ -6158,6 +6112,72 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 156.21 121.92 270)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "35d4bab7-fcac-4e0b-8740-197a36f36430")
+		(property "Reference" "TP5"
+			(at 162.56 121.92 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 159.512 119.38 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 156.21 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 156.21 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 156.21 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c20daa2f-8fbf-4358-a20b-6a0256fe94be")
+		)
+		(instances
+			(project "noisemeter"
+				(path "/2019f223-1307-408a-bf87-dad398f72c59"
+					(reference "TP5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C_Small")
 		(at 154.94 81.28 0)
 		(mirror y)
@@ -6298,6 +6318,72 @@
 			(project "noisemeter"
 				(path "/2019f223-1307-408a-bf87-dad398f72c59"
 					(reference "#PWR010")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 156.21 127 270)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "527c6a3f-5e9a-48fc-b7d8-31b71a912e23")
+		(property "Reference" "TP7"
+			(at 162.56 127 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 159.512 124.46 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 156.21 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 156.21 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 156.21 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "7790ce40-a278-4ddf-86ae-aff09d0c8b3b")
+		)
+		(instances
+			(project "noisemeter"
+				(path "/2019f223-1307-408a-bf87-dad398f72c59"
+					(reference "TP7")
 					(unit 1)
 				)
 			)
