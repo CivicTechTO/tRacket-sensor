@@ -28,13 +28,13 @@
 #if defined(BOARD_ESP32_PCB)
 
 /** Pin number for the board's LED. */
-#define PIN_LED1    GPIO_NUM_0
+#define PIN_LED1    GPIO_NUM_17
 /** Pin number for the board's factory reset button. */
-#define PIN_BUTTON  GPIO_NUM_1
+#define PIN_BUTTON  GPIO_NUM_15
 /** Pin number for the microphone's clock pin. */
-#define I2S_SCK     GPIO_NUM_4
+#define I2S_SCK     GPIO_NUM_5
 /** Pin number for the microphone's data out pin. */
-#define I2S_SD      GPIO_NUM_5
+#define I2S_SD      GPIO_NUM_6
 
 /** I2S peripheral instance to be used. */
 #define I2S_PORT    I2S_NUM_0
@@ -43,7 +43,7 @@
 #define I2S_FORMAT  I2S_CHANNEL_FMT_ONLY_LEFT
 
 /** Serial instance to use for logging output. */
-#define SERIAL      Serial
+#define SERIAL      USBSerial
 
 #include <HWCDC.h>
 extern HWCDC USBSerial;

@@ -79,11 +79,6 @@ void AccessPoint::run()
     }
 }
 
-bool AccessPoint::canHandle(HTTPMethod, const String&)
-{
-    return true;
-}
-
 void AccessPoint::taskOnCredentialsReceived(void *param)
 {
     auto ap = reinterpret_cast<AccessPoint *>(param);
@@ -121,6 +116,11 @@ static String waitingHtml()
             "<div class='meter'><span style='width:100%;'><span class='progress'></span></span></div>";
     html += HTML_FOOTER;
     return html;
+}
+
+bool AccessPoint::canHandle(WebServer&, HTTPMethod, const String&)
+{
+    return true;
 }
 
 bool AccessPoint::handle(WebServer& server, HTTPMethod method, const String& uri)

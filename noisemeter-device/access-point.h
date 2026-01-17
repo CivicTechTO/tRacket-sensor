@@ -63,6 +63,11 @@ public:
      */
     void run();
 
+    /** Determines which HTTP requests should be handled. */
+    virtual bool canHandle(WebServer&, HTTPMethod, const String&) override;
+    /** Handles requests by redirecting to the setup page. */
+    virtual bool handle(WebServer&, HTTPMethod, const String&) override;
+
 private:
 
     unsigned long timeout;
@@ -85,11 +90,6 @@ private:
     static const IPAddress Netmask;
     /** Provides HTML for an error page with the given message. */
     static String htmlFromMsg(const char *msg, const char *extra = nullptr);
-
-    /** Determines which HTTP requests should be handled. */
-    virtual bool canHandle(HTTPMethod, const String&) override;
-    /** Handles requests by redirecting to the setup page. */
-    virtual bool handle(WebServer&, HTTPMethod, const String&) override;
 
     static void taskOnCredentialsReceived(void *param);
 };

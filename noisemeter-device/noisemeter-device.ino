@@ -245,7 +245,7 @@ void measurementHandler(void *)
 
   while (1) {
     if (const auto db = SPL.readMicrophoneData(); db) {
-      //packets.front().add(*db);
+      packets.front().add(*db);
       printReadingToConsole(*db);
     }
   }
