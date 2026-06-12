@@ -72,7 +72,6 @@ $(function() {
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pri-methods">Private Member Functions</a> &#124;
 <a href="#pri-static-methods">Static Private Member Functions</a> &#124;
 <a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="#pri-static-attribs">Static Private Attributes</a> &#124;
@@ -107,17 +106,14 @@ Public Member Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>run</b> ()</td></tr>
 <tr class="memdesc:a0a15a3a0117ab2644a47c9b7569d193c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enters an infinite loop to handle the access point and web server. <br /></td></tr>
 <tr class="separator:a0a15a3a0117ab2644a47c9b7569d193c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-methods" name="pri-methods"></a>
-Private Member Functions</h2></td></tr>
-<tr class="memitem:ac1f804eac8b3bbb8912a184a30370207" id="r_ac1f804eac8b3bbb8912a184a30370207"><td class="memItemLeft" align="right" valign="top"><a id="ac1f804eac8b3bbb8912a184a30370207" name="ac1f804eac8b3bbb8912a184a30370207"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>canHandle</b> (HTTPMethod, String) override</td></tr>
-<tr class="memdesc:ac1f804eac8b3bbb8912a184a30370207"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines which HTTP requests should be handled. <br /></td></tr>
-<tr class="separator:ac1f804eac8b3bbb8912a184a30370207"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a423b869b1d315ccefbce5d18dc8ea1eb" id="r_a423b869b1d315ccefbce5d18dc8ea1eb"><td class="memItemLeft" align="right" valign="top"><a id="a423b869b1d315ccefbce5d18dc8ea1eb" name="a423b869b1d315ccefbce5d18dc8ea1eb"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>handle</b> (WebServer &amp;, HTTPMethod, String) override</td></tr>
-<tr class="memdesc:a423b869b1d315ccefbce5d18dc8ea1eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handles requests by redirecting to the setup page. <br /></td></tr>
-<tr class="separator:a423b869b1d315ccefbce5d18dc8ea1eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a00b313e21133178634ed14d332e3027d" id="r_a00b313e21133178634ed14d332e3027d"><td class="memItemLeft" align="right" valign="top"><a id="a00b313e21133178634ed14d332e3027d" name="a00b313e21133178634ed14d332e3027d"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>canHandle</b> (WebServer &amp;, HTTPMethod, const String &amp;) override</td></tr>
+<tr class="memdesc:a00b313e21133178634ed14d332e3027d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines which HTTP requests should be handled. <br /></td></tr>
+<tr class="separator:a00b313e21133178634ed14d332e3027d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79d02ee14c0016c193600331439965e1" id="r_a79d02ee14c0016c193600331439965e1"><td class="memItemLeft" align="right" valign="top"><a id="a79d02ee14c0016c193600331439965e1" name="a79d02ee14c0016c193600331439965e1"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>handle</b> (WebServer &amp;, HTTPMethod, const String &amp;) override</td></tr>
+<tr class="memdesc:a79d02ee14c0016c193600331439965e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handles requests by redirecting to the setup page. <br /></td></tr>
+<tr class="separator:a79d02ee14c0016c193600331439965e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-static-methods" name="pri-static-methods"></a>
 Static Private Member Functions</h2></td></tr>
@@ -245,7 +241,7 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00079">79</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00084">84</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
 
 </div>
 </div>
@@ -271,7 +267,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>DNS server object for captive portal redirection. </p>
 
-<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00070">70</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00075">75</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
 
 </div>
 </div>
@@ -295,7 +291,7 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00077">77</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00082">82</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
 
 </div>
 </div>
@@ -319,7 +315,7 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00078">78</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00083">83</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
 
 </div>
 </div>
@@ -343,7 +339,7 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00077">77</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00082">82</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
 
 </div>
 </div>
@@ -369,7 +365,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>Hard-coded IP address for the ESP32 when hosting the access point. </p>
 
-<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00083">83</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00088">88</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
 
 </div>
 </div>
@@ -395,7 +391,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>Hard-coded netmask for access point configuration. </p>
 
-<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00085">85</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00090">90</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
 
 </div>
 </div>
@@ -421,7 +417,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>Callback for setup form completion. </p>
 
-<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00074">74</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00079">79</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
 
 </div>
 </div>
@@ -471,7 +467,7 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00077">77</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00082">82</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
 
 </div>
 </div>
@@ -495,7 +491,7 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00080">80</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00085">85</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
 
 </div>
 </div>
@@ -521,7 +517,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>Web server object for running the setup form. </p>
 
-<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00072">72</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00077">77</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
 
 </div>
 </div>
@@ -571,7 +567,7 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00077">77</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00082">82</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
 
 </div>
 </div>
@@ -595,7 +591,7 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00068">68</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="access-point_8h_source.html#l00073">73</a> of file <a class="el" href="access-point_8h_source.html">access-point.h</a>.</p>
 
 </div>
 </div>

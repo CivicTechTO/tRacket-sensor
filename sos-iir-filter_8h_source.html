@@ -264,8 +264,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span><span class="comment">// See: https://www.dsprelated.com/freebooks/filters/DC_Blocker.html</span></div>
 <div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span><span class="comment">// a1 = -0.9992 should heavily attenuate frequencies below 10Hz</span></div>
 <div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span><a class="code hl_struct" href="structSOS__IIR__Filter.html">SOS_IIR_Filter</a> DC_BLOCKER = {</div>
-<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>  gain: 1.0,</div>
-<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>  sos: { { -1.0, 0.0, +0.9992, 0 } }</div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>  <span class="comment">/* gain: */</span> 1.0,</div>
+<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>  <span class="comment">/* sos: */</span> { { -1.0, 0.0, +0.9992, 0 } }</div>
 <div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span>};</div>
 <div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span> </div>
 <div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span><span class="comment">//</span></div>
@@ -285,8 +285,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span><span class="comment">// B = [0.477326418836803, -0.486486982406126, -0.336455844522277, 0.234624646917202, 0.111023257388606];</span></div>
 <div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span><span class="comment">// A = [1.0, -1.93073383849136326, 0.86519456089576796, 0.06442838283825100, 0.00111249298800616];</span></div>
 <div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span><a class="code hl_struct" href="structSOS__IIR__Filter.html">SOS_IIR_Filter</a> ICS43434 = {</div>
-<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>  gain: 0.477326418836803,</div>
-<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>  sos: { <span class="comment">// Second-Order Sections {b1, b2, -a1, -a2}</span></div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>  <span class="comment">/* gain: */</span> 0.477326418836803,</div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>  <span class="comment">/* sos: */</span> { <span class="comment">// Second-Order Sections {b1, b2, -a1, -a2}</span></div>
 <div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>         { +0.96986791463971267, 0.23515976355743193, -0.06681948004769928, -0.00111521990688128 },</div>
 <div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>         { -1.98905931743624453, 0.98908924206960169, +1.99755331853906037, -0.99755481510122113 } }</div>
 <div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>};</div>
@@ -296,8 +296,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span><span class="comment">// B = [-0.45733702338341309   1.12228667105574775  -0.77818278904413563, 0.00968926337978037, 0.10345668405223755]</span></div>
 <div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span><span class="comment">// A = [1.0, -3.3420781082912949, 4.4033694320978771, -3.0167072679918010, 1.2265536567647031, -0.2962229189311990, 0.0251085747458112]</span></div>
 <div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span><a class="code hl_struct" href="structSOS__IIR__Filter.html">SOS_IIR_Filter</a> ICS43432 = {</div>
-<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>  gain: -0.457337023383413,</div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>  sos: { <span class="comment">// Second-Order Sections {b1, b2, -a1, -a2}</span></div>
+<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>  <span class="comment">/* gain: */</span> -0.457337023383413,</div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>  <span class="comment">/* sos: */</span> { <span class="comment">// Second-Order Sections {b1, b2, -a1, -a2}</span></div>
 <div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>         { -0.544047931916859, -0.248361759321800, +0.403298891662298, -0.207346186351843 },</div>
 <div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>         { -1.909911869441421, +0.910830292683527, +1.790285722826743, -0.804085812369134 },</div>
 <div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>         { +0.000000000000000, +0.000000000000000, +1.148493493802252, -0.150599527756651 } }</div>
@@ -308,8 +308,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span><span class="comment">// B ~= [1.00198, -1.99085, 0.98892]</span></div>
 <div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span><span class="comment">// A ~= [1.0, -1.99518, 0.99518]</span></div>
 <div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span><a class="code hl_struct" href="structSOS__IIR__Filter.html">SOS_IIR_Filter</a> INMP441 = {</div>
-<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>  gain: 1.00197834654696,</div>
-<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>  sos: { <span class="comment">// Second-Order Sections {b1, b2, -a1, -a2}</span></div>
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>  <span class="comment">/* gain: */</span> 1.00197834654696,</div>
+<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>  <span class="comment">/* sos: */</span> { <span class="comment">// Second-Order Sections {b1, b2, -a1, -a2}</span></div>
 <div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>         { -1.986920458344451, +0.986963226946616, +1.995178510504166, -0.995184322194091 } }</div>
 <div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>};</div>
 <div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span> </div>
@@ -319,8 +319,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span><span class="comment">// A ~= [1.0, -1.997675693595542, 0.997677044195563]</span></div>
 <div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span><span class="comment">// With additional DC blocking component</span></div>
 <div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span><a class="code hl_struct" href="structSOS__IIR__Filter.html">SOS_IIR_Filter</a> IM69D130 = {</div>
-<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>  gain: 1.00124068496753,</div>
-<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>  sos: {</div>
+<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>  <span class="comment">/* gain: */</span> 1.00124068496753,</div>
+<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>  <span class="comment">/* sos: */</span> {</div>
 <div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>    { -1.0, 0.0, +0.9992, 0 },  <span class="comment">// DC blocker, a1 = -0.9992</span></div>
 <div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span>    { -1.994461610298131, 0.994469278738208, +1.997675693595542, -0.997677044195563 } }</div>
 <div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>};</div>
@@ -331,8 +331,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span><span class="comment">// A ~= [1.0, -1.993853, 0.993863]</span></div>
 <div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span><span class="comment">// With additional DC blocking component</span></div>
 <div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span><a class="code hl_struct" href="structSOS__IIR__Filter.html">SOS_IIR_Filter</a> SPH0645LM4H_B_RB = {</div>
-<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>  gain: 1.00123377961525,</div>
-<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>  sos: {                             <span class="comment">// Second-Order Sections {b1, b2, -a1, -a2}</span></div>
+<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>  <span class="comment">/* gain: */</span> 1.00123377961525,</div>
+<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>  <span class="comment">/* sos: */</span> {                             <span class="comment">// Second-Order Sections {b1, b2, -a1, -a2}</span></div>
 <div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>         { -1.0, 0.0, +0.9992, 0 },  <span class="comment">// DC blocker, a1 = -0.9992</span></div>
 <div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>         { -1.988897663539382, +0.988928479008099, +1.993853376183491, -0.993862821429572 } }</div>
 <div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>};</div>
@@ -347,8 +347,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span><span class="comment">// B = [0.169994948147430, 0.280415310498794, -1.120574766348363, 0.131562559965936, 0.974153561246036, -0.282740857326553, -0.152810756202003]</span></div>
 <div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span><span class="comment">// A = [1.0, -2.12979364760736134, 0.42996125885751674, 1.62132698199721426, -0.96669962900852902, 0.00121015844426781, 0.04400300696788968]</span></div>
 <div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span><a class="code hl_struct" href="structSOS__IIR__Filter.html">SOS_IIR_Filter</a> A_weighting = {</div>
-<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>  gain: 0.169994948147430,</div>
-<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>  sos: { <span class="comment">// Second-Order Sections {b1, b2, -a1, -a2}</span></div>
+<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>  <span class="comment">/* gain: */</span> 0.169994948147430,</div>
+<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>  <span class="comment">/* sos: */</span> { <span class="comment">// Second-Order Sections {b1, b2, -a1, -a2}</span></div>
 <div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>         { -2.00026996133106, +1.00027056142719, -1.060868438509278, -0.163987445885926 },</div>
 <div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>         { +4.35912384203144, +3.09120265783884, +1.208419926363593, -0.273166998428332 },</div>
 <div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>         { -0.70930303489759, -0.29071868393580, +1.982242159753048, -0.982298594928989 } }</div>
@@ -360,8 +360,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span><span class="comment">// B = [-0.49164716933714026, 0.14844753846498662, 0.74117815661529129, -0.03281878334039314, -0.29709276192593875, -0.06442545322197900, -0.00364152725482682]</span></div>
 <div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span><span class="comment">// A = [1.0, -1.0325358998928318, -0.9524000181023488, 0.8936404694728326   0.2256286147169398  -0.1499917107550188, 0.0156718181681081]</span></div>
 <div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span><a class="code hl_struct" href="structSOS__IIR__Filter.html">SOS_IIR_Filter</a> C_weighting = {</div>
-<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>  gain: -0.491647169337140,</div>
-<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>  sos: {</div>
+<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>  <span class="comment">/* gain: */</span> -0.491647169337140,</div>
+<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>  <span class="comment">/* sos: */</span> {</div>
 <div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>    { +1.4604385758204708, +0.5275070373815286, +1.9946144559930252, -0.9946217070140883 },</div>
 <div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>    { +0.2376222404939509, +0.0140411206016894, -1.3396585608422749, -0.4421457807694559 },</div>
 <div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>    { -2.0000000000000000, +1.0000000000000000, +0.3775800047420818, -0.0356365756680430 } }</div>

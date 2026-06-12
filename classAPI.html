@@ -103,6 +103,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aa56b80cab82a2b51156c5decc6d57020" id="r_aa56b80cab82a2b51156c5decc6d57020"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAPI.html#aa56b80cab82a2b51156c5decc6d57020">sendMeasurement</a> (const <a class="el" href="structDataPacket.html">DataPacket</a> &amp;packet)</td></tr>
 <tr class="memdesc:aa56b80cab82a2b51156c5decc6d57020"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends a <a class="el" href="structDataPacket.html" title="Stores data points included in an uploaded &quot;measurement&quot;.">DataPacket</a> (dB measurement) to the server.  <br /></td></tr>
 <tr class="separator:aa56b80cab82a2b51156c5decc6d57020"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ed55ee22180627d8e9110bbca379c5f" id="r_a7ed55ee22180627d8e9110bbca379c5f"><td class="memItemLeft" align="right" valign="top"><a id="a7ed55ee22180627d8e9110bbca379c5f" name="a7ed55ee22180627d8e9110bbca379c5f"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>sendMeasurements</b> (const std::list&lt; <a class="el" href="structDataPacket.html">DataPacket</a> &gt; &amp;<a class="el" href="noisemeter-device_8ino.html#a8ed6493bf4782cfdf85b9c3d632a1692">packets</a>, const std::list&lt; <a class="el" href="structDataPacket.html">DataPacket</a> &gt;::const_iterator from)</td></tr>
+<tr class="separator:a7ed55ee22180627d8e9110bbca379c5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad1a8cd2379212cbb9d5fa5edf058107a" id="r_ad1a8cd2379212cbb9d5fa5edf058107a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAPI.html#ad1a8cd2379212cbb9d5fa5edf058107a">sendMeasurementWithDiagnostics</a> (const <a class="el" href="structDataPacket.html">DataPacket</a> &amp;packet, String version, String boottime)</td></tr>
 <tr class="memdesc:ad1a8cd2379212cbb9d5fa5edf058107a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends diagnostic/analytic data to the server along with a <a class="el" href="structDataPacket.html" title="Stores data points included in an uploaded &quot;measurement&quot;.">DataPacket</a>.  <br /></td></tr>
 <tr class="separator:ad1a8cd2379212cbb9d5fa5edf058107a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -126,10 +129,10 @@ Private Member Functions</h2></td></tr>
 std::optional&lt; JsonDocument &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>responseToJson</b> (const String &amp;response)</td></tr>
 <tr class="memdesc:a64fcc6c6c4b0fd03de4412d8cc28b70e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts response string into JSON. <br /></td></tr>
 <tr class="separator:a64fcc6c6c4b0fd03de4412d8cc28b70e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac258b66ff2aebdd21ebe53c3b1595853" id="r_ac258b66ff2aebdd21ebe53c3b1595853"><td class="memItemLeft" align="right" valign="top"><a id="ac258b66ff2aebdd21ebe53c3b1595853" name="ac258b66ff2aebdd21ebe53c3b1595853"></a>
-std::optional&lt; JsonDocument &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>sendAuthorizedRequest</b> (const <a class="el" href="structAPI_1_1Request.html">Request</a> &amp;req)</td></tr>
-<tr class="memdesc:ac258b66ff2aebdd21ebe53c3b1595853"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts the given request and returns the JSON response on success. <br /></td></tr>
-<tr class="separator:ac258b66ff2aebdd21ebe53c3b1595853"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ec20ab7f79a076997bfa75eb646cfdb" id="r_a4ec20ab7f79a076997bfa75eb646cfdb"><td class="memItemLeft" align="right" valign="top"><a id="a4ec20ab7f79a076997bfa75eb646cfdb" name="a4ec20ab7f79a076997bfa75eb646cfdb"></a>
+std::optional&lt; JsonDocument &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>sendAuthorizedRequest</b> (const <a class="el" href="structAPI_1_1Request.html">Request</a> &amp;req, String ctype=&quot;application/x-www-form-urlencoded&quot;)</td></tr>
+<tr class="memdesc:a4ec20ab7f79a076997bfa75eb646cfdb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts the given request and returns the JSON response on success. <br /></td></tr>
+<tr class="separator:a4ec20ab7f79a076997bfa75eb646cfdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a18c196adba525ea80c15278e97e8baa1" id="r_a18c196adba525ea80c15278e97e8baa1"><td class="memItemLeft" align="right" valign="top"><a id="a18c196adba525ea80c15278e97e8baa1" name="a18c196adba525ea80c15278e97e8baa1"></a>
 std::optional&lt; JsonDocument &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>sendNonauthorizedRequest</b> (const <a class="el" href="structAPI_1_1Request.html">Request</a> &amp;req)</td></tr>
 <tr class="memdesc:a18c196adba525ea80c15278e97e8baa1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts the given request and returns the JSON response on success. <br /></td></tr>
@@ -162,7 +165,7 @@ Static Private Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Provides interface for <a class="el" href="classAPI.html" title="Provides interface for API calls.">API</a> calls. </p>
 
-<p class="definition">Definition at line <a class="el" href="api_8h_source.html#l00035">35</a> of file <a class="el" href="api_8h_source.html">api.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="api_8h_source.html#l00036">36</a> of file <a class="el" href="api_8h_source.html">api.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="aca6120ab8e7663f2d83eddc5bf85f2e4" name="aca6120ab8e7663f2d83eddc5bf85f2e4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aca6120ab8e7663f2d83eddc5bf85f2e4">&#9670;&#160;</a></span>API()</h2>
@@ -344,7 +347,7 @@ Static Private Attributes</h2></td></tr>
 
 <p><a class="el" href="classAPI.html" title="Provides interface for API calls.">API</a> host / base URL. </p>
 
-<p class="definition">Definition at line <a class="el" href="api_8h_source.html#l00038">38</a> of file <a class="el" href="api_8h_source.html">api.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="api_8h_source.html#l00039">39</a> of file <a class="el" href="api_8h_source.html">api.h</a>.</p>
 
 </div>
 </div>
@@ -370,7 +373,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>Device's <a class="el" href="classUUID.html">UUID</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="api_8h_source.html#l00116">116</a> of file <a class="el" href="api_8h_source.html">api.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="api_8h_source.html#l00119">119</a> of file <a class="el" href="api_8h_source.html">api.h</a>.</p>
 
 </div>
 </div>
@@ -396,7 +399,7 @@ Static Private Attributes</h2></td></tr>
 
 <p>Device's <a class="el" href="classAPI.html" title="Provides interface for API calls.">API</a> token for authorized requests. </p>
 
-<p class="definition">Definition at line <a class="el" href="api_8h_source.html#l00118">118</a> of file <a class="el" href="api_8h_source.html">api.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="api_8h_source.html#l00121">121</a> of file <a class="el" href="api_8h_source.html">api.h</a>.</p>
 
 </div>
 </div>
