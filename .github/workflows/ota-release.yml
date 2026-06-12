@@ -32,7 +32,7 @@ jobs:
           python "${GITHUB_WORKSPACE}/noisemeter-device/certs.py" -s api.tracket.info > "${GITHUB_WORKSPACE}/noisemeter-device/certs.h"
 
       - name: Build signed firmware
-        run: pio run -t ota -e esp32-pcb
+        run: pio run -t ota -e rev4
 
       - name: Upload signed firmware
         uses: djn24/add-asset-to-release@v1
