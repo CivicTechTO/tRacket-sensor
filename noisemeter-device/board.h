@@ -25,21 +25,16 @@
 
 #undef SERIAL
 
-#if defined(BOARD_ESP32_PCB)
+#if defined(BOARD_REV4)
 
 /** Pin number for the board's LED. */
-#define PIN_LED1    (0)
-/** Pin number for the board's second LED.
- * @deprecated No longer used; production board only has one LED. */
-#define PIN_LED2    (3)
+#define PIN_LED1    GPIO_NUM_17
 /** Pin number for the board's factory reset button. */
-#define PIN_BUTTON  (1)
-/** Pin number for the microphone's WS pin. */
-#define I2S_WS      (4)
+#define PIN_BUTTON  GPIO_NUM_15
 /** Pin number for the microphone's clock pin. */
-#define I2S_SCK     (5)
+#define I2S_SCK     GPIO_NUM_5
 /** Pin number for the microphone's data out pin. */
-#define I2S_SD      (6)
+#define I2S_SD      GPIO_NUM_6
 
 /** I2S peripheral instance to be used. */
 #define I2S_PORT    I2S_NUM_0
@@ -50,24 +45,40 @@
 /** Serial instance to use for logging output. */
 #define SERIAL      USBSerial
 
+#define USE_MIC_IM64D130A
+
 #include <HWCDC.h>
 extern HWCDC USBSerial;
 
-#elif defined(BOARD_ESP32_BREADBOARD)
+#elif defined(BOARD_REV123)
 
-// Pin definitions
-#define PIN_LED1    (36) // random choice
-#define PIN_LED2    (39) // random choice
-#define PIN_BUTTON  (5)
-#define I2S_WS      (18)
-#define I2S_SCK     (23)
-#define I2S_SD      (19)
+#define PIN_LED1    GPIO_NUM_0
+#define PIN_BUTTON  GPIO_NUM_1
+#define I2S_WS      GPIO_NUM_4
+#define I2S_SCK     GPIO_NUM_5
+#define I2S_SD      GPIO_NUM_6
+#define I2S_PORT    I2S_NUM_0
+#define I2S_FORMAT  I2S_CHANNEL_FMT_ONLY_LEFT
+#define SERIAL      USBSerial
 
-// ESP32 has two I2S peripherals
+#define USE_MIC_SPH0645
+
+#include <HWCDC.h>
+extern HWCDC USBSerial;
+
+#elif defined(BOARD_BREADBOARD)
+
+#define PIN_LED1    GPIO_NUM_36 // random choice
+#define PIN_LED2    GPIO_NUM_39 // random choice
+#define PIN_BUTTON  GPIO_NUM_5
+#define I2S_WS      GPIO_NUM_18
+#define I2S_SCK     GPIO_NUM_23
+#define I2S_SD      GPIO_NUM_19
 #define I2S_PORT    I2S_NUM_0
 #define I2S_FORMAT  I2S_CHANNEL_FMT_ONLY_RIGHT
-
 #define SERIAL      Serial
+
+#define USE_MIC_SPH0645
 
 #else
 #error "Please select a board from the list in board.h!"

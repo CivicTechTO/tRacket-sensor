@@ -19,6 +19,7 @@
 #include "board.h"
 #include "timestamp.h"
 
+#include <WiFi.h>
 #include <WiFiAP.h>
 
 constexpr int DNSPort = 53;
@@ -78,11 +79,6 @@ void AccessPoint::run()
     }
 }
 
-bool AccessPoint::canHandle(HTTPMethod, String)
-{
-    return true;
-}
-
 void AccessPoint::taskOnCredentialsReceived(void *param)
 {
     auto ap = reinterpret_cast<AccessPoint *>(param);
@@ -122,7 +118,12 @@ static String waitingHtml()
     return html;
 }
 
-bool AccessPoint::handle(WebServer& server, HTTPMethod method, String uri)
+bool AccessPoint::canHandle(WebServer&, HTTPMethod, const String&)
+{
+    return true;
+}
+
+bool AccessPoint::handle(WebServer& server, HTTPMethod method, const String& uri)
 {
     if (method == HTTP_POST) {
         if (uri == "/submit") {

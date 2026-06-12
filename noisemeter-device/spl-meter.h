@@ -19,9 +19,14 @@
 #ifndef SPL_METER_H
 #define SPL_METER_H
 
+#if defined(USE_MIC_IM64D130A)
+#include <driver/i2s_pdm.h>
+#elif defined(USE_MIC_SPH0645)
+#include <driver/i2s_std.h>
+#endif
+
 #include <array>
 #include <cstdint>
-#include <driver/i2s.h>
 #include <optional>
 
 /**
@@ -43,49 +48,22 @@ public:
     std::optional<float> readMicrophoneData() noexcept;
 
 private:
-    /**
-     * During processing, microphone samples can either be ints or floats.
-     * Since sample data takes up a lot of memory, a union is used to reuse
-     * the buffer during processing.
-     */
-    union sample_t {
-        /** Raw integer reading from the microphone. */
-        std::int32_t i;
-        /** Floating-point microphone value created during processing. */
-        float f;
-    };
-    // Both types must be the same size to allow for buffer reuse.
-    static_assert(sizeof(float) == sizeof(std::int32_t));
-
-    /** The number of bits in a single microphone sample. */
-    static constexpr auto SAMPLE_BITS = sizeof(sample_t) * 8u;
     /** The number of samples to keep in the sample buffer. */
-    static constexpr auto SAMPLES_SHORT = SAMPLE_RATE / 8u;
-    /** I2S peripheral config. */
-    static const i2s_config_t i2s_config;
-    /** I2S peripheral pin config. */
-    static const i2s_pin_config_t pin_config;
+    static constexpr auto SAMPLES_SHORT = SAMPLE_RATE / 16u;
 
     /** Buffer to store microphone samples in for reading and processing. */
     alignas(4)
-    std::array<sample_t, SAMPLES_SHORT> samples;
+    std::array<float, SAMPLES_SHORT> samples;
 
     /** Number of samples included in Leq_sum_sqr accumulation. */
     unsigned Leq_samples = 0;
     /** Accumulation of sums of squares for decibel calculation. */
     float Leq_sum_sqr = 0;
 
-    /** Reads enough samples from the microphone to fill the samples buffer. */
-    void i2sRead() noexcept;
+    i2s_chan_handle_t i2s_handle;
 
-    /**
-     * Converts a raw microphone sample into a usable number.
-     * This is primarily a bit shift to discard unused bits in the left-aligned
-     * 32-bit raw sample.
-     * @param s Sample value to convert
-     * @return Converted sample value ready for processing
-     */
-    static constexpr std::int32_t micConvert(std::int32_t s);
+    /** Reads enough samples from the microphone to fill the samples buffer. */
+    size_t i2sRead() noexcept;
 };
 
 #endif // SPL_METER_H

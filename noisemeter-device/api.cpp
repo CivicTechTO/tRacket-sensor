@@ -34,14 +34,17 @@ API::Request::Request(const char endpoint[])
 
 API::Request& API::Request::addParam(const char param[], String value)
 {
-    params.concat('&');
+    if (!params.isEmpty())
+        params.concat('&');
+
     params.concat(param);
     params.concat('=');
     params.concat(urlEncode(value));
     return *this;
 }
 
-std::optional<JsonDocument> API::sendAuthorizedRequest(const API::Request& req)
+std::optional<JsonDocument> API::sendAuthorizedRequest(
+    const API::Request& req, String ctype)
 {
     WiFiClientSecure client;
     client.setCACert(rootCertificate());
@@ -53,9 +56,10 @@ std::optional<JsonDocument> API::sendAuthorizedRequest(const API::Request& req)
 
     HTTPClient https;
     if (https.begin(client, req.url)) {
-        https.addHeader("Content-Type", "application/x-www-form-urlencoded");
+        https.addHeader("Content-Type", ctype);
         https.addHeader("Authorization", String("Token ") + token);
-        return sendHttpPOST(https, req.params.substring(1));
+        https.addHeader("X-Tracket-Device", id);
+        return sendHttpPOST(https, req.params);
 #ifdef API_VERBOSE
     } else {
         SERIAL.println("[api] Failed to https.begin()");
@@ -78,7 +82,8 @@ std::optional<JsonDocument> API::sendNonauthorizedRequest(const API::Request& re
     HTTPClient https;
     if (https.begin(client, req.url)) {
         https.addHeader("Content-Type", "application/x-www-form-urlencoded");
-        return sendHttpPOST(https, req.params.substring(1));
+        https.addHeader("X-Tracket-Device", id);
+        return sendHttpPOST(https, req.params);
 #ifdef API_VERBOSE
     } else {
         SERIAL.println("[api] Failed to https.begin()");
@@ -163,10 +168,38 @@ std::optional<JsonDocument> API::responseToJson(const String& response)
 API::API(UUID id_, String token_):
     id(id_), token(token_) {}
 
+bool API::sendMeasurements(const std::list<DataPacket>& packets,
+    const std::list<DataPacket>::const_iterator from)
+{
+    String send;
+    JsonDocument doc;
+    auto data = doc["data"].to<JsonArray>();
+
+    for (auto it = from; it != packets.cend(); it++) {
+        auto entry = data.add<JsonObject>();
+        entry["timestamp"] = String(it->timestamp);
+        entry["min"]       = std::lround(it->minimum);
+        entry["max"]       = std::lround(it->maximum);
+        entry["mean"]      = std::lround(it->average);
+    };
+
+    const auto size = serializeJson(data, send);
+
+    if (size == 0) {
+        SERIAL.println("sendMeasurements: serializeJson: failed!");
+        return false;
+    } else {
+        auto request = Request("measurements");
+        request.params = send;
+
+        const auto resp = sendAuthorizedRequest(request, "application/json");
+        return resp && (*resp)["result"] == "ok";
+    }
+}
+
 bool API::sendMeasurement(const DataPacket& packet)
 {
     const auto request = Request("measurement")
-        .addParam("device",    id)
         .addParam("timestamp", packet.timestamp)
         .addParam("min",       String(std::lround(packet.minimum)))
         .addParam("max",       String(std::lround(packet.maximum)))
@@ -179,7 +212,6 @@ bool API::sendMeasurement(const DataPacket& packet)
 bool API::sendMeasurementWithDiagnostics(const DataPacket& packet, String version, String boottime)
 {
     const auto request = Request("measurement")
-        .addParam("device",    id)
         .addParam("timestamp", packet.timestamp)
         .addParam("min",       String(std::lround(packet.minimum)))
         .addParam("max",       String(std::lround(packet.maximum)))
@@ -194,7 +226,6 @@ bool API::sendMeasurementWithDiagnostics(const DataPacket& packet, String versio
 std::optional<String> API::sendRegister(String email)
 {
     const auto request = Request("device/register")
-        .addParam("device", id)
         .addParam("email", email);
 
     const auto resp = sendNonauthorizedRequest(request);
@@ -211,7 +242,7 @@ std::optional<API::LatestSoftware> API::getLatestSoftware()
     WiFiClientSecure client;
     client.setCACert(rootCertificate());
 
-    String endpoint = request.url + '?' + request.params.substring(1);
+    String endpoint = request.url + '?' + request.params;
 
 #ifdef API_VERBOSE
     SERIAL.print("[api] Non-authorized request: ");

@@ -10,11 +10,13 @@ hardware/pcb-*/fp-info-cache
 hardware/pcb-*/fp-lib-table
 hardware/pcb-*/sym-lib-table
 hmac_key
-*.kicad_prl
-*.step
-*.lck
-*.sw*
 *.bin
+*.bmp
 *.FCBak
+*.kicad_prl
+*.lck
 *.pem
+*.png
 *.pub
+*.step
+*.sw*
