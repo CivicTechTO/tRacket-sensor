@@ -17,7 +17,7 @@
 #include "secret-store.h"
 #include "board.h"
 
-#if defined(BOARD_ESP32_PCB)
+#if defined(BOARD_REV4) || defined(BOARD_REV123)
 
 #include <esp_hmac.h>
 #include <mbedtls/aes.h>
@@ -56,7 +56,7 @@ void SecretStore::decrypt(const uint8_t *in, char *out, unsigned N) const noexce
         in, reinterpret_cast<uint8_t *>(out));
 }
 
-#else // !defined(BOARD_ESP32_PCB)
+#else // BOARD_BREADBOARD
 
 #include <algorithm>
 
@@ -70,5 +70,5 @@ void SecretStore::decrypt(const uint8_t *in, char *out, unsigned N) const noexce
     std::copy(in, in + N, out);
 }
 
-#endif // defined(BOARD_ESP32_PCB)
+#endif
 

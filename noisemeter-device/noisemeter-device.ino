@@ -34,7 +34,7 @@
 #include <list>
 #include <optional>
 
-#ifdef BOARD_ESP32_PCB
+#if defined(BOARD_REV4) || defined(BOARD_REV123)
 HWCDC USBSerial;
 #endif
 
@@ -211,7 +211,7 @@ void loop()
       }
     }
 
-#if defined(BOARD_ESP32_PCB)
+#if defined(BOARD_REV4) || defined(BOARD_REV123)
     // We have WiFi: also check for software updates
     if (++wakeupCount >= OTA_INTERVAL_SEC / UPLOAD_INTERVAL_SEC) {
       wakeupCount = 0;
@@ -219,7 +219,11 @@ void loop()
 
       const auto ota = api.getLatestSoftware();
       if (ota) {
-        if (ota->version.compareTo(NOISEMETER_VERSION) > 0) {
+        if (ota->version.compareTo(NOISEMETER_VERSION) > 0
+#if defined(BOARD_REV123)
+            && ota->version.startsWith("0.3.")
+#endif // defined(BOARD_REV123)
+        ) {
           SERIAL.print(ota->version);
           SERIAL.println(" available!");
 
@@ -231,7 +235,7 @@ void loop()
         } /*else { SERIAL.println("No new updates."); }*/
       } else { SERIAL.println("Failed to reach update server!"); }
     }
-#endif // BOARD_ESP32_PCB
+#endif // defined(BOARD_REV4) || defined(BOARD_REV123)
   }
 #endif // !UPLOAD_DISABLED
 }

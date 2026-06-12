@@ -19,9 +19,14 @@
 #ifndef SPL_METER_H
 #define SPL_METER_H
 
+#if defined(USE_MIC_IM64D130A)
+#include <driver/i2s_pdm.h>
+#elif defined(USE_MIC_SPH0645)
+#include <driver/i2s_std.h>
+#endif
+
 #include <array>
 #include <cstdint>
-#include <driver/i2s_pdm.h>
 #include <optional>
 
 /**
@@ -44,7 +49,7 @@ public:
 
 private:
     /** The number of samples to keep in the sample buffer. */
-    static constexpr auto SAMPLES_SHORT = SAMPLE_RATE / 8u;
+    static constexpr auto SAMPLES_SHORT = SAMPLE_RATE / 16u;
 
     /** Buffer to store microphone samples in for reading and processing. */
     alignas(4)
@@ -58,7 +63,7 @@ private:
     i2s_chan_handle_t i2s_handle;
 
     /** Reads enough samples from the microphone to fill the samples buffer. */
-    void i2sRead() noexcept;
+    size_t i2sRead() noexcept;
 };
 
 #endif // SPL_METER_H
