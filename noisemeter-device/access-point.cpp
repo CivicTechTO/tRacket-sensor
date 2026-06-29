@@ -56,8 +56,10 @@ void AccessPoint::run()
     networkScanCount = WiFi.scanNetworks();
 
     WiFi.mode(WIFI_AP);
+    delay(250);
     WiFi.softAPConfig(IP, IP, Netmask);
     WiFi.softAP(SSID, Passkey);
+    delay(250);
 
     dns.start(DNSPort, "*", IP);
 

@@ -42,12 +42,14 @@ HWCDC USBSerial;
 constexpr auto WIFI_CONNECT_TIMEOUT_SEC = MIN_TO_SEC(2);
 /** Maximum number of seconds to try making new WiFi connection. */
 constexpr auto WIFI_NEW_CONNECT_TIMEOUT_SEC = 20;
-/** Specifies how frequently to upload data points to the server. */
-constexpr auto UPLOAD_INTERVAL_SEC = MIN_TO_SEC(5);
+/** Minimum number of packets required before upload. */
+constexpr auto UPLOAD_PACKET_MIN = 5;
+/** Specifies how frequently to create a packet w/ min/mean/max stats. */
+constexpr auto PACKET_INTERVAL_SEC = MIN_TO_SEC(1);
 /** Specifies how frequently to check for OTA updates from our server. */
 constexpr auto OTA_INTERVAL_SEC = HR_TO_SEC(24);
 /** Maximum number of data packets to retain when WiFi is unavailable. */
-constexpr auto MAX_SAVED_PACKETS = DAY_TO_SEC(14) / UPLOAD_INTERVAL_SEC;
+constexpr auto MAX_SAVED_PACKETS = DAY_TO_SEC(14) / PACKET_INTERVAL_SEC;
 
 /** Storage instance to manage stored credentials. */
 static Storage Creds;
@@ -62,6 +64,8 @@ static bool firstSend;
  * @param reading The decibel reading to display
  */
 void printReadingToConsole(double reading);
+
+void otaUpdateCheck(API&);
 
 /**
  * Callback for AccessPoint that verifies credentials and attempts registration.
@@ -167,77 +171,74 @@ void setup()
 
 void loop()
 {
-#ifndef UPLOAD_DISABLED
-  static int wakeupCount = 0;
+  auto lastWake = xTaskGetTickCount();
 
-  vTaskDelay(pdMS_TO_TICKS(SEC_TO_MS(UPLOAD_INTERVAL_SEC)));
+  auto readyCount = packets.size();
+  if (readyCount == MAX_SAVED_PACKETS) {
+    SERIAL.println("Discarded a packet!");
+    packets.pop_back();
+  }
 
+  // Timestamp current packet, then immediately create new packet for ongoing
+  // samples to feed into.
   packets.front().timestamp = Timestamp();
   packets.emplace_front();
 
-  if (WiFi.status() != WL_CONNECTED) {
-    SERIAL.println("Attempting WiFi reconnect...");
-    WiFi.reconnect();
-    delay(5000);
-  }
+#ifndef UPLOAD_DISABLED
+  static int otaCountdown = 0; // zero to force check on first upload
 
-  if (WiFi.status() == WL_CONNECTED) {
-    API api (buildDeviceId(), Creds.get(Storage::Entry::Token));
+  otaCountdown -= PACKET_INTERVAL_SEC;
 
-    if (firstSend) {
-      const bool success = api.sendMeasurementWithDiagnostics(
-        packets.back(), NOISEMETER_VERSION, String(millis() / 1000));
-
-      if (success) {
-        packets.pop_back();
-        firstSend = false;
-      }
+  if (readyCount >= UPLOAD_PACKET_MIN) {
+    if (WiFi.status() != WL_CONNECTED) {
+      SERIAL.println("Attempting WiFi reconnect...");
+      WiFi.reconnect();
+      delay(5000);
     }
 
-    const auto size = packets.size();
-    if (size > 1) {
-      if (size == 2 && api.sendMeasurement(packets.back())) {
-        packets.pop_back();
-      } else if (size > 2 && api.sendMeasurements(packets, ++packets.cbegin())) {
-        packets.erase(++packets.cbegin(), packets.cend());
-      } else {
-        SERIAL.print(size - 1);
-        SERIAL.println(" packets still need to be sent!");
+    if (WiFi.status() == WL_CONNECTED) {
+      API api (buildDeviceId(), Creds.get(Storage::Entry::Token));
 
-        if (size >= MAX_SAVED_PACKETS) {
-          SERIAL.println("Discarded a packet!");
+      if (firstSend) {
+        const bool success = api.sendMeasurementWithDiagnostics(
+          packets.back(), NOISEMETER_VERSION, String(millis() / 1000));
+
+        if (success) {
           packets.pop_back();
+          readyCount--;
+          firstSend = false;
         }
       }
-    }
+
+      if (readyCount == 1) {
+        if (api.sendMeasurement(packets.back())) {
+          packets.pop_back();
+          readyCount = 0;
+        }
+      } else {
+        if (api.sendMeasurements(packets, ++packets.cbegin())) {
+          packets.erase(++packets.cbegin(), packets.cend());
+          readyCount = 0;
+        }
+      }
+
+      if (readyCount > 0) {
+        SERIAL.print(readyCount);
+        SERIAL.println(" packets still need to be sent!");
+      }
 
 #if defined(BOARD_REV4) || defined(BOARD_REV123)
-    // We have WiFi: also check for software updates
-    if (++wakeupCount >= OTA_INTERVAL_SEC / UPLOAD_INTERVAL_SEC) {
-      wakeupCount = 0;
-      SERIAL.println("Checking for updates...");
-
-      const auto ota = api.getLatestSoftware();
-      if (ota) {
-        if (ota->version.compareTo(NOISEMETER_VERSION) > 0
-#if defined(BOARD_REV123)
-            && ota->version.startsWith("0.3.")
-#endif // defined(BOARD_REV123)
-        ) {
-          SERIAL.print(ota->version);
-          SERIAL.println(" available!");
-
-          if (downloadOTAUpdate(ota->url, api.rootCertificate())) {
-            SERIAL.println("Download success! Restarting...");
-            delay(1000);
-            ESP.restart();
-          } else { SERIAL.println("Update download failed."); }
-        } /*else { SERIAL.println("No new updates."); }*/
-      } else { SERIAL.println("Failed to reach update server!"); }
-    }
+      // We have WiFi: also check for software updates
+      if (otaCountdown <= 0) {
+        otaCountdown = OTA_INTERVAL_SEC;
+        otaUpdateCheck(api);
+      }
 #endif // defined(BOARD_REV4) || defined(BOARD_REV123)
+    }
   }
 #endif // !UPLOAD_DISABLED
+
+  vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(SEC_TO_MS(PACKET_INTERVAL_SEC)));
 }
 
 void measurementHandler(void *)
@@ -266,6 +267,29 @@ void printReadingToConsole(double reading)
     output += " [+" + String(currentCount - 1) + " more]";
   }
   SERIAL.println(output);
+}
+
+void otaUpdateCheck(API& api)
+{
+  SERIAL.println("Checking for updates...");
+
+  const auto ota = api.getLatestSoftware();
+  if (ota) {
+    if (ota->version.compareTo(NOISEMETER_VERSION) > 0
+#if defined(BOARD_REV123)
+        && ota->version.startsWith("0.3.")
+#endif // defined(BOARD_REV123)
+    ) {
+      SERIAL.print(ota->version);
+      SERIAL.println(" available!");
+
+      if (downloadOTAUpdate(ota->url, api.rootCertificate())) {
+        SERIAL.println("Download success! Restarting...");
+        delay(1000);
+        ESP.restart();
+      } else { SERIAL.println("Update download failed."); }
+    } /*else { SERIAL.println("No new updates."); }*/
+  } else { SERIAL.println("Failed to reach update server!"); }
 }
 
 std::optional<const char *> saveNetworkCreds(String ssid, String psk, String email)
