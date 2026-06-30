@@ -32,7 +32,16 @@ jobs:
           python "${GITHUB_WORKSPACE}/noisemeter-device/certs.py" -s api.tracket.info > "${GITHUB_WORKSPACE}/noisemeter-device/certs.h"
 
       - name: Build signed firmware
-        run: pio run -t ota -e rev4
+        run: |
+          pio run -t ota -e rev123
+          mv firmware_signed.bin firmware_signed_rev123.bin
+          pio run -t ota -e rev4
+
+      - name: Upload signed firmware (rev123)
+        uses: djn24/add-asset-to-release@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: 'firmware_signed_rev123.bin'
 
       - name: Upload signed firmware
         uses: djn24/add-asset-to-release@v1
