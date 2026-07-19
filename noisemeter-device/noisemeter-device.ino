@@ -42,14 +42,15 @@ HWCDC USBSerial;
 constexpr auto WIFI_CONNECT_TIMEOUT_SEC = MIN_TO_SEC(2);
 /** Maximum number of seconds to try making new WiFi connection. */
 constexpr auto WIFI_NEW_CONNECT_TIMEOUT_SEC = 20;
-/** Minimum number of packets required before upload. */
-constexpr auto UPLOAD_PACKET_MIN = 5;
-/** Specifies how frequently to create a packet w/ min/mean/max stats. */
-constexpr auto PACKET_INTERVAL_SEC = MIN_TO_SEC(1);
 /** Specifies how frequently to check for OTA updates from our server. */
 constexpr auto OTA_INTERVAL_SEC = HR_TO_SEC(24);
 /** Maximum number of data packets to retain when WiFi is unavailable. */
-constexpr auto MAX_SAVED_PACKETS = DAY_TO_SEC(14) / PACKET_INTERVAL_SEC;
+constexpr auto MAX_SAVED_PACKETS = 7 * 24 * 60;
+
+static API::DeviceConfig config;
+
+static int uploadCountdown = 0;
+static int otaCountdown = 0; // zero to force check on first upload
 
 /** Storage instance to manage stored credentials. */
 static Storage Creds;
@@ -164,6 +165,15 @@ void setup()
   SERIAL.println(WiFi.localIP());
   SERIAL.print("Current time: ");
   SERIAL.println(Timestamp());
+
+  API api (buildDeviceId(), Creds.get(Storage::Entry::Token));
+  const auto deviceConfig = api.getDeviceConfig();
+  if (deviceConfig) {
+    config = *deviceConfig;
+    uploadCountdown = config.sendFrequency;
+  } else {
+    uploadCountdown = MIN_TO_SEC(5); // 5 min default
+  }
 #endif // !UPLOAD_DISABLED
 
   digitalWrite(PIN_LED1, HIGH);
@@ -185,11 +195,12 @@ void loop()
   packets.emplace_front();
 
 #ifndef UPLOAD_DISABLED
-  static int otaCountdown = 0; // zero to force check on first upload
+  otaCountdown -= config.measurementFrequency;
+  uploadCountdown -= config.measurementFrequency;
 
-  otaCountdown -= PACKET_INTERVAL_SEC;
+  if (uploadCountdown <= 0) {
+    uploadCountdown = config.sendFrequency;
 
-  if (readyCount >= UPLOAD_PACKET_MIN) {
     if (WiFi.status() != WL_CONNECTED) {
       SERIAL.println("Attempting WiFi reconnect...");
       WiFi.reconnect();
@@ -198,12 +209,13 @@ void loop()
 
     if (WiFi.status() == WL_CONNECTED) {
       API api (buildDeviceId(), Creds.get(Storage::Entry::Token));
+      std::optional<String> deviceLastModified;
 
       if (firstSend) {
-        const bool success = api.sendMeasurementWithDiagnostics(
+        deviceLastModified = api.sendMeasurementWithDiagnostics(
           packets.back(), NOISEMETER_VERSION, String(millis() / 1000));
 
-        if (success) {
+        if (deviceLastModified) {
           packets.pop_back();
           readyCount--;
           firstSend = false;
@@ -211,15 +223,24 @@ void loop()
       }
 
       if (readyCount == 1) {
-        if (api.sendMeasurement(packets.back())) {
+        deviceLastModified = api.sendMeasurement(packets.back());
+        if (deviceLastModified) {
           packets.pop_back();
           readyCount = 0;
         }
       } else {
-        if (api.sendMeasurements(packets, ++packets.cbegin())) {
+        deviceLastModified = api.sendMeasurements(packets, ++packets.cbegin());
+        if (deviceLastModified) {
           packets.erase(++packets.cbegin(), packets.cend());
           readyCount = 0;
         }
+      }
+
+      if (deviceLastModified && *deviceLastModified > config.timestamp) {
+        // New device config on server - fetch and update
+        const auto deviceConfig = api.getDeviceConfig();
+        if (deviceConfig)
+          config = *deviceConfig;
       }
 
       if (readyCount > 0) {
@@ -238,7 +259,7 @@ void loop()
   }
 #endif // !UPLOAD_DISABLED
 
-  vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(SEC_TO_MS(PACKET_INTERVAL_SEC)));
+  vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(SEC_TO_MS(config.measurementFrequency)));
 }
 
 void measurementHandler(void *)

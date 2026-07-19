@@ -68,6 +68,15 @@ public:
         String url;
     };
 
+    struct DeviceConfig {
+        /** Timestamp for when this config was last updated. */
+        String timestamp;
+        /** Specifies how frequently to create a packet w/ min/mean/max stats. */
+        int measurementFrequency;
+        /** Specifies how frequently to upload measurements. */
+        int sendFrequency;
+    };
+
     /**
      * Creates a new API interface for the given device (ID).
      * @param id_ Device UUID
@@ -79,11 +88,11 @@ public:
      * Sends a DataPacket (dB measurement) to the server.
      * This request requires authentication.
      * @param packet Packet to be sent.
-     * @return True on success
+     * @return If successful, the timestamp of the last DeviceConfig modification
      */
-    bool sendMeasurement(const DataPacket& packet);
+    std::optional<String> sendMeasurement(const DataPacket& packet);
 
-    bool sendMeasurements(const std::list<DataPacket>& packets,
+    std::optional<String> sendMeasurements(const std::list<DataPacket>& packets,
         const std::list<DataPacket>::const_iterator from);
 
     /**
@@ -92,9 +101,9 @@ public:
      * @param packet Packet to be sent.
      * @param version Device's software version number.
      * @param boottime Timestamp of last connection to the internet.
-     * @return True on success
+     * @return If successful, the timestamp of the last DeviceConfig modification
      */
-    bool sendMeasurementWithDiagnostics(const DataPacket& packet, String version, String boottime);
+    std::optional<String> sendMeasurementWithDiagnostics(const DataPacket& packet, String version, String boottime);
 
     /**
      * Attempts to register the device with the given email.
@@ -108,6 +117,8 @@ public:
      * @return LatestSoftware if successful.
      */
     std::optional<LatestSoftware> getLatestSoftware();
+
+    std::optional<DeviceConfig> getDeviceConfig();
 
     /**
      * Provides the server's root certificate for non-API HTTPS requests.

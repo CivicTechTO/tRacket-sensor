@@ -43,7 +43,7 @@ class AccessPoint : public RequestHandler
     /** Hard-coded SSID for the access point. */
     static constexpr auto SSID = "tRacket_Setup";
     /** Hard-coded passkey for the access point. */
-    static constexpr auto Passkey = "tracket1234";
+    static constexpr auto Passkey = "noise123";
 
 public:
     /**

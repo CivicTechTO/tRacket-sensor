@@ -168,7 +168,7 @@ std::optional<JsonDocument> API::responseToJson(const String& response)
 API::API(UUID id_, String token_):
     id(id_), token(token_) {}
 
-bool API::sendMeasurements(const std::list<DataPacket>& packets,
+std::optional<String> API::sendMeasurements(const std::list<DataPacket>& packets,
     const std::list<DataPacket>::const_iterator from)
 {
     String send;
@@ -187,17 +187,19 @@ bool API::sendMeasurements(const std::list<DataPacket>& packets,
 
     if (size == 0) {
         SERIAL.println("sendMeasurements: serializeJson: failed!");
-        return false;
     } else {
         auto request = Request("measurements");
         request.params = send;
 
         const auto resp = sendAuthorizedRequest(request, "application/json");
-        return resp && (*resp)["result"] == "ok";
+        if (resp && (*resp)["result"] == "ok")
+            return (*resp)["device_last_modified"];
     }
+
+    return {};
 }
 
-bool API::sendMeasurement(const DataPacket& packet)
+std::optional<String> API::sendMeasurement(const DataPacket& packet)
 {
     const auto request = Request("measurement")
         .addParam("timestamp", packet.timestamp)
@@ -206,10 +208,13 @@ bool API::sendMeasurement(const DataPacket& packet)
         .addParam("mean",      String(std::lround(packet.average)));
 
     const auto resp = sendAuthorizedRequest(request);
-    return resp && (*resp)["result"] == "ok";
+    if (resp && (*resp)["result"] == "ok")
+        return (*resp)["device_last_modified"];
+    else
+        return {};
 }
 
-bool API::sendMeasurementWithDiagnostics(const DataPacket& packet, String version, String boottime)
+std::optional<String> API::sendMeasurementWithDiagnostics(const DataPacket& packet, String version, String boottime)
 {
     const auto request = Request("measurement")
         .addParam("timestamp", packet.timestamp)
@@ -220,7 +225,10 @@ bool API::sendMeasurementWithDiagnostics(const DataPacket& packet, String versio
         .addParam("boottime",  boottime);
 
     const auto resp = sendAuthorizedRequest(request);
-    return resp && (*resp)["result"] == "ok";
+    if (resp && (*resp)["result"] == "ok")
+        return (*resp)["device_last_modified"];
+    else
+        return {};
 }
 
 std::optional<String> API::sendRegister(String email)
@@ -265,6 +273,24 @@ std::optional<API::LatestSoftware> API::getLatestSoftware()
     } else {
         SERIAL.println("[api] Failed to https.begin()");
 #endif
+    }
+
+    return {};
+}
+
+std::optional<API::DeviceConfig> API::getDeviceConfig()
+{
+    const auto request = Request("device");
+
+    const auto resp = sendAuthorizedRequest(request);
+    if (resp && (*resp)["result"] == "ok") {
+        DeviceConfig dc = {
+            .timestamp = (*resp)["timestamp"],
+            .measurementFrequency = (*resp)["measurementFrequency"],
+            .sendFrequency = (*resp)["sendFrequency"],
+        };
+
+        return dc;
     }
 
     return {};
