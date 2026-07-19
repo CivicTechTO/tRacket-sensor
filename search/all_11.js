@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['timestamp_0',['timestamp',['../classTimestamp.html',1,'Timestamp'],['../classTimestamp.html#ace6d40adbf85f83bc2b9d1fd65412661',1,'Timestamp::Timestamp()'],['../structDataPacket.html#aa4baf5b92cbefdd6e16365b7b525e890',1,'DataPacket::timestamp']]],
+  ['timestamp_0',['timestamp',['../classTimestamp.html',1,'Timestamp'],['../classTimestamp.html#ace6d40adbf85f83bc2b9d1fd65412661',1,'Timestamp::Timestamp()'],['../structAPI_1_1DeviceConfig.html#ad8104b13144c4fc90f0f30b22a24be5b',1,'API::DeviceConfig::timestamp'],['../structDataPacket.html#aa4baf5b92cbefdd6e16365b7b525e890',1,'DataPacket::timestamp']]],
   ['timestamp_2eh_1',['timestamp.h',['../timestamp_8h.html',1,'']]],
   ['tm_2',['tm',['../classTimestamp.html#ae0a49cea6353c29f69b780fd9a1a627f',1,'Timestamp']]],
   ['tochararray_3',['toCharArray',['../classUUID.html#a239889c1d302c9edb2207f41a2788b83',1,'UUID']]],

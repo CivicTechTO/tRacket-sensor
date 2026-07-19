@@ -105,6 +105,8 @@ Functions</h2></td></tr>
 <tr class="memitem:ae8bcebb1dc083b5de76dac51dbe4f3fc" id="r_ae8bcebb1dc083b5de76dac51dbe4f3fc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#ae8bcebb1dc083b5de76dac51dbe4f3fc">printReadingToConsole</a> (double reading)</td></tr>
 <tr class="memdesc:ae8bcebb1dc083b5de76dac51dbe4f3fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Outputs the given decibel reading over serial.  <br /></td></tr>
 <tr class="separator:ae8bcebb1dc083b5de76dac51dbe4f3fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e4e05af49cde438385179f597075100" id="r_a3e4e05af49cde438385179f597075100"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a3e4e05af49cde438385179f597075100">otaUpdateCheck</a> (<a class="el" href="classAPI.html">API</a> &amp;)</td></tr>
+<tr class="separator:a3e4e05af49cde438385179f597075100"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaaac53f976c91508ace9778f2a7c51f2" id="r_aaaac53f976c91508ace9778f2a7c51f2"><td class="memItemLeft" align="right" valign="top">std::optional&lt; const char * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#aaaac53f976c91508ace9778f2a7c51f2">saveNetworkCreds</a> (String ssid, String psk, String email)</td></tr>
 <tr class="memdesc:aaaac53f976c91508ace9778f2a7c51f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback for <a class="el" href="classAccessPoint.html" title="Manages the WiFi access point, captive portal, and user setup form.">AccessPoint</a> that verifies credentials and attempts registration.  <br /></td></tr>
 <tr class="separator:aaaac53f976c91508ace9778f2a7c51f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -130,15 +132,18 @@ Variables</h2></td></tr>
 <tr class="memitem:a195abc3b621b87fd8336f94e4bbb312a" id="r_a195abc3b621b87fd8336f94e4bbb312a"><td class="memItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a195abc3b621b87fd8336f94e4bbb312a">WIFI_NEW_CONNECT_TIMEOUT_SEC</a> = 20</td></tr>
 <tr class="memdesc:a195abc3b621b87fd8336f94e4bbb312a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of seconds to try making new WiFi connection.  <br /></td></tr>
 <tr class="separator:a195abc3b621b87fd8336f94e4bbb312a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:accc0af7cd587113a17098ce2ec959d67" id="r_accc0af7cd587113a17098ce2ec959d67"><td class="memItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#accc0af7cd587113a17098ce2ec959d67">UPLOAD_INTERVAL_SEC</a> = MIN_TO_SEC(5)</td></tr>
-<tr class="memdesc:accc0af7cd587113a17098ce2ec959d67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies how frequently to upload data points to the server.  <br /></td></tr>
-<tr class="separator:accc0af7cd587113a17098ce2ec959d67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31696764590da99bc3572553a6604915" id="r_a31696764590da99bc3572553a6604915"><td class="memItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a31696764590da99bc3572553a6604915">OTA_INTERVAL_SEC</a> = HR_TO_SEC(24)</td></tr>
 <tr class="memdesc:a31696764590da99bc3572553a6604915"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specifies how frequently to check for OTA updates from our server.  <br /></td></tr>
 <tr class="separator:a31696764590da99bc3572553a6604915"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9b5cbef01be470713408910f62cd6580" id="r_a9b5cbef01be470713408910f62cd6580"><td class="memItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a9b5cbef01be470713408910f62cd6580">MAX_SAVED_PACKETS</a> = DAY_TO_SEC(14) / <a class="el" href="noisemeter-device_8ino.html#accc0af7cd587113a17098ce2ec959d67">UPLOAD_INTERVAL_SEC</a></td></tr>
+<tr class="memitem:a9b5cbef01be470713408910f62cd6580" id="r_a9b5cbef01be470713408910f62cd6580"><td class="memItemLeft" align="right" valign="top">constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#a9b5cbef01be470713408910f62cd6580">MAX_SAVED_PACKETS</a> = 7 * 24 * 60</td></tr>
 <tr class="memdesc:a9b5cbef01be470713408910f62cd6580"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of data packets to retain when WiFi is unavailable.  <br /></td></tr>
 <tr class="separator:a9b5cbef01be470713408910f62cd6580"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa783ad3d920643ad4a20644a0326c2b9" id="r_aa783ad3d920643ad4a20644a0326c2b9"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structAPI_1_1DeviceConfig.html">API::DeviceConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#aa783ad3d920643ad4a20644a0326c2b9">config</a></td></tr>
+<tr class="separator:aa783ad3d920643ad4a20644a0326c2b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1ae0986bb4826e6d0b41e521c08d734" id="r_ae1ae0986bb4826e6d0b41e521c08d734"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#ae1ae0986bb4826e6d0b41e521c08d734">uploadCountdown</a> = 0</td></tr>
+<tr class="separator:ae1ae0986bb4826e6d0b41e521c08d734"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf69df1373df2fe8af2551f0f8e08672" id="r_abf69df1373df2fe8af2551f0f8e08672"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#abf69df1373df2fe8af2551f0f8e08672">otaCountdown</a> = 0</td></tr>
+<tr class="separator:abf69df1373df2fe8af2551f0f8e08672"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add1ec86b8b8345a26e59735edddfb2c2" id="r_add1ec86b8b8345a26e59735edddfb2c2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classStorage.html">Storage</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="noisemeter-device_8ino.html#add1ec86b8b8345a26e59735edddfb2c2">Creds</a></td></tr>
 <tr class="memdesc:add1ec86b8b8345a26e59735edddfb2c2"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classStorage.html" title="Manages the storage of persistent settings.">Storage</a> instance to manage stored credentials.  <br /></td></tr>
 <tr class="separator:add1ec86b8b8345a26e59735edddfb2c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -174,7 +179,7 @@ Variables</h2></td></tr>
 <p>Generates a <a class="el" href="classUUID.html">UUID</a> that is unique to the hardware running this firmware. </p>
 <dl class="section return"><dt>Returns</dt><dd>A device-unique <a class="el" href="classUUID.html">UUID</a> object </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00310">310</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00355">355</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -193,7 +198,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00168">168</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00182">182</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -221,7 +226,27 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00243">243</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00265">265</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+
+</div>
+</div>
+<a id="a3e4e05af49cde438385179f597075100" name="a3e4e05af49cde438385179f597075100"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e4e05af49cde438385179f597075100">&#9670;&#160;</a></span>otaUpdateCheck()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void otaUpdateCheck </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classAPI.html">API</a> &amp;&#160;</td>
+          <td class="paramname"><em>api</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00293">293</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -249,7 +274,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00258">258</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00280">280</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -296,7 +321,7 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>An error message if not successful </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00271">271</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00316">316</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -317,7 +342,7 @@ Variables</h2></td></tr>
 
 <p>Firmware entry point and initialization routine. </p>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00095">95</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00100">100</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -357,11 +382,35 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Zero on success or a negative number on failure </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00317">317</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00362">362</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
+<a id="aa783ad3d920643ad4a20644a0326c2b9" name="aa783ad3d920643ad4a20644a0326c2b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa783ad3d920643ad4a20644a0326c2b9">&#9670;&#160;</a></span>config</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structAPI_1_1DeviceConfig.html">API::DeviceConfig</a> config</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00050">50</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+
+</div>
+</div>
 <a id="add1ec86b8b8345a26e59735edddfb2c2" name="add1ec86b8b8345a26e59735edddfb2c2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#add1ec86b8b8345a26e59735edddfb2c2">&#9670;&#160;</a></span>Creds</h2>
 
@@ -384,7 +433,7 @@ Variables</h2></td></tr>
 
 <p><a class="el" href="classStorage.html" title="Manages the storage of persistent settings.">Storage</a> instance to manage stored credentials. </p>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00053">53</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00056">56</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -410,7 +459,7 @@ Variables</h2></td></tr>
 
 <p>Track first measurement upload so diagnostics can be sent/included. </p>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00058">58</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00061">61</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -424,7 +473,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr auto MAX_SAVED_PACKETS = DAY_TO_SEC(14) / <a class="el" href="noisemeter-device_8ino.html#accc0af7cd587113a17098ce2ec959d67">UPLOAD_INTERVAL_SEC</a></td>
+          <td class="memname">constexpr auto MAX_SAVED_PACKETS = 7 * 24 * 60</td>
         </tr>
       </table>
   </td>
@@ -436,7 +485,7 @@ Variables</h2></td></tr>
 
 <p>Maximum number of data packets to retain when WiFi is unavailable. </p>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00050">50</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00048">48</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -460,7 +509,7 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00089">89</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00094">94</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -486,7 +535,31 @@ Variables</h2></td></tr>
 
 <p>Specifies how frequently to check for OTA updates from our server. </p>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00048">48</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00046">46</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+
+</div>
+</div>
+<a id="abf69df1373df2fe8af2551f0f8e08672" name="abf69df1373df2fe8af2551f0f8e08672"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abf69df1373df2fe8af2551f0f8e08672">&#9670;&#160;</a></span>otaCountdown</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int otaCountdown = 0</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00053">53</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
@@ -513,12 +586,12 @@ Variables</h2></td></tr>
 <p>Linked list of completed data packets. </p>
 <p>This list should only grow if WiFi is unavailable. </p>
 
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00056">56</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00059">59</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
-<a id="accc0af7cd587113a17098ce2ec959d67" name="accc0af7cd587113a17098ce2ec959d67"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#accc0af7cd587113a17098ce2ec959d67">&#9670;&#160;</a></span>UPLOAD_INTERVAL_SEC</h2>
+<a id="ae1ae0986bb4826e6d0b41e521c08d734" name="ae1ae0986bb4826e6d0b41e521c08d734"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae1ae0986bb4826e6d0b41e521c08d734">&#9670;&#160;</a></span>uploadCountdown</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -527,19 +600,17 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr auto UPLOAD_INTERVAL_SEC = MIN_TO_SEC(5)</td>
+          <td class="memname">int uploadCountdown = 0</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Specifies how frequently to upload data points to the server. </p>
-
-<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00046">46</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
+<p class="definition">Definition at line <a class="el" href="noisemeter-device_8ino_source.html#l00052">52</a> of file <a class="el" href="noisemeter-device_8ino_source.html">noisemeter-device.ino</a>.</p>
 
 </div>
 </div>
